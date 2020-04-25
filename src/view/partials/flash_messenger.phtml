@@ -1,0 +1,30 @@
+<?php
+$flashMessenger = $this->serviceManager()->get(\Laminas\Mvc\Plugin\FlashMessenger\FlashMessenger::class);
+/* @var $flashMessenger \Laminas\Mvc\Plugin\FlashMessenger\FlashMessenger */
+?>
+<div class="messenger">
+    <!-- informacje o błędzie -->
+    <?php if ($flashMessenger->getErrorMessages()) : ?>
+    <?php foreach ($flashMessenger->getErrorMessages() as $message) : ?>
+    <div class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-remove-sign"></span> <?php echo $this->translate($message); ?></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+    <!-- sukces -->
+    <?php if ($flashMessenger->getSuccessMessages()) : ?>
+    <?php foreach ($flashMessenger->getSuccessMessages() as $message) : ?>
+    <div class="alert alert-success" role="alert"><span class="alert-ico fa fa-fw fa-check"></span> <?php echo $this->translate($message); ?></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+    <!-- ostrzeżenia -->
+    <?php if ($flashMessenger->getWarningMessages()) : ?>
+    <?php foreach ($flashMessenger->getWarningMessages() as $message) : ?>
+    <div class="alert alert-warning" role="alert"><span class="alert-ico fa fa-fw fa-exclamation"></span> <?php echo $this->translate($message); ?></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+    <!-- informacje -->
+    <?php if ($flashMessenger->getInfoMessages()) : ?>
+    <?php foreach ($flashMessenger->getInfoMessages() as $message) : ?>
+    <div class="alert alert-info" role="alert"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $this->translate($message); ?></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
+</div>

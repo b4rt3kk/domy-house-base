@@ -1,0 +1,49 @@
+<?php
+/* @var $form \Base\Form\AbstractForm */
+$elements = $form->getElements();
+$buttons = [];
+
+$buttonTypes = [
+    \Laminas\Form\Element\Submit::class,
+    \Laminas\Form\Element\Button::class,
+];
+
+echo $this->form()->openTag($form);
+
+echo '<table class="table">';
+
+foreach ($elements as $element) {
+    if (in_array(get_class($element), $buttonTypes)) {
+        $buttons[] = $element;
+        continue;
+    }
+    
+    echo '<tr>';
+    
+    echo '<td>';
+    echo $this->formLabel($element);
+    echo '</td>';
+    
+    echo '<td>';
+    echo $this->formElement($element);
+    echo $this->formElementErrors($element);
+    echo '</td>';
+    
+    echo '</tr>';
+}
+
+if (!empty($buttons)) {
+    echo '<tr>';
+    echo '<td colspan="2">';
+
+    foreach ($buttons as $button) {
+        echo $this->formElement($button);  
+    }
+
+    echo '</td>';
+    echo '</tr>';
+}
+
+echo '</table>';
+
+echo $this->form()->closeTag();
