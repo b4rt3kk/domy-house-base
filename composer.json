@@ -1,0 +1,26 @@
+{
+    "name": "bw/base",
+    "description": "Base methods for Laminas framework",
+    "authors": [
+        {
+            "name": "bwiechnik",
+            "email": "bartlomiej.wiechnik@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.0"
+    },
+    "version": "1.2-stable",
+    "autoload": {
+        "psr-0": {
+            "Base": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "master",
+            "dev-develop": "master"
+        }
+    }
+}
