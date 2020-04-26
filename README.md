@@ -67,10 +67,12 @@ Wszystkie partiale z `Base` korzystają z tej konwencji nazewnictwa, więc bez i
 Abstrakcyjne fabryki są potrzebne do inicjalizacji np. formularzy. W pliku konfiguracji modułu `module.config.php` należy dodać:
 
 ```
-'abstract_factories' => [
-    \Base\Form\AbstractFormFactory::class,
-    \Base\Logic\Factory\AbstractLogicFactory::class,
-],
+'service_manager' => [
+    'abstract_factories' => [
+        \Base\Form\AbstractFormFactory::class,
+        \Base\Logic\Factory\AbstractLogicFactory::class,
+    ],
+]
 ```
 
 ### Dodawanie nowych pluginów widoku
