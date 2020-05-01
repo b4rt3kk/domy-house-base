@@ -30,7 +30,11 @@ class RbacAssertionManager extends AbstractLogic
     {
         return $this->creatorIdName;
     }
-
+    
+    /**
+     * Nazwa klucza z przekazanych parametrów do funkcji assert(), która zawiera id osoby tworzącej/posiadającej dany zasób/rekord
+     * @param string $creatorIdName
+     */
     public function setCreatorIdName($creatorIdName)
     {
         $this->creatorIdName = $creatorIdName;

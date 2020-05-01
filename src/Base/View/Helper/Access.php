@@ -16,7 +16,7 @@ class Access extends AbstractHelper
         return $this->rbacManager;
     }
 
-    public function setRbacManager($rbacManager)
+    public function setRbacManager(\Base\Services\Rbac\RbacManager $rbacManager)
     {
         $this->rbacManager = $rbacManager;
     }

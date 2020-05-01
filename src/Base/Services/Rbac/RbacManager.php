@@ -86,7 +86,8 @@ class RbacManager extends AbstractLogic
         $rolesManager = $this->getRolesManager();
         
         $dataRoles = $rolesManager->getRolesData();
-        $nameColumn = $rolesManager->getNameColumn();
+        $nameColumn = $rolesManager->getRoleNameColumn();
+        $permissionNameColumn = $rolesManager->getPermissionNameColumn();
         $primaryKey = $rolesManager->getPrimaryKey();
         
         foreach ($dataRoles as $rowRole) {
@@ -114,7 +115,7 @@ class RbacManager extends AbstractLogic
             $dataPermissions = $rolesManager->getRolePermissionsData($idRole);
             
             foreach ($dataPermissions as $rowPermission) {
-                $rbac->getRole($roleName)->addPermission($rowPermission->name);
+                $rbac->getRole($roleName)->addPermission($rowPermission->{$permissionNameColumn});
             }
         }
         
@@ -132,6 +133,7 @@ class RbacManager extends AbstractLogic
         $isGranted = false;
         
         $rolesManager = $this->getRolesManager();
+        $nameColumn = $rolesManager->getRoleNameColumn();
         $assertionManagers = $this->getAssertionManagers();
         $idUser = null;
         
@@ -148,7 +150,7 @@ class RbacManager extends AbstractLogic
         $userRoles = $rolesManager->getUserRolesData($idUser);
         
         foreach ($userRoles as $rowRole) {
-            if ($rbac->isGranted($rowRole->name, $permission)) {
+            if ($rbac->isGranted($rowRole->{$nameColumn}, $permission)) {
                 if (empty($params)) {
                     $isGranted = true;
                 }
