@@ -36,7 +36,7 @@ abstract class RbacRolesManager extends AbstractLogic
      */
     public function getPrimaryKey()
     {
-        return $this->roleNameColumn;
+        return $this->primaryKey;
     }
     
     /**
@@ -86,4 +86,10 @@ abstract class RbacRolesManager extends AbstractLogic
      * @return \Laminas\Db\ResultSet\ResultSet
      */
     abstract public function getUserRolesData($idUser);
+    
+    /**
+     * Pobierz wiersz dla roli na podstawie jego nazwy
+     * @param string $name
+     */
+    abstract public function getRoleByNameRow($name);
 }
