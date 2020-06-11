@@ -5,6 +5,25 @@ abstract class AbstractForm extends \Laminas\Form\Form
 {
     protected $serviceManager;
     
+    protected $isInitialized = false;
+    
+    public function getIsInitialized()
+    {
+        return $this->isInitialized;
+    }
+
+    public function setIsInitialized($isInitialized)
+    {
+        $this->isInitialized = $isInitialized;
+    }
+    
+    public function init()
+    {
+        parent::init();
+        
+        $this->setIsInitialized(true);
+    }
+    
     /**
      * @return \Laminas\ServiceManager\ServiceManager
      */
