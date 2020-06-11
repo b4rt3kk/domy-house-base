@@ -45,4 +45,9 @@ abstract class AbstractForm extends \Laminas\Form\Form
         
         $this->submit($value, $options);
     }
+    
+    protected function addClearStart($values, $label = '-- wybierz --')
+    {
+        return ['' => $label] + $values;
+    }
 }

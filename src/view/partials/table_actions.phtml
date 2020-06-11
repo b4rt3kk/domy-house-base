@@ -1,0 +1,13 @@
+<?php
+foreach ($actions as $action) {
+    $page = new \Base\Navigation\Page\Mvc(array_merge($action, [
+        'row' => $row,
+        'serviceManager' => $this->serviceManager(),
+    ]));
+    
+    if ($page->isAllowed()) {
+        echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary">';
+        echo $page->getLabel();
+        echo '</a>';
+    }
+}

@@ -18,6 +18,10 @@ foreach ($headers as $header) {
     echo '</th>';
 }
 
+if (!empty($rowActions)) {
+    echo '<th>Actions</th>';
+}
+
 echo '</tr>';
 echo '</thead>';
 
@@ -30,6 +34,12 @@ foreach ($data as $row) {
     foreach ($headers as $header) {
         echo '<td>';
         echo $row->{$header};
+        echo '</td>';
+    }
+    
+    if (!empty($rowActions)) {
+        echo '<td>';
+        echo $this->partial('base/table_actions', ['actions' => $rowActions, 'row' => $row]);
         echo '</td>';
     }
     

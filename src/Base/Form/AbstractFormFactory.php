@@ -22,7 +22,6 @@ class AbstractFormFactory implements AbstractFactoryInterface
         $class = new $requestedName();
         /* @var $class \Base\Form\AbstractForm */
         $class->setServiceManager($container);
-        $class->init();
         
         return $class;
     }
