@@ -1,0 +1,51 @@
+<?php
+/* @var $data \Laminas\Db\ResultSet\ResultSet */
+$prototype = $data->getArrayObjectPrototype();
+/* @var $prototype \Base\Db\Table\AbstractEntity */
+
+$index = isset($index) ? $index : 1;
+$headersMapping = $prototype->getHeadersMapping();
+$rowActions = $prototype->getRowActions();
+
+echo '<table class="table">';
+echo '<thead>';
+echo '<tr>';
+echo '<th>#</th>';
+
+foreach ($headers as $header) {
+    echo '<th>';
+    echo $headersMapping[$header]['title'];
+    echo '</th>';
+}
+
+if (!empty($rowActions)) {
+    echo '<th>Actions</th>';
+}
+
+echo '</tr>';
+echo '</thead>';
+
+echo '<tbody>';
+
+foreach ($data as $row) {
+    echo '<tr>';
+    echo '<td>' . ($index++) . '</td>';
+    
+    foreach ($headers as $header) {
+        echo '<td>';
+        echo $row->{$header};
+        echo '</td>';
+    }
+    
+    if (!empty($rowActions)) {
+        echo '<td>';
+        echo $this->partial('base/table_actions', ['actions' => $rowActions, 'row' => $row]);
+        echo '</td>';
+    }
+    
+    echo '</tr>';
+}
+
+echo '</tbody>';
+
+echo '</table>';

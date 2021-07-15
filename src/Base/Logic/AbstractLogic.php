@@ -17,4 +17,15 @@ abstract class AbstractLogic implements LogicInterface
     {
         $this->serviceManager = $serviceManager;
     }
+    
+    public function unserializeJqueryArray($data)
+    {
+        $return = [];
+        
+        foreach ($data as $row) {
+            $return[$row['name']] = $row['value'];
+        }
+        
+        return $return;
+    }
 }

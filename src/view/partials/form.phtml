@@ -8,6 +8,8 @@ $buttonTypes = [
     \Laminas\Form\Element\Button::class,
 ];
 
+echo '<div class="form-container">';
+
 echo $this->form()->openTag($form);
 
 echo '<table class="table">';
@@ -47,3 +49,5 @@ if (!empty($buttons)) {
 echo '</table>';
 
 echo $this->form()->closeTag();
+
+echo '</div>';

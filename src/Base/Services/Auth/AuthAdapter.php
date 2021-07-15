@@ -57,7 +57,10 @@ class AuthAdapter implements AdapterInterface
      * @var array
      */
     protected $rowPreConditions = [
+        /*
         'NOT ghost',
+         * 
+         */
     ];
     
     /**
@@ -67,10 +70,13 @@ class AuthAdapter implements AdapterInterface
      * @var array
      */
     protected $rowPostConditions = [
+        /*
         [
             'condition' => ['is_locked' => false],
             'message' => 'User is locked',
         ],
+         * 
+         */
     ];
     
     /**
@@ -176,6 +182,9 @@ class AuthAdapter implements AdapterInterface
         $this->failedLoginsLimit = $failedLoginsLimit;
     }
     
+    /**
+     * @return \Base\Db\Table\AbstractEntity
+     */
     public function getUserRow()
     {
         return $this->userRow;

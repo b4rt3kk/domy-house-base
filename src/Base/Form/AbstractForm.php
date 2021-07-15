@@ -5,6 +5,25 @@ abstract class AbstractForm extends \Laminas\Form\Form
 {
     protected $serviceManager;
     
+    protected $isInitialized = false;
+    
+    public function getIsInitialized()
+    {
+        return $this->isInitialized;
+    }
+
+    public function setIsInitialized($isInitialized)
+    {
+        $this->isInitialized = $isInitialized;
+    }
+    
+    public function init()
+    {
+        parent::init();
+        
+        $this->setIsInitialized(true);
+    }
+    
     /**
      * @return \Laminas\ServiceManager\ServiceManager
      */
@@ -44,5 +63,10 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $options['name'] = 'cancel_form';
         
         $this->submit($value, $options);
+    }
+    
+    protected function addClearStart($values, $label = '-- wybierz --')
+    {
+        return ['' => $label] + $values;
     }
 }

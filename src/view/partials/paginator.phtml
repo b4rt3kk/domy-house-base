@@ -1,0 +1,15 @@
+<?php
+/* @var $paginator \Base\Paginator */
+if (!$paginator->getIsInitialized()) {
+    $paginator->init();
+}
+
+$data = $paginator->getData();
+
+echo $this->partial('base/paginator_navigation', ['paginator' => $paginator]);
+
+echo $this->partial('base/table', [
+    'data' => $data,
+    'headers' => $paginator->getHeaders(),
+    'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
+]);
