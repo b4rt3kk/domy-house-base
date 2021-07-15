@@ -27,4 +27,10 @@ $flashMessenger = $this->serviceManager()->get(\Laminas\Mvc\Plugin\FlashMessenge
     <div class="alert alert-info" role="alert"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $this->translate($message); ?></div>
     <?php endforeach; ?>
     <?php endif; ?>
+    <!-- pozostałe wiadomości flash (bez kategorii -->
+    <?php if ($flashMessenger->getMessages()) : ?>
+    <?php foreach ($flashMessenger->getMessages() as $message) : ?>
+    <div class="alert alert-primary" role="alert"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $this->translate($message); ?></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
 </div>
