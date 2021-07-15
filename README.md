@@ -29,11 +29,44 @@ Najpierw należy dodać nowe repozytorium do pliku `composer.json`:
 ]
 ```
 
+Można to zrobić również przez inny typ - VCS (zalecane):
+
+```
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "ssh://git@dev-bwiechnik.dyndns.org:64998/BW/Base.laminas.git",
+            "canonical": false,
+            "package": {
+                "name": "bw/base",
+                "version": "1.3",
+                "source": {
+                    "url": "ssh://git@dev-bwiechnik.dyndns.org:64998/BW/Base.laminas.git",
+                    "type": "git",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "psr-0": {
+                        "Base": "src"
+                    }
+                }
+            }
+        }
+    ],
+```
+
 Teraz należy wywołać komendę do instalacji paczki:
 
 ```
 composer require --dev bw/base:master
 ```
+
+lub w przypadku zalecanej metody wystarczy:
+
+```
+composer require bw/base
+```
+
 
 Jeśli jest to konieczne (ponieważ composer wyrzuca błąd):
 
