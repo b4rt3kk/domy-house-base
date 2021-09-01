@@ -16,7 +16,7 @@
         "psr-0": {
             "Base": "src/"
         },
-        "files": ["vendor/bw/base/src/debug/functions.php"]
+        "files": ["src/debug/functions.php"]
     },
     "extra": {
         "branch-alias": {
