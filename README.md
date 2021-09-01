@@ -243,6 +243,187 @@ $authManager = $this->getServiceManager()->get(\Base\Services\Auth\AuthManager::
 /* @var $authManager \Base\Services\Auth\AuthManager */
 ```
 
+### Implementacja RBAC
+
+Najpierw należy napisać odpowiedniego Managera dla ról pobieranych z bazy danych, który rozszerza tego z Base `\Base\Services\Rbac\RbacRolesManager`, odpowiedniego dla naszej aplikacji, tak żeby nie trzeba było dokładnie kopiować struktury bazy danych, tylko można było to określić samemu wedle potrzeb.
+
+```
+namespace Application\Services\Rbac;
+
+class RbacRolesManager extends \Base\Services\Rbac\RbacRolesManager
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getRolesData()
+    {
+        $model = $this->getServiceManager()->get(\Application\Model\RolesTable::class);
+        /* @var $model \Base\Db\Table\AbstractModel */
+        
+        $select = $model->select()
+                ->where(['NOT ghost']);
+        
+        $data = $model->fetchAll($select);
+        
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoleParentsData($idRole)
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoleChildrensData($idRole) 
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRolePermissionsData($idRole)
+    {
+        $model = $this->getServiceManager()->get(\Application\Model\RolePermissionsTable::class);
+        /* @var $model \Base\Db\Table\AbstractModel */
+        
+        $select = new \Laminas\Db\Sql\Select();
+        $select->from(['rp' => new \Laminas\Db\Sql\TableIdentifier('role_permissions', 'public')], [])
+                ->join(['p' => new \Laminas\Db\Sql\TableIdentifier('permissions', 'public')], 'p.id = rp.id_permission')
+                ->where(['NOT rp.ghost', 'NOT p.ghost', 'rp.id_role' => $idRole]);
+        
+        $data = $model->fetchAll($select);
+        
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUserRolesData($idUser)
+    {
+        $model = $this->getServiceManager()->get(\Application\Model\RolesTable::class);
+        /* @var $model \Base\Db\Table\AbstractModel */
+        
+        $select = new \Laminas\Db\Sql\Select();
+        $select->from(['r' => new \Laminas\Db\Sql\TableIdentifier('roles', 'public')])
+                ->where(['NOT r.ghost']);
+        
+        if (!empty($idUser)) {
+            $select->join(['ur' => new \Laminas\Db\Sql\TableIdentifier('user_roles', 'public')], 'ur.id_role = r.id', [])
+                    ->where(['NOT ur.ghost', 'ur.id_user' => $idUser]);
+        } else {
+            $select->where(['code' => \Base\Services\Rbac\RbacManager::DEFAULT_ROLE_CODE]);
+        }
+        
+        $data = $model->fetchAll($select);
+        
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoleByNameRow($name)
+    {
+        $model = $this->getServiceManager()->get(\Application\Model\RolesTable::class);
+        /* @var $model \Base\Db\Table\AbstractModel */
+    }
+}
+```
+
+Oraz napisać odpowiednią fabrykę, która zwróci RbacManagera z Base, przykładowo:
+
+```
+namespace Application\Services\Rbac;
+
+class RbacManagerFactory implements \Laminas\ServiceManager\Factory\FactoryInterface
+{
+    public function __invoke(\Interop\Container\ContainerInterface $container, $requestedName, array $options = null)
+    {
+        $rbacManager = new \Base\Services\Rbac\RbacManager();
+        $rbacManager->setServiceManager($container);
+        
+        $rbacRolesManager = new RbacRolesManager();
+        $rbacRolesManager->setServiceManager($container);
+        
+        $rbacManager->setRolesManager($rbacRolesManager);
+        
+        $assertionManager = $container->get(\Base\Services\Rbac\RbacAssertionManager::class);
+        /* @var $assertionManager \Base\Services\Rbac\RbacAssertionManager */
+        $assertionManager->setServiceManager($container);
+        
+        $rbacManager->addAssertionManager($assertionManager);
+        
+        return $rbacManager;
+    }
+}
+```
+
+Teraz wystarczy dodać konfigurację fabryki do `module.config.php`:
+
+```
+    'service_manager' => [
+        'factories' => [
+            \Base\Services\Rbac\RbacManager::class => Services\Rbac\RbacManagerFactory::class,
+        ],
+        'abstract_factories' => [
+            \Base\Logic\Factory\AbstractLogicFactory::class,
+            \Base\Form\AbstractFormFactory::class,
+        ],
+    ]
+```
+
+Oraz dodać sprawdzanie autoryzacji w `Module.php`:
+
+```
+    public function onBootstrap(\Laminas\Mvc\MvcEvent $event)
+    {
+        $application = $event->getApplication();
+        $eventManager = $application->getEventManager();
+        
+        $eventManager->attach(\Laminas\Mvc\MvcEvent::EVENT_DISPATCH, [$this, 'onDispatch']);
+    }
+    
+    public function onDispatch(\Laminas\Mvc\MvcEvent $event)
+    {
+        $application = $event->getApplication();
+        $serviceManager = $application->getServiceManager();
+        
+        $controller = $event->getTarget();
+        $routeName = $event->getRouteMatch()->getMatchedRouteName();
+        $controllerName = $event->getRouteMatch()->getParam('controller', null);
+        $actionName = $event->getRouteMatch()->getParam('action', null);
+        
+        $authManager = $serviceManager->get(\Base\Services\Auth\AuthManager::class);
+        /* @var $authManager \Base\Services\Auth\AuthManager */
+        
+        // sprawdzenie czy użytkownik ma dostęp do zasobu
+        $result = $authManager->filterAccess($routeName, $actionName);
+        
+        switch ($result) {
+            case \Base\Services\Auth\AuthManager::ACCESS_DENIED:
+                if ($routeName !== 'auth' || $actionName !== 'notauthorized') {
+                    return $controller->redirect()->toRoute('auth', ['action' => 'notauthorized']);
+                }
+                break;
+            case \Base\Services\Auth\AuthManager::AUTH_REQUIRED:
+                if ($routeName !== 'auth' || $actionName !== 'login') {
+                    $controller->flashMessenger()->addErrorMessage('Musisz się zalogować by uzyskać dostęp do tego zasobu');
+                    
+                    return $controller->redirect()->toRoute('auth', ['action' => 'login']);
+                }
+                break;
+        }
+    }
+```
+
+Przy braku autoryzacji lub braku dostępu powinno nastąpić odpowiednie przekierowanie.
 
 ## Dodatkowe informacje
 
