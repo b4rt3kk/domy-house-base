@@ -181,11 +181,18 @@ abstract class AbstractModel
         return $select;
     }
     
-    public function fetchRow($where)
+    /**
+     * @param \Laminas\Db\Sql\Select $where
+     * @return \Base\Db\Table\AbstractEntity
+     */
+    public function fetchRow($where = null)
     {
         if (!$where instanceof \Laminas\Db\Sql\Select) {
-            $select = $this->select()
-                ->where($where);
+            $select = $this->select();
+            
+            if (!empty($where)) {
+                $select->where($where);
+            }
         } else {
             $select = $where;
         }
@@ -203,11 +210,14 @@ abstract class AbstractModel
      * @param \Laminas\Db\Sql\Select $where
      * @return \Laminas\Db\ResultSet\ResultSet
      */
-    public function fetchAll($where)
+    public function fetchAll($where = null)
     {
         if (!$where instanceof \Laminas\Db\Sql\Select) {
-            $select = $this->select()
-                ->where($where);
+            $select = $this->select();
+            
+            if (!empty($where)) {
+                $select->where($where);
+            }
         } else {
             $select = $where;
         }

@@ -1,5 +1,9 @@
 <?php
 /* @var $form \Base\Form\AbstractForm */
+if (!$form->getIsInitialized()) {
+    $form->init();
+}
+
 $elements = $form->getElements();
 $buttons = [];
 
@@ -28,7 +32,7 @@ foreach ($elements as $element) {
     
     echo '<td>';
     echo $this->formElement($element);
-    echo $this->formElementErrors($element);
+    echo $this->formElementErrors($element, ['id' => 'form-input-errors']);
     echo '</td>';
     
     echo '</tr>';
@@ -39,7 +43,8 @@ if (!empty($buttons)) {
     echo '<td colspan="2">';
 
     foreach ($buttons as $button) {
-        echo $this->formElement($button);  
+        echo $this->formElement($button);
+        echo '&nbsp;';
     }
 
     echo '</td>';

@@ -49,10 +49,24 @@ class RbacManager extends AbstractLogic
     {
         $this->cache = $cache;
     }
+    
+    public function clearAssertionManagers()
+    {
+        $this->assertionManagers = [];
+    }
 
     public function setAssertionManagers($assertionManagers)
     {
-        $this->assertionManagers = $assertionManagers;
+        $this->clearAssertionManagers();
+        
+        foreach ($assertionManagers as $assertionManager) {
+            $this->addAssertionManager($assertionManager);
+        }
+    }
+    
+    public function addAssertionManager(AbstractRbacAssertionManager $assertionManager)
+    {
+        $this->assertionManagers[] = $assertionManager;
     }
     
     public function getIsInitialized()
@@ -84,6 +98,10 @@ class RbacManager extends AbstractLogic
         $rbac->setCreateMissingRoles(true);
         
         $rolesManager = $this->getRolesManager();
+        
+        if (!$rolesManager instanceof RbacRolesManager) {
+            throw new \Exception(sprintf("Role manager must inherits from %s class", RbacRolesManager::class));
+        }
         
         $dataRoles = $rolesManager->getRolesData();
         $nameColumn = $rolesManager->getRoleNameColumn();

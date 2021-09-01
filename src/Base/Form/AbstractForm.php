@@ -46,7 +46,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
         ];
         
         if (isset($options['attributes'])) {
-            $attributes = array_merge($options['attributes'], $attributes);
+            $attributes = array_merge($attributes, $options['attributes']);
         }
         
         $config = array_merge($options, [
@@ -61,6 +61,9 @@ abstract class AbstractForm extends \Laminas\Form\Form
     protected function cancel($value = 'Cancel', $options = [])
     {
         $options['name'] = 'cancel_form';
+        $options['attributes'] = [
+            'class' => 'btn btn-secondary',
+        ];
         
         $this->submit($value, $options);
     }
