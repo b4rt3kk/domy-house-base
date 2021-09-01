@@ -150,6 +150,100 @@ By było to możliwe należy dodać jego fabrykę do `module.config.php`:
 ]
 ```
 
+### Implementacja AuthMenagera do autoryzacji użytkowników
+
+Najpierw należy napisać własną fabrykę do utworzenia instancji Menagera rozszerzającą `\Base\Services\Auth\AuthenticationServiceFactory`. Wspomniana fabryka z Base ustawia wstępnie odpowiednie adaptery, ale należy je rozszerzyć by wstrzyknąć dane specyficzne dla naszej aplikacji, jak nazwa modelu czy warunki where dla wiersza lub dodatkowe akcje do wykonania jeśli wystąpi określony EVENT. Przykładowy kod:
+
+```
+namespace Application\Services\Auth;
+
+class AuthenticationServiceFactory extends \Base\Services\Auth\AuthenticationServiceFactory
+{
+    public function __invoke(\Interop\Container\ContainerInterface $container, $requestedName, array $options = null)
+    {
+        $service = parent::__invoke($container, $requestedName, $options);
+        
+        $adapter = $service->getAdapter();
+        /* @var $adapter \Base\Services\Auth\AuthAdapter */
+        
+        // nazwa modelu
+        $adapter->setModelName(\Application\Model\UsersTable::class);
+        $adapter->setRowPreConditions(['NOT ghost']);
+        $adapter->setRowPostConditions([
+            [
+                'condition' => ['is_locked' => false],
+                'message' => 'User is locked',
+            ],
+        ]);
+        
+        $adapter->addCallable(\Base\Services\Auth\AuthAdapter::EVENT_LOGIN_SUCCESS, function(\Base\Services\Auth\AuthAdapter $adapter) {
+            $model = $adapter->getModel();
+            $row = $adapter->getUserRow();
+            $remoteAddress = new \Laminas\Http\PhpEnvironment\RemoteAddress();
+            
+            $model->update([
+                'last_login_time' => new \Laminas\Db\Sql\Expression("NOW()"),
+                'last_login_ip_address' => $remoteAddress->getIpAddress(),
+            ], [
+                'id' => $row->id,
+            ]);
+        });
+        
+        return $service;
+    }
+}
+```
+
+Następnie w pliku konfiguracji modułu `module.config.php` należy dodać tę fabrykę by mógł z niej korzystać ServiceManager:
+
+```
+    'service_manager' => [
+        'factories' => [
+            /* ... */
+            \Laminas\Authentication\AuthenticationService::class => Services\Auth\AuthenticationServiceFactory::class,
+        ],
+        'abstract_factories' => [
+            \Base\Logic\Factory\AbstractLogicFactory::class,
+            \Base\Form\AbstractFormFactory::class,
+        ],
+    ]
+```
+
+Konieczne jest również dodanie konfiguracji do obsługi sesji, z której korzysta AuthManager. Należy to zrobić w pliku `config\autoload\global.php`:
+
+```
+return [
+    /* ... */
+    // Session configuration.
+    'session_config' => [
+        // Session cookie will expire in 1 hour.
+        'cookie_lifetime' => 60*60*1,     
+        // Session data will be stored on server maximum for 30 days.
+        'gc_maxlifetime'     => 60*60*24*30, 
+    ],
+    // Session manager configuration.
+    'session_manager' => [
+        // Session validators (used for security).
+        'validators' => [
+            \Laminas\Session\Validator\RemoteAddr::class,
+            \Laminas\Session\Validator\HttpUserAgent::class,
+        ]
+    ],
+    // Session storage configuration.
+    'session_storage' => [
+        'type' => \Laminas\Session\Storage\SessionArrayStorage::class,
+    ],
+];
+```
+
+W kontrolerze wystarczy utworzyć instancję Managera i korzystać z gotowych już metod do logowania, rejestracji czy wylogowania. Należy jedynie dopisać odpowiednie formularze.
+
+```
+$authManager = $this->getServiceManager()->get(\Base\Services\Auth\AuthManager::class);
+/* @var $authManager \Base\Services\Auth\AuthManager */
+```
+
+
 ## Dodatkowe informacje
 
 Tworzenie własnej paczki composera:
