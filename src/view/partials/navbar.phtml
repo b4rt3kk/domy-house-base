@@ -1,0 +1,78 @@
+<?php
+/* @var $navbar \Base\Navigation\Navigation */
+$pages = $navbar->getPages();
+?>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <?php foreach ($pages as $page) : ?>
+            <?php 
+            /* @var $page \Base\Navigation\Page\Mvc */ 
+            $hasChildrens = !empty($page->getPages());
+            
+            if (!$page->isAllowed()) {
+                continue;
+            }
+            ?>
+                <li class="nav-item <?php echo $hasChildrens ? 'dropdown' : ''; ?>">
+                    <a 
+                        class="nav-link <?php echo $hasChildrens ? 'dropdown-toggle' : ''; ?>" 
+                        href="<?php echo $this->url($page->getRoute(), ['action' => $page->getAction()]); ?>"
+                        <?php echo $hasChildrens ? 'data-bs-toggle="dropdown"' : ''; ?>
+                    >
+                        <?php echo $page->getLabel(); ?>
+                        
+                    </a>
+                    <?php if ($hasChildrens) : ?>
+                    <ul class="dropdown-menu">
+                        <?php foreach ($page->getPages() as $childrenPage) : ?>
+                        <?php 
+                            if (!$childrenPage->isAllowed()) {
+                                continue;
+                            }
+                        ?>
+                        <li>
+                            <a class="dropdown-item" href="<?php echo $this->url($childrenPage->getRoute(), ['action' => $childrenPage->getAction()]); ?>">
+                                <?php echo $childrenPage->getLabel(); ?>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+            </ul>
+        </div>
+        <!--
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Dropdown
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+        -->
+    </div>
+</nav>

@@ -60,10 +60,23 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     public function isAllowed()
     {
+        $isAllowed = false;
         $rbacManager = $this->getServiceManager()->get(\Base\Services\Rbac\RbacManager::class);
         /* @var $rbacManager \Base\Services\Rbac\RbacManager */
         
-        return $rbacManager->isGranted(null, $this->getPrivilege(), $this->getRow()->getData());
+        $row = $this->getRow();
+        $data = [];
+        $privilege = $this->getPrivilege();
+        
+        if ($row instanceof \Base\Db\Table\AbstractEntity) {
+            $data = $row->getData();
+        }
+        
+        if (!empty($privilege)) {
+            $isAllowed = $rbacManager->isGranted(null, $this->getPrivilege(), $data);
+        }
+        
+        return $isAllowed;
     }
     
     protected function prepareParams($options = [])
