@@ -40,8 +40,12 @@ foreach ($rowDictionaries as $key => $rowDictionary) {
     $dictionaries[$key] = $dictionary->getDictionary();
 }
 
+if ($responsive) {
+    echo '<div class="table-responsive">';
+}
+
 echo '<table class="table">';
-echo '<thead>';
+echo '<thead class="table-light">';
 echo '<tr>';
 echo '<th>#</th>';
 
@@ -62,7 +66,7 @@ echo '<tbody>';
 
 foreach ($data as $row) {
     echo '<tr>';
-    echo '<td>' . ($index++) . '</td>';
+    echo '<td><strong>' . ($index++) . '</strong></td>';
     
     foreach ($headers as $header) {
         $value = $row->{$header};
@@ -92,3 +96,7 @@ foreach ($data as $row) {
 echo '</tbody>';
 
 echo '</table>';
+
+if ($responsive) {
+    echo '</div>';
+}
