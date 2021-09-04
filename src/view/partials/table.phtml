@@ -81,7 +81,7 @@ foreach ($data as $row) {
     }
     
     if (!empty($rowActions)) {
-        echo '<td>';
+        echo '<td class="text-nowrap">';
         echo $this->partial('base/table_actions', ['actions' => $rowActions, 'row' => $row]);
         echo '</td>';
     }
