@@ -9,6 +9,8 @@ abstract class AbstractEntity
     
     protected $rowActions = [];
     
+    protected $dictionaries = [];
+    
     public function exchangeArray(array $data)
     {
         $this->setData($data);
@@ -42,6 +44,16 @@ abstract class AbstractEntity
     public function setRowActions($rowActions)
     {
         $this->rowActions = $rowActions;
+    }
+    
+    public function getDictionaries()
+    {
+        return $this->dictionaries;
+    }
+
+    public function setDictionaries($dictionaries)
+    {
+        $this->dictionaries = $dictionaries;
     }
     
     public function __get($name)

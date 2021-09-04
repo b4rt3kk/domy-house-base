@@ -6,6 +6,39 @@ $prototype = $data->getArrayObjectPrototype();
 $index = isset($index) ? $index : 1;
 $headersMapping = $prototype->getHeadersMapping();
 $rowActions = $prototype->getRowActions();
+$rowDictionaries = $prototype->getDictionaries();
+
+$dictionaries = [];
+
+foreach ($rowDictionaries as $key => $rowDictionary) {
+    $dictionary = $this->serviceManager()->get(\Base\Dictionary::class);
+    /* @var $dictionary \Base\Dictionary */
+    if (!empty($rowDictionary['name'])) {
+        $dictionary->setDictionaryName($rowDictionary['name']);
+    }
+    
+    if (!empty($rowDictionary['id'])) {
+        $dictionary->setIdKey($rowDictionary['id']);
+    }
+    
+    if (!empty($rowDictionary['modelName'])) {
+        $dictionary->setModelName($rowDictionary['modelName']);
+    }
+    
+    if (!empty($rowDictionary['nameFields'])) {
+        $dictionary->setNameFields($rowDictionary['nameFields']);
+    }
+    
+    if (!empty($rowDictionary['where'])) {
+        $dictionary->setWhere($rowDictionary['where']);
+    }
+    
+    if (!empty($rowDictionary['separator'])) {
+        $dictionary->setSeparator($rowDictionary['separator']);
+    }
+    
+    $dictionaries[$key] = $dictionary->getDictionary();
+}
 
 echo '<table class="table">';
 echo '<thead>';
@@ -32,8 +65,14 @@ foreach ($data as $row) {
     echo '<td>' . ($index++) . '</td>';
     
     foreach ($headers as $header) {
+        $value = $row->{$header};
+        
+        if (!empty($dictionaries[$header][$row->{$header}])) {
+            $value = $dictionaries[$header][$row->{$header}];
+        }
+        
         echo '<td>';
-        echo $row->{$header};
+        echo $value;
         echo '</td>';
     }
     

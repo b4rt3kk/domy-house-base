@@ -37,6 +37,18 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $this->serviceManager = $serviceManager;
     }
     
+    public function getValues()
+    {
+        return $this->data;
+    }
+    
+    public function isCancelled($name = 'cancel_form')
+    {
+        $values = $this->getValues();
+        
+        return isset($values[$name]);
+    }
+    
     protected function submit($value = 'Submit', $options = [])
     {
         $name = array_key_exists('name', $options) ? $options['name'] : 'submit_form';
