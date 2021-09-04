@@ -5,7 +5,7 @@ foreach ($actions as $action) {
         'serviceManager' => $this->serviceManager(),
     ]));
     
-    if ($page->isAllowed()) {
+    if ($page->isAllowed() && $page->isShowable()) {
         echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary">';
         echo $page->getLabel();
         echo '</a>&nbsp;';

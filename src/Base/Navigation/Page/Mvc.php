@@ -7,6 +7,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $serviceManager;
     
+    protected $where = [];
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -15,6 +17,10 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         
         if (array_key_exists('serviceManager', $options)) {
             $this->setServiceManager($options['serviceManager']);
+        }
+        
+        if (array_key_exists('where', $options)) {
+            $this->setWhere($options['where']);
         }
         
         $options['params'] = $this->prepareParams($options);
@@ -43,6 +49,16 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     public function setRow($row)
     {
         $this->row = $row;
+    }
+    
+    public function getWhere()
+    {
+        return $this->where;
+    }
+
+    public function setWhere($where)
+    {
+        $this->where = $where;
     }
     
     /**
@@ -77,6 +93,31 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         }
         
         return $isAllowed;
+    }
+    
+    /**
+     * Sprawdź czy przycisk powinien zostać pokazany, na podstawie warunków wiersza. Wszystkie muszą zostać spełnione.
+     * @return boolean
+     */
+    public function isShowable()
+    {
+        $showable = true;
+        $whereConditions = $this->getWhere();
+        $row = $this->getRow();
+        
+        if (!empty($whereConditions) && !empty($row)) {
+            $conditionsMet = 0;
+            
+            foreach ($whereConditions as $columnName => $condition) {
+                if ($row->{$columnName} == $condition) {
+                    $conditionsMet++;
+                }
+            }
+            
+            $showable = sizeof($whereConditions) === $conditionsMet;
+        }
+        
+        return $showable;
     }
     
     protected function prepareParams($options = [])
