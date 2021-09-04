@@ -58,12 +58,12 @@ abstract class Paginator extends Logic\AbstractLogic
     {
         $totalPages = $this->getTotalPages();
         
-        if ($currentPage < 1) {
-            $currentPage = 1;
-        }
-        
         if ($currentPage > $totalPages) {
             $currentPage = $totalPages;
+        }
+        
+        if ($currentPage < 1) {
+            $currentPage = 1;
         }
         
         $this->currentPage = $currentPage;
@@ -109,21 +109,10 @@ abstract class Paginator extends Logic\AbstractLogic
      */
     public function getTotalPages()
     {
-        if (!$this->getIsInitialized()) {
-            throw new \Exception('Paginator has to be initialized first. Call init() method.');
-        }
-        
         $itemsPerPage = $this->getItemsPerPage();
+        $totalResults = $this->getTotalResults();
         
-        $model = $this->getModel();
-        $select = clone $this->getSelect();
-        $select->reset(\Laminas\Db\Sql\Select::ORDER);
-        
-        $select->columns(['count' => new \Laminas\Db\Sql\Expression("COUNT(1)")]);
-        
-        $row = $model->fetchRow($select);
-        
-        return ceil($row->count / $itemsPerPage);
+        return ceil($totalResults / $itemsPerPage);
     }
     
     /**
@@ -162,6 +151,23 @@ abstract class Paginator extends Logic\AbstractLogic
         }
         
         return $lastPage;
+    }
+    
+    public function getTotalResults()
+    {
+        if (!$this->getIsInitialized()) {
+            throw new \Exception('Paginator has to be initialized first. Call init() method.');
+        }
+        
+        $model = $this->getModel();
+        $select = clone $this->getSelect();
+        $select->reset(\Laminas\Db\Sql\Select::ORDER);
+
+        $select->columns(['count' => new \Laminas\Db\Sql\Expression("COUNT(1)")]);
+
+        $row = $model->fetchRow($select);
+
+        return $row->count;
     }
         
     /**
