@@ -22,8 +22,8 @@ $lastPage = $paginator->getLastPageInRange();
         
         <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : null; ?>">
             <a class="page-link" href="<?php echo $this->url(null, [], ['query' => ['page' => $currentPage + 1]], true); ?>" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
                 <span class="sr-only">Next</span>
+                <span aria-hidden="true">&raquo;</span>
             </a>
         </li>
     </ul>
