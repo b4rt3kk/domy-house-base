@@ -8,6 +8,6 @@ foreach ($actions as $action) {
     if ($page->isAllowed()) {
         echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary">';
         echo $page->getLabel();
-        echo '</a>';
+        echo '</a>&nbsp;';
     }
 }

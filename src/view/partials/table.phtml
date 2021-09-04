@@ -71,6 +71,10 @@ foreach ($data as $row) {
             $value = $dictionaries[$header][$row->{$header}];
         }
         
+        if (!empty($headersMapping[$header]['format'])) {
+            $value = $this->format()->format($headersMapping[$header]['format'], $value);
+        }
+        
         echo '<td>';
         echo $value;
         echo '</td>';
