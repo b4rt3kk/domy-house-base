@@ -117,6 +117,7 @@ abstract class Paginator extends Logic\AbstractLogic
         
         $model = $this->getModel();
         $select = clone $this->getSelect();
+        $select->reset(\Laminas\Db\Sql\Select::ORDER);
         
         $select->columns(['count' => new \Laminas\Db\Sql\Expression("COUNT(1)")]);
         
