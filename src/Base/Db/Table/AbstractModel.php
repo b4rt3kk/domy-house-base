@@ -13,9 +13,37 @@ abstract class AbstractModel
     
     protected $sequenceName;
     
-    public function __construct(TableGatewayInterface $tableGateway)
+    protected $serviceManager;
+    
+    protected $creatorColumnName = 'created_by';
+    
+    public function __construct(TableGatewayInterface $tableGateway, $serviceManager = null)
     {
         $this->setTableGateway($tableGateway);
+        $this->setServiceManager($serviceManager);
+    }
+    
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->serviceManager;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        $this->serviceManager = $serviceManager;
+    }
+    
+    public function getCreatorColumnName()
+    {
+        return $this->creatorColumnName;
+    }
+
+    public function setCreatorColumnName($creatorColumnName)
+    {
+        $this->creatorColumnName = $creatorColumnName;
     }
     
     public function getPrimaryKey()
@@ -105,6 +133,16 @@ abstract class AbstractModel
         $tableGateway = $this->getTableGateway();
         $data = $entity->getData();
         $columns = $this->getTableColumns();
+        $serviceManager = $this->getServiceManager();
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
+            $idUser = $authenticationService->getIdentity()->id;
+            
+            if (!empty($idUser)) {
+                $data[$this->getCreatorColumnName()] = $idUser;
+            }
+        }
         
         $insertData = array_intersect_key($data, $columns);
         
