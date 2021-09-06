@@ -250,7 +250,16 @@ abstract class AbstractModel
      */
     public function fetchAll($where = null)
     {
-        if (!$where instanceof \Laminas\Db\Sql\Select) {
+        if ($where instanceof \Laminas\Db\Sql\Combine) {
+            $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
+            $data = $connection->execute($where->getSqlString());
+            
+            $prototype = $this->getTableGateway()->getResultSetPrototype();
+            /* @var $prototype \Laminas\Db\ResultSet\ResultSet */
+            $prototype->initialize($data);
+            
+            return $prototype;
+        } else if (!$where instanceof \Laminas\Db\Sql\Select) {
             $select = $this->select();
             
             if (!empty($where)) {
