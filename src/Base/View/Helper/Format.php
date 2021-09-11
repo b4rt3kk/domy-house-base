@@ -12,10 +12,14 @@ class Format extends \Laminas\View\Helper\AbstractHelper
         
         switch ($format) {
             case self::FORMAT_DATE_TIME:
-                $return = date('Y-m-d H:i:s', strtotime($value));
+                if (!empty($value)) {
+                    $return = date('Y-m-d H:i:s', strtotime($value));
+                }
                 break;
             case self::FORMAT_DATE:
-                $return = date('Y-m-d', strtotime($value));
+                if (!empty($value)) {
+                    $return = date('Y-m-d', strtotime($value));
+                }
                 break;
             default:
                 $return = $value;
