@@ -108,26 +108,29 @@ class RbacManager extends AbstractLogic
         $permissionNameColumn = $rolesManager->getPermissionNameColumn();
         $primaryKey = $rolesManager->getPrimaryKey();
         
+        $roles = [];
+        
+        // dodanie wszystkich dostępnych ról
         foreach ($dataRoles as $rowRole) {
+            $roles[] = $rowRole;
+            $rbac->addRole($rowRole->{$nameColumn});
+        }
+        
+        // dodanie uprawnień dla ról
+        foreach ($roles as $rowRole) {
             $roleName = $rowRole->{$nameColumn};
             $idRole = $rowRole->{$primaryKey};
+            $role = $rbac->getRole($roleName);
             
-            $dataParentRoles = $rolesManager->getRoleParentsData($idRole);
-            $dataChildrenRoles = $rolesManager->getRoleChildrensData($idRole);
+            // nazwy ról dziedziczycących po tej roli
+            $dataChildrenNames = $rolesManager->getRoleChildrensNames($idRole);
             
-            $parentNames = [];
-            $childrenNames = [];
+            // nazwy ról rodziców
+            $dataParentsNames = $rolesManager->getRoleParentsNames($idRole);
             
-            foreach ($dataParentRoles as $rowParentRole) {
-                $parentNames[] = $rowParentRole->{$nameColumn};
-            }
-            
-            foreach ($dataChildrenRoles as $rowChildrenRole) {
-                $childrenNames[] = $rowChildrenRole->{$nameColumn};
-            }
-            
-            if (!$rbac->hasRole($roleName)) {
-                $rbac->addRole($roleName, $parentNames);
+            foreach ($dataParentsNames as $rowParentName) {
+                $roleParent = $rbac->getRole($rowParentName);
+                $role->addParent($roleParent);
             }
             
             $dataPermissions = $rolesManager->getRolePermissionsData($idRole);

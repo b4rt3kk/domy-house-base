@@ -62,16 +62,16 @@ abstract class RbacRolesManager extends AbstractLogic
     /**
      * Pobierz listę rodziców dla roli o id podanym w parametrze
      * @param integer $idRole
-     * @return \Laminas\Db\ResultSet\ResultSet
+     * @return array
      */
-    abstract public function getRoleParentsData($idRole);
+    abstract public function getRoleParentsNames($idRole);
     
     /**
      * Pobierz listę dzieci dla roli o id podanym w parametrze
      * @param integer $idRole
-     * @return \Laminas\Db\ResultSet\ResultSet
+     * @return array
      */
-    abstract public function getRoleChildrensData($idRole);
+    abstract public function getRoleChildrensNames($idRole);
     
     /**
      * Pobierz listę uprawnień przypisanych do roli o id podanym w parametrze

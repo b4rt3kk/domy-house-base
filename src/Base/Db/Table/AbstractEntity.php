@@ -62,4 +62,11 @@ abstract class AbstractEntity
         
         return array_key_exists($name, $data) ? $data[$name] : null;
     }
+    
+    public function __isset($name)
+    {
+        $data = $this->getData();
+        
+        return array_key_exists($name, $data);
+    }
 }
