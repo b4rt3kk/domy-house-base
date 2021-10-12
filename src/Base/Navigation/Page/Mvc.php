@@ -123,7 +123,7 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     protected function prepareParams($options = [])
     {
         $return = [];
-        $params = $options['params'];
+        $params = isset($options['params']) ? $options['params'] : [];
         $row = $this->getRow();
         
         foreach ($params as $name => $value) {
