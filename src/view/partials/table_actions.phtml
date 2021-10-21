@@ -1,11 +1,15 @@
 <?php
+$showedPages = [];
+
 foreach ($actions as $action) {
     $page = new \Base\Navigation\Page\Mvc(array_merge($action, [
         'row' => $row,
         'serviceManager' => $this->serviceManager(),
     ]));
     
-    if ($page->isAllowed() && $page->isShowable()) {
+    if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
+        $showedPages[] = $page->getHref();
+        
         echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary">';
         echo $page->getLabel();
         echo '</a>&nbsp;';
