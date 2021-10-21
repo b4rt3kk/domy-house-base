@@ -1,0 +1,34 @@
+<?php
+/* @var $page \Base\Navigation\Page\Mvc */
+?>
+<ul class="dropdown-menu <?php echo $depth > 1 ? 'dropdown-submenu' : ''; ?>">
+    <?php foreach ($page->getPages() as $childrenPage) : ?>
+        <?php
+        /* @var $childrenPage \Base\Navigation\Page\Mvc */
+        
+        if (!$childrenPage->isAllowed()) {
+            continue;
+        }
+        
+        $hasChildrens = !empty($childrenPage->getPages());
+        ?>
+        <li>
+            <?php if ($hasChildrens) : ?>
+                <span class="dropdown-item">
+                    <?php echo $childrenPage->getLabel(); ?> <small style="float: right; margin-top: 3px;"><i class="fa fa-chevron-right"></i></small>
+                </span>
+            <?php else : ?>
+                <a class="dropdown-item" href="<?php echo $this->url($childrenPage->getRoute(), ['action' => $childrenPage->getAction()]); ?>">
+                    <?php echo $childrenPage->getLabel(); ?>
+                </a>
+            <?php endif; ?>
+            
+                <?php
+                if ($hasChildrens) {
+                    echo $this->partial('base/navbar_submenu', ['page' => $childrenPage, 'depth' => ++$depth]);
+                }
+                ?>
+            
+        </li>
+    <?php endforeach; ?>
+</ul>

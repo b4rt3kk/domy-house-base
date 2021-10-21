@@ -17,6 +17,8 @@ abstract class Paginator extends Logic\AbstractLogic
     
     protected $isInitialized = false;
     
+    protected $isResponsive = true;
+    
     public function init()
     {
         $this->initSelect();
@@ -42,6 +44,16 @@ abstract class Paginator extends Logic\AbstractLogic
     public function getItemsPerPage()
     {
         return $this->itemsPerPage;
+    }
+    
+    public function getIsResponsive()
+    {
+        return $this->isResponsive;
+    }
+
+    public function setIsResponsive($isResponsive)
+    {
+        $this->isResponsive = $isResponsive;
     }
 
     public function setModelName($modelName)

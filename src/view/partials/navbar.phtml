@@ -25,20 +25,7 @@ $pages = $navbar->getPages();
                         
                     </a>
                     <?php if ($hasChildrens) : ?>
-                    <ul class="dropdown-menu">
-                        <?php foreach ($page->getPages() as $childrenPage) : ?>
-                        <?php 
-                            if (!$childrenPage->isAllowed()) {
-                                continue;
-                            }
-                        ?>
-                        <li>
-                            <a class="dropdown-item" href="<?php echo $this->url($childrenPage->getRoute(), ['action' => $childrenPage->getAction()]); ?>">
-                                <?php echo $childrenPage->getLabel(); ?>
-                            </a>
-                        </li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <?php echo $this->partial('base/navbar_submenu', ['page' => $page, 'depth' => 1]); ?>
                     <?php endif; ?>
                 </li>
             <?php endforeach; ?>

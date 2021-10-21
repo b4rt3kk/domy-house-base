@@ -15,6 +15,7 @@ if ($totalResults > 0) {
         'data' => $data,
         'headers' => $paginator->getHeaders(),
         'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
+        'responsive' => $paginator->getIsResponsive(),
     ]);
 } else {
     
