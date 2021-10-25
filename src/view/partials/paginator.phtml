@@ -1,22 +1,24 @@
 <?php
 /* @var $paginator \Base\Paginator */
-if (!$paginator->getIsInitialized()) {
-    $paginator->init();
-}
+if ($paginator instanceof \Base\Paginator) {
+    if (!$paginator->getIsInitialized()) {
+        $paginator->init();
+    }
 
-$totalResults = $paginator->getTotalResults();
+    $totalResults = $paginator->getTotalResults();
 
-if ($totalResults > 0) {
-    $data = $paginator->getData();
+    if ($totalResults > 0) {
+        $data = $paginator->getData();
 
-    echo $this->partial('base/paginator_navigation', ['paginator' => $paginator]);
+        echo $this->partial('base/paginator_navigation', ['paginator' => $paginator]);
 
-    echo $this->partial('base/table', [
-        'data' => $data,
-        'headers' => $paginator->getHeaders(),
-        'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
-        'responsive' => $paginator->getIsResponsive(),
-    ]);
-} else {
-    
+        echo $this->partial('base/table', [
+            'data' => $data,
+            'headers' => $paginator->getHeaders(),
+            'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
+            'responsive' => $paginator->getIsResponsive(),
+        ]);
+    } else {
+
+    }
 }

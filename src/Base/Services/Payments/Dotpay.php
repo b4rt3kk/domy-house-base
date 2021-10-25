@@ -126,6 +126,10 @@ class Dotpay extends AbstractPayment
     
     protected $apToken;
     
+    protected $urlcRequest;
+    
+    protected $pin;
+    
     public function getApiVersion()
     {
         return $this->apiVersion;
@@ -178,7 +182,7 @@ class Dotpay extends AbstractPayment
 
     public function getUrl()
     {
-        return $this->url;
+        return $this->getConvertedString($this->url);
     }
 
     public function getType()
@@ -203,7 +207,7 @@ class Dotpay extends AbstractPayment
 
     public function getUrlc()
     {
-        return $this->urlc;
+        return $this->getConvertedString($this->urlc);
     }
 
     public function getExpirationDate()
@@ -408,7 +412,7 @@ class Dotpay extends AbstractPayment
 
     public function setControl($control): void
     {
-        $this->control = $control;
+        $this->control = $this->encodeString($this->prepareControlString($control));
     }
 
     public function setFirstname($firstname): void
@@ -514,5 +518,105 @@ class Dotpay extends AbstractPayment
     public function setApToken($apToken): void
     {
         $this->apToken = $apToken;
+    }
+    
+    public function getPin()
+    {
+        return $this->pin;
+    }
+
+    public function setPin($pin): void
+    {
+        $this->pin = $pin;
+    }
+    
+    /**
+     * @return \Base\Services\Payments\Dotpay\UrlcRequest
+     */
+    public function getUrlcRequest()
+    {
+        return $this->urlcRequest;
+    }
+
+    public function setUrlcRequest($urlcRequest)
+    {
+        $this->urlcRequest = $urlcRequest;
+    }
+    
+    public function encodeString($string)
+    {
+        return base64_encode($string);
+    }
+    
+    public function decodeString($string)
+    {
+        return base64_decode($string);
+    }
+    
+    public function setPaymentConfirmationData($paymentConfirmationData)
+    {
+        parent::setPaymentConfirmationData($paymentConfirmationData);
+        
+        $urlc = new Dotpay\UrlcRequest();
+        $urlc->setData($paymentConfirmationData);
+        
+        $this->setUrlcRequest($urlc);
+    }
+    
+    public function updatePaymentData()
+    {
+        $urlc = $this->getUrlcRequest();
+        
+        if (!$urlc instanceof Dotpay\UrlcRequest) {
+            throw new \Exception(sprintf("Nie utworzono obiektu %s odpowiedzi od providera", Dotpay\UrlcRequest::class));
+        }
+        
+        $controlParams = $this->getControlStringParams($this->decodeString($urlc->getControl()));
+        
+        if (!$urlc->isSignatureValid($this->getPin())) {
+            throw new \Exception("Niepoprawna sygnatura płatności");
+        }
+        
+        $this->callEvent(self::EVENT_UPDATE_PAYMENT);
+    }
+    
+    public function afterConfirmationDataRecieved()
+    {
+        echo 'OK';
+    }
+    
+    public function prepareControlString($params = [])
+    {
+        $return = null;
+
+        foreach ($params as $name => $value) {
+            $return .= $name . '=' . $value . ';';
+        }
+
+        return $return;
+    }
+    
+    /**
+     * Rozkoduj parametry stringa control do parametrów w tablicy
+     * @param string $controlString
+     * @return array
+     */
+    public function getControlStringParams($controlString)
+    {
+        $return = [];
+        
+        $chunks = explode(';', rtrim($controlString, ';'));
+        
+        foreach ($chunks as $chunk) {
+            $tmp = explode('=', $chunk);
+            
+            if (empty($tmp[0])) {
+                continue;
+            }
+            
+            $return[$tmp[0]] = $tmp[1];
+        }
+        
+        return $return;
     }
 }

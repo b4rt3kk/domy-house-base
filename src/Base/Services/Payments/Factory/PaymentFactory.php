@@ -7,6 +7,13 @@ use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class PaymentFactory implements FactoryInterface
 {
+    /**
+     * @param ContainerInterface $container
+     * @param type $requestedName
+     * @param array $options
+     * @return \Base\Services\Payments\AbstractPayment
+     * @throws \Exception
+     */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $payment = new $requestedName();
@@ -18,8 +25,9 @@ class PaymentFactory implements FactoryInterface
         // pobranie konfiguracji dla płatności
         $config = $container->get('ApplicationConfig')['payments'][$payment->getCode()];
         
-        //$payment->setServiceManager($container);
+        $payment->setServiceManager($container);
         $payment->setConfig($config);
+        $payment->setTagetUrl($config['target_url']);
         
         return $payment;
     }

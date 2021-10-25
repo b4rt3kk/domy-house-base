@@ -2,15 +2,67 @@
 
 namespace Base\Services\Payments;
 
-abstract class AbstractPayment
+abstract class AbstractPayment extends AbstractInput
 {
+    const STATUS_PAYMENT_NEW = 1;
+    const STATUS_PAYMENT_SUCCESS = 2;
+    const STATUS_PAYMENT_WAITING = 3;
+    const STATUS_PAYMENT_REJECTED = 4;
+    const STATUS_PAYMENT_ERROR = 5;
+    
+    const EVENT_UPDATE_PAYMENT = 'update_payment';
+    
     protected $serviceManager;
     
+    protected $paymentModelName;
+    /**
+     * Dowolny kod identyfikujący metodę płatności
+     * @var string
+     */
     protected $code;
+    /**
+     * Wyświetlana klientowi nazwa metody płatności
+     * @var string
+     */
+    protected $name;
+    /**
+     * Wyświetlany klientowi obrazek metody płatności
+     * @var string
+     */
+    protected $image;
+    /**
+     * Wyświetlany klientowi opis metody płatności
+     * @var string
+     */
+    protected $description;
+    /**
+     * Treść przycisku do zatwierdzenia przesyłania płatności do providera danym kanałem
+     * @var string
+     */
+    protected $submitButtonText = 'Wybierz';
+    /**
+     * URL end-pointa kanału płatności (tam gdzie mają trafiać rządania obsługi danego zakupu)
+     * @var string
+     */
+    protected $tagetUrl;
+    /**
+     * Jaką metodą należy przesłać dane do end-pointa providera płatności
+     * @var string
+     */
+    protected $submitMethod = 'POST';
+    /**
+     * Id kanału płatności. Wartość pomocnicza, tak by wiedzieć z którego kanału następuje płatność
+     * @var integer
+     */
+    protected $idChannel;
     
     protected $config = [];
     
     protected $params = [];
+    
+    protected $paymentConfirmationData = [];
+    
+    protected $events = [];
     
     /**
      * @return \Laminas\ServiceManager\ServiceManager
@@ -23,6 +75,42 @@ abstract class AbstractPayment
     public function setServiceManager($serviceManager)
     {
         $this->serviceManager = $serviceManager;
+    }
+    
+    public function addEvent($name, $event)
+    {
+        $this->events[$name] = $event;
+    }
+    
+    public function getEvent($name)
+    {
+        return array_key_exists($name, $this->events) ? $this->events[$name] : null;
+    }
+    
+    public function callEvent($name)
+    {
+        $event = $this->getEvent($name);
+        
+        if (empty($event)) {
+            throw new \Exception(sprintf("Zdarzenie %s nie zostało skonfigurowane", $name));
+        }
+        
+        if (is_array($event)) {
+            call_user_func($event, $this);
+        } else {
+            $event($this);
+        }
+        
+    }
+    
+    public function getIdChannel()
+    {
+        return $this->idChannel;
+    }
+
+    public function setIdChannel($idChannel)
+    {
+        $this->idChannel = $idChannel;
     }
     
     public function getCode()
@@ -47,6 +135,11 @@ abstract class AbstractPayment
         }
     }
     
+    /**
+     * Skonfiguruj wartości dla istniejących parametrów klasy
+     * @param string $name
+     * @param mixed $value
+     */
     public function setConfigValue($name, $value)
     {
         $normalizedName = $this->getNormalizedName($name);
@@ -76,6 +169,90 @@ abstract class AbstractPayment
         $this->params = $params;
     }
     
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function setImage($image)
+    {
+        $this->image = $image;
+    }
+
+    public function setDescription($description)
+    {
+        $this->description = $description;
+    }
+    
+    public function getSubmitButtonText()
+    {
+        return $this->submitButtonText;
+    }
+
+    public function setSubmitButtonText($submitButtonText)
+    {
+        $this->submitButtonText = $submitButtonText;
+    }
+    
+    /**
+     * Pobierz adres URL na który należy przesłać dane płatności do providera
+     * @return string
+     */
+    public function getTagetUrl()
+    {
+        return $this->tagetUrl;
+    }
+
+    public function setTagetUrl($tagetUrl)
+    {
+        $this->tagetUrl = $tagetUrl;
+    }
+    
+    public function getSubmitMethod()
+    {
+        return $this->submitMethod;
+    }
+
+    public function setSubmitMethod($submitMethod)
+    {
+        $this->submitMethod = $submitMethod;
+    }
+    
+    public function getPaymentConfirmationData()
+    {
+        return $this->paymentConfirmationData;
+    }
+
+    public function setPaymentConfirmationData($paymentConfirmationData)
+    {
+        $this->paymentConfirmationData = $paymentConfirmationData;
+    }
+    
+    public function getPaymentModelName()
+    {
+        return $this->paymentModelName;
+    }
+
+    public function setPaymentModelName($paymentModelName)
+    {
+        $this->paymentModelName = $paymentModelName;
+    }
+    
     public function getParamsValues()
     {
         $return = [];
@@ -93,36 +270,50 @@ abstract class AbstractPayment
         return $return;
     }
     
-    protected function getPropertiesNames()
+    /**
+     * Wygeneruj listę ukrytych [hidden] elementów formularza z przypisanymi nazwami i wartościami, tak by można je było przesłać POST do providera kanału płatności
+     * @return string
+     */
+    public function generateFormInputsHtml() 
     {
-        $return = [];
-        $reflectionClass = new \ReflectionClass($this);
+        $html = null;
+        $params = $this->getParamsValues();
         
-        $properties = $reflectionClass->getProperties();
-        
-        foreach ($properties as $property) {
-            /* @var $property \ReflectionProperty */
-            $return[] = $property->getName();
+        foreach ($params as $name => $value) {
+            if ($value !== null) {
+                $html .= '<input type="hidden" name="' . $name . '" value="' . $value . '" />';
+            }
         }
         
-        return $return;
+        return $html;
     }
     
-    protected function getNormalizedName($name)
+    /**
+     * Pobierz obiekt modelu, w którym zapisywane są płatności
+     * @return \Base\Db\Table\AbstractModel
+     * @throws \Exception
+     */
+    public function getPaymentModel()
     {
-        $chunks = explode('_', $name);
+        $serviceManager = $this->getServiceManager();
+        $modelName = $this->getPaymentModelName();
         
-        $return = implode('', array_map('ucfirst', $chunks));
+        $model = $serviceManager->get($modelName);
         
-        return $return;
+        if (!$model instanceof \Base\Db\Table\AbstractModel) {
+            throw new \Exception(sprintf("Model musi dziedziczyć po %s", \Base\Db\Table\AbstractModel::class));
+        }
+        
+        return $model;
     }
     
-    protected function getUnnormalizedName($name)
-    {
-        $chunks = preg_split('/(?=[A-Z])/',$name);
-        
-        $return = implode('_', array_map('uclower', $chunks));
-        
-        return $return;
-    }
+    /**
+     * Zaktualizuj dane dotyczące płatności
+     */
+    abstract public function updatePaymentData();
+    
+    /**
+     * Czynności do wykonania po aktualizacji odebranych danych płatności
+     */
+    abstract public function afterConfirmationDataRecieved();    
 }
