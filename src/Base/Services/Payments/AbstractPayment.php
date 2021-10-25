@@ -307,6 +307,8 @@ abstract class AbstractPayment extends AbstractInput
         return $model;
     }
     
+    abstract public function isLandingPagePaymentSuccess($params);
+    
     /**
      * Zaktualizuj dane dotyczące płatności
      */

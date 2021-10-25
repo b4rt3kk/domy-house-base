@@ -619,4 +619,9 @@ class Dotpay extends AbstractPayment
         
         return $return;
     }
+    
+    public function isLandingPagePaymentSuccess($params)
+    {
+        return $params['status'] === 'OK';
+    }
 }
