@@ -412,7 +412,7 @@ class Dotpay extends AbstractPayment
 
     public function setControl($control): void
     {
-        $this->control = $this->encodeString($this->prepareControlString($control));
+        $this->control = $this->getEncodedControlString($control);
     }
 
     public function setFirstname($firstname): void
@@ -541,6 +541,11 @@ class Dotpay extends AbstractPayment
     public function setUrlcRequest($urlcRequest)
     {
         $this->urlcRequest = $urlcRequest;
+    }
+    
+    public function getEncodedControlString($control = [])
+    {
+        return $this->encodeString($this->prepareControlString($control));
     }
     
     public function encodeString($string)
