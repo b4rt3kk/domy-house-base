@@ -279,6 +279,14 @@ abstract class AbstractModel
     public function update($data, $where)
     {
         $tableGateway = $this->getTableGateway();
+        $columns = $this->getTableColumns();
+        
+        // usunięcie kolumn nie występujących w tej tabeli
+        foreach (array_keys($data) as $key) {
+            if (!in_array($key, array_keys($columns))) {
+                unset($data[$key]);
+            }
+        }
         
         $tableGateway->update($data, $where);
     }
