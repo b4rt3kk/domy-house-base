@@ -1,0 +1,19 @@
+<?php
+/* @var $breadcrumbs \Base\Navigation\Breadcrumbs */
+$pages = $breadcrumbs->getPages();
+?>
+<?php if (sizeof($pages) > $breadcrumbs->getMinDepth()) : ?>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <?php foreach ($pages as $page) : ?>
+                <?php if ($page->isActive()) : ?>
+                    <li class="breadcrumb-item active" aria-current="page"><?php echo $page->getLabel(); ?></li>
+                <?php else : ?>
+                    <li class="breadcrumb-item" aria-current="page">
+                        <a href="<?php echo $this->url($page->getRoute(), ['action' => $page->getAction()]); ?>"><?php echo $page->getLabel(); ?></a>
+                    </li>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </ol>
+    </nav>
+<?php endif; ?>
