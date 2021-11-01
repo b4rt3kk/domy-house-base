@@ -144,6 +144,13 @@ abstract class AbstractModel
             }
         }
         
+        // usunięcie kolumn z pustymi wartościami
+        foreach ($data as $key => $value) {
+            if (empty($value) && $value !== 0) {
+                unset($data[$key]);
+            }
+        }
+
         $insertData = array_intersect_key($data, $columns);
         
         $tableGateway->insert($insertData);
@@ -282,8 +289,9 @@ abstract class AbstractModel
         $columns = $this->getTableColumns();
         
         // usunięcie kolumn nie występujących w tej tabeli
+        // lub z pustymi wartościami
         foreach (array_keys($data) as $key) {
-            if (!in_array($key, array_keys($columns))) {
+            if (!in_array($key, array_keys($columns)) || (empty($data[$key]) && $data[$key] !== 0)) {
                 unset($data[$key]);
             }
         }
