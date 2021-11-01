@@ -10,7 +10,7 @@ $pages = $breadcrumbs->getPages();
                     <li class="breadcrumb-item active" aria-current="page"><?php echo $page->getLabel(); ?></li>
                 <?php else : ?>
                     <li class="breadcrumb-item" aria-current="page">
-                        <a href="<?php echo $this->url($page->getRoute(), ['action' => $page->getAction()]); ?>"><?php echo $page->getLabel(); ?></a>
+                        <a href="<?php echo $this->url($page->getRoute(), ['action' => $page->getAction()]); ?>" class="link-dark"><?php echo $page->getLabel(); ?></a>
                     </li>
                 <?php endif; ?>
             <?php endforeach; ?>
