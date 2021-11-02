@@ -146,7 +146,7 @@ abstract class AbstractModel
         
         // usunięcie kolumn z pustymi wartościami
         foreach ($data as $key => $value) {
-            if (empty($value) && $value !== 0) {
+            if (empty($value) && $value !== 0 && $data[$key] !== '0') {
                 unset($data[$key]);
             }
         }
@@ -291,7 +291,7 @@ abstract class AbstractModel
         // usunięcie kolumn nie występujących w tej tabeli
         // lub z pustymi wartościami
         foreach (array_keys($data) as $key) {
-            if (!in_array($key, array_keys($columns)) || (empty($data[$key]) && $data[$key] !== 0)) {
+            if (!in_array($key, array_keys($columns)) || (empty($data[$key]) && $data[$key] !== 0 && $data[$key] !== '0')) {
                 unset($data[$key]);
             }
         }
