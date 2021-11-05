@@ -12,6 +12,8 @@ $dictionaries = [];
 
 foreach ($rowDictionaries as $key => $rowDictionary) {
     $dictionary = $this->serviceManager()->get(\Base\Dictionary::class);
+    $dictionary->init();
+    
     /* @var $dictionary \Base\Dictionary */
     if (!empty($rowDictionary['name'])) {
         $dictionary->setDictionaryName($rowDictionary['name']);

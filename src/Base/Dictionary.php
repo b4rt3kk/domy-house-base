@@ -3,19 +3,41 @@ namespace Base;
 
 class Dictionary extends Logic\AbstractLogic
 {
+    const DEFAULT_ID_KEY = 'id';
+    const DEFAULT_SEPARATOR = ' ';
+    const DEFAULT_LANGUAGE_CODE = 'pl_pl';
+    
     protected $modelName;
     
     protected $dictionaryName;
     
-    protected $idKey = 'id';
+    protected $languageCode = 'pl_pl';
+    
+    protected $idKey = self::DEFAULT_ID_KEY;
     
     protected $nameFields = [];
     
     protected $where = [];
     
-    protected $separator = ' ';
+    protected $separator = self::DEFAULT_SEPARATOR;
     
     protected $namedDictionaryCallable;
+    
+    public function init()
+    {
+        $this->reset();
+    }
+    
+    public function reset()
+    {
+        $this->setModelName(null);
+        $this->setDictionaryName(null);
+        $this->setLanguageCode(self::DEFAULT_LANGUAGE_CODE);
+        $this->setIdKey(self::DEFAULT_ID_KEY);
+        $this->setNameFields([]);
+        $this->setWhere([]);
+        $this->setSeparator(self::DEFAULT_SEPARATOR);
+    }
     
     public function getNamedDictionaryCallable()
     {
@@ -86,6 +108,16 @@ class Dictionary extends Logic\AbstractLogic
     {
         $this->where = $where;
     }
+    
+    public function getLanguageCode()
+    {
+        return $this->languageCode;
+    }
+
+    public function setLanguageCode($languageCode)
+    {
+        $this->languageCode = $languageCode;
+    }
         
     public function getDictionary()
     {
@@ -129,7 +161,17 @@ class Dictionary extends Logic\AbstractLogic
      */
     protected function getModel()
     {
+        $modelName = $this->getModelName();
+        
+        if (empty($modelName)) {
+            throw new \Exception("Nazwa modelu słownikowego nie może być pusta. Być może nie podałeś wartości dla dictionaryName?");
+        }
+        
         $model = $this->getServiceManager()->get($this->getModelName());
+        
+        if (!$model instanceof \Base\Db\Table\AbstractModel) {
+            throw new \Exception(sprintf("Model słownika %s musi dziedziczyć po %s", $modelName, \Base\Db\Table\AbstractModel::class));
+        }
         
         return $model;
     }
