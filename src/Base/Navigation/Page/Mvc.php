@@ -9,6 +9,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $where = [];
     
+    protected $class;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -72,6 +74,16 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     public function setServiceManager($serviceManager)
     {
         $this->serviceManager = $serviceManager;
+    }
+    
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    public function setClass($class)
+    {
+        $this->class = $class;
     }
     
     public function isAllowed()
