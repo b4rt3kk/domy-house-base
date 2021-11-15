@@ -49,6 +49,16 @@ abstract class AbstractForm extends \Laminas\Form\Form
         return isset($values[$name]);
     }
     
+    protected function button($name, $value, $options = [])
+    {
+        $options['name'] = $name;
+        $options['attributes'] = [
+            'class' => 'btn btn-secondary',
+        ];
+
+        $this->submit($value, $options);
+    }
+    
     protected function submit($value = 'Submit', $options = [])
     {
         $name = array_key_exists('name', $options) ? $options['name'] : 'submit_form';

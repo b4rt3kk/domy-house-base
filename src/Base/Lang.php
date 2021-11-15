@@ -6,7 +6,7 @@ class Lang extends \Base\Logic\AbstractLogic
 {
     protected static $instance;
     
-    protected $defaultLanguageSymbol;
+    protected $defaultLanguageSymbol = 'en_gb';
     
     protected $currentLanguageSymbol;
     
