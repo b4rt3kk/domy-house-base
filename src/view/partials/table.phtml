@@ -49,16 +49,16 @@ if ($responsive) {
 echo '<table class="table">';
 echo '<thead class="table-light">';
 echo '<tr>';
-echo '<th>#</th>';
+echo '<th class="fw-bold">#</th>';
 
 foreach ($headers as $header) {
-    echo '<th>';
+    echo '<th class="fw-bold">';
     echo $headersMapping[$header]['title'];
     echo '</th>';
 }
 
 if (!empty($rowActions)) {
-    echo '<th>Actions</th>';
+    echo '<th class="fw-bold">Actions</th>';
 }
 
 echo '</tr>';

@@ -9,8 +9,10 @@ abstract class AbstractPayment extends AbstractInput
     const STATUS_PAYMENT_WAITING = 3;
     const STATUS_PAYMENT_REJECTED = 4;
     const STATUS_PAYMENT_ERROR = 5;
+    const STATUS_PAYMENT_SECURITY_BREACH = 6;
     
     const EVENT_UPDATE_PAYMENT = 'update_payment';
+    const EVENT_IS_PAYMENT_VALID = 'is_payment_valid';
     
     protected $serviceManager;
     
