@@ -27,7 +27,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     
     protected $isInitialized = false;
     
-    protected $csrfValidation = false;
+    protected $csrfValidation = true;
     
     protected $csrfTimeout = 600;
     
