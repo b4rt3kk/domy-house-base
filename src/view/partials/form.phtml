@@ -12,6 +12,10 @@ if ($form instanceof \Base\Form\AbstractForm) {
         \Laminas\Form\Element\Submit::class,
         \Laminas\Form\Element\Button::class,
     ];
+    
+    $specialElements = [
+        \Laminas\Form\Element\Csrf::class,
+    ];
 
     echo '<div class="form-container">';
 
@@ -22,6 +26,12 @@ if ($form instanceof \Base\Form\AbstractForm) {
     foreach ($elements as $element) {
         if (in_array(get_class($element), $buttonTypes)) {
             $buttons[] = $element;
+            continue;
+        }
+        
+        if (in_array(get_class($element), $specialElements)) {
+            // elementy specjalne do wyrenderowania "od razu" jako ukryte
+            echo $this->formElement($element);
             continue;
         }
 

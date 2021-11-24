@@ -27,6 +27,14 @@ abstract class AbstractForm extends \Laminas\Form\Form
     
     protected $isInitialized = false;
     
+    protected $csrfValidation = false;
+    
+    protected $csrfTimeout = 600;
+    
+    protected $specialElementsTypes = [
+        \Laminas\Form\Element\Csrf::class,
+    ];
+    
     public function getIsInitialized()
     {
         return $this->isInitialized;
@@ -37,11 +45,100 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $this->isInitialized = $isInitialized;
     }
     
+    public function getCsrfValidation()
+    {
+        return $this->csrfValidation;
+    }
+
+    /**
+     * Ustaw flagę walidacji CSRF.
+     * Spowoduje to automatyczne dodanie elementu formularza typu csrf.
+     * W przypadku używania innego sposobu renderowania formularza niż base/form należy samemu dodać renderowanie tego elementu wewnątrz form.
+     * 
+     * Info: https://olegkrivtsov.github.io/using-zend-framework-3-book/html/en/Advanced_Usage_of_Forms/Form_Security_Elements.html
+     * @param boolean $csrfValidation
+     */
+    public function setCsrfValidation($csrfValidation)
+    {
+        $this->csrfValidation = $csrfValidation;
+    }
+    
+    public function getCsrfTimeout()
+    {
+        return $this->csrfTimeout;
+    }
+
+    public function setCsrfTimeout($csrfTimeout)
+    {
+        $this->csrfTimeout = $csrfTimeout;
+    }
+    
+    /**
+     * Pobierz typy specjalnych elementów formularza
+     * @return array
+     */
+    public function getSpecialElementsTypes()
+    {
+        return $this->specialElementsTypes;
+    }
+
+    public function setSpecialElementsTypes($specialElementsTypes)
+    {
+        $this->specialElementsTypes = $specialElementsTypes;
+    }
+    
+    /**
+     * Pobierz specjalne elementy formularza
+     * @return \Laminas\Form\Element[]
+     */
+    public function getSpecialElements()
+    {
+        $return = [];
+        $specialElementsTypes = $this->getSpecialElementsTypes();
+        $elements = $this->getElements();
+        
+        foreach ($elements as $element) {
+            if (in_array(get_class($element), $specialElementsTypes)) {
+                $return[] = $element;
+            }
+        }
+        
+        return $return;
+    }
+    
     public function init()
     {
         parent::init();
         
+        $isCsrfValidation = $this->getCsrfValidation();
+        
+        if ($isCsrfValidation) {
+            $this->add([
+                'type' => 'csrf',
+                'name' => 'csrf',
+                'options' => [
+                    'csrf_options' => [
+                        'timeout' => $this->getCsrfTimeout(),
+                    ],
+                ],
+            ]);
+        }
+        
         $this->setIsInitialized(true);
+    }
+    
+    public function initInputFilter()
+    {
+        $inputFilter = $this->getInputFilter();
+        $elements = $this->getElements();
+        
+        foreach ($elements as $element) {
+            /* @var $element \Laminas\Form\Element */
+            $inputFilter->add([
+                'name' => $element->getName(),
+                'required' => false,
+            ]);
+        }
     }
     
     /**
