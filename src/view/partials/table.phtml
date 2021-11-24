@@ -72,6 +72,7 @@ foreach ($data as $row) {
     
     foreach ($headers as $header) {
         $value = $row->{$header};
+        $class = null;
         
         if (!empty($dictionaries[$header][$row->{$header}])) {
             $value = $dictionaries[$header][$row->{$header}];
@@ -81,7 +82,11 @@ foreach ($data as $row) {
             $value = $this->format()->format($headersMapping[$header]['format'], $value);
         }
         
-        echo '<td>';
+        if (!empty($headersMapping[$header]['class'])) {
+            $class = $headersMapping[$header]['class'];
+        }
+        
+        echo '<td class="' . $class . '">';
         echo $value;
         echo '</td>';
     }
