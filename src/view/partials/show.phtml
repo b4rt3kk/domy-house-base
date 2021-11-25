@@ -1,0 +1,88 @@
+<?php
+/* @var $row \Base\Db\Table\AbstractEntity */
+
+if (empty($headers)) {
+    $headers = array_keys($row->getHeadersMapping());
+}
+
+$headersMapping = $row->getHeadersMapping();
+$rowDictionaries = $row->getDictionaries();
+
+$dictionaries = [];
+
+// pobranie listy słowników określonych na wierszu
+foreach ($rowDictionaries as $key => $rowDictionary) {
+    $dictionary = $this->serviceManager()->get(\Base\Dictionary::class);
+    $dictionary->init();
+
+    /* @var $dictionary \Base\Dictionary */
+    if (!empty($rowDictionary['name'])) {
+        $dictionary->setDictionaryName($rowDictionary['name']);
+    }
+
+    if (!empty($rowDictionary['id'])) {
+        $dictionary->setIdKey($rowDictionary['id']);
+    }
+
+    if (!empty($rowDictionary['modelName'])) {
+        $dictionary->setModelName($rowDictionary['modelName']);
+    }
+
+    if (!empty($rowDictionary['nameFields'])) {
+        $dictionary->setNameFields($rowDictionary['nameFields']);
+    }
+
+    if (!empty($rowDictionary['where'])) {
+        $dictionary->setWhere($rowDictionary['where']);
+    }
+
+    if (!empty($rowDictionary['separator'])) {
+        $dictionary->setSeparator($rowDictionary['separator']);
+    }
+
+    $dictionaries[$key] = $dictionary->getDictionary();
+}
+
+echo '<table class="table">';
+echo '<tbody>';
+
+foreach ($headers as $header) {
+    $class = null;
+    
+    echo '<tr>';
+    echo '<td>';
+    
+    // nazwa nagłówka wiersza
+    echo !empty($headersMapping[$header]['title']) ? $headersMapping[$header]['title'] : $header;
+    
+    echo '</td>';
+    
+    if (!empty($headersMapping[$header]['class'])) {
+        $class = $headersMapping[$header]['class'];
+    }
+
+    echo '<td class="' . $class . '">';
+    
+    // wartość wiersza
+    $value = $row->{$header};
+
+    // pobranie wartości ze słownika
+    if (!empty($dictionaries[$header][$row->{$header}])) {
+        $value = $dictionaries[$header][$row->{$header}];
+    }
+    
+    // formatowanie
+    if (!empty($headersMapping[$header]['format'])) {
+        $value = $this->format()->format($headersMapping[$header]['format'], $value);
+    }
+
+    echo $value;
+    
+    echo '</td>';
+    
+    echo '</tr>';
+}
+
+echo '</tbody>';
+echo '</table>';
+

@@ -164,7 +164,10 @@ class Dictionary extends Logic\AbstractLogic
         $modelName = $this->getModelName();
         
         if (empty($modelName)) {
-            throw new \Exception("Nazwa modelu słownikowego nie może być pusta. Być może nie podałeś wartości dla dictionaryName?");
+            throw new \Exception(
+                    "Nazwa modelu słownikowego nie może być pusta. Być może nie podałeś wartości dla dictionaryName? " .
+                    "Słownik musi zawierać nazwę modelu [modelName] lub nazwę słownika [name]."
+                );
         }
         
         $model = $this->getServiceManager()->get($this->getModelName());
@@ -186,7 +189,7 @@ class Dictionary extends Logic\AbstractLogic
         $callable = $this->getNamedDictionaryCallable();
         
         if (empty($callable)) {
-            throw new \Exception("Nie koreślono callable dla customowego słownika z określonym name");
+            throw new \Exception("Nie określono callable dla customowego słownika z określonym name. W przypadku podania name w fabryce słownika należy dodać odpowiednie callable.");
         }
         
         if (is_array($callable)) {
