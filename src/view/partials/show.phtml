@@ -43,14 +43,20 @@ foreach ($rowDictionaries as $key => $rowDictionary) {
     $dictionaries[$key] = $dictionary->getDictionary();
 }
 
-echo '<table class="table">';
+echo '<table class="table table-hover">';
+
+echo '<colgroup>';
+echo '<col class = "col-md-2">';
+echo '<col class = "col-md-10">';
+echo '</colgroup>';
+
 echo '<tbody>';
 
 foreach ($headers as $header) {
     $class = null;
     
     echo '<tr>';
-    echo '<td>';
+    echo '<td class="fw-bold text-end">';
     
     // nazwa nagłówka wiersza
     echo !empty($headersMapping[$header]['title']) ? $headersMapping[$header]['title'] : $header;
