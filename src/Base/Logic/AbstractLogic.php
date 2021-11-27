@@ -28,4 +28,16 @@ abstract class AbstractLogic implements LogicInterface
         
         return $return;
     }
+    
+    public function generateRandomString($length = 32)
+    {
+        $return = null;
+        $chars = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890';
+        
+        for ($i = 0; $i < $length; $i++) {
+            $return .= $chars[mt_rand(0, strlen($chars) -1)];
+        }
+        
+        return $return;
+    }
 }
