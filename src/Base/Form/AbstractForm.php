@@ -134,9 +134,11 @@ abstract class AbstractForm extends \Laminas\Form\Form
         
         foreach ($elements as $element) {
             /* @var $element \Laminas\Form\Element */
+            $isRequired = !empty($element->getAttribute('required'));
+            
             $inputFilter->add([
                 'name' => $element->getName(),
-                'required' => false,
+                'required' => $isRequired,
             ]);
         }
     }
