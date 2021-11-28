@@ -145,7 +145,7 @@ class Mail
             // nowy wiersz wiadomości
             $id = $this->createMailSentRow(array_merge([
                 $this->getMappedColumnName('subject') => $message->getSubject(),
-                $this->getMappedColumnName('body') => $message->getBody(),
+                $this->getMappedColumnName('body') => $message->getBodyText(),
                 $this->getMappedColumnName('email') => rtrim($recipients, ';'),
             ], $rowData));
         }
