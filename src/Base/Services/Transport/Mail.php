@@ -11,6 +11,7 @@ use Laminas\Mail\Transport\TransportInterface;
  * Konfiguracja odbywa się w Factory, dlatego by skorzystać z wysyłki nie trzeba podawać za każdym razem dodatkowych parametrów.
  * 
  * Przykładowe użycie:
+ * 
  * $mail = $this->getServiceManager()->get(\Base\Services\Transport\Mail::class);
  * 
  * $message = new \Laminas\Mail\Message();
@@ -20,6 +21,19 @@ use Laminas\Mail\Transport\TransportInterface;
  * $message->setSubject('TestSubject');
  * 
  * $mail->send($message);
+ * 
+ * W przypadku maili np. z załącznikiem lub treścią HTML należy utworzyć osobny obiekt body:
+ * 
+ * $part = new \Laminas\Mime\Part($convert->convert($rowNote->body, ['id_user' => $row->id]));
+ * $part->type = \Laminas\Mime\Mime::TYPE_HTML;
+ * $part->charset = 'UTF-8';
+ * 
+ * $body = new \Laminas\Mime\Message();
+ * $body->setParts([$part]);
+ * 
+ * $message = new \Laminas\Mail\Message();
+ * $message->setBody($body);
+ * ...
 */
 class Mail
 {
