@@ -9,7 +9,7 @@ if ($paginator instanceof \Base\Paginator) {
     
     if ($form instanceof \Base\Form\AbstractForm) {
         echo '<div class="mb-4">';
-        echo $this->partial('base/paginator_filter', ['form' => $form]);
+        echo $this->partial('base/paginator_filter', ['form' => $form, 'paginator' => $paginator]);
         echo '</div>';
     }
 
