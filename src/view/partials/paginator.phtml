@@ -4,6 +4,14 @@ if ($paginator instanceof \Base\Paginator) {
     if (!$paginator->getIsInitialized()) {
         $paginator->init();
     }
+    
+    $form = $paginator->getFilterForm();
+    
+    if ($form instanceof \Base\Form\AbstractForm) {
+        echo '<div class="mb-4">';
+        echo $this->partial('base/paginator_filter', ['form' => $form]);
+        echo '</div>';
+    }
 
     $totalResults = $paginator->getTotalResults();
 

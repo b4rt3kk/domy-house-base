@@ -1,0 +1,20 @@
+<?php
+/* @var $form \Base\Form\AbstractForm */
+$id = 'paginator_filter_' . str_replace('\\', '_', get_class($form));
+?>
+<?php if ($form instanceof Base\Form\AbstractForm) : ?>
+<div class="accordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo $id; ?>" aria-expanded="true" aria-controls="<?php echo $id; ?>">
+        Filtr wyszukiwania
+      </button>
+    </h2>
+    <div id="<?php echo $id; ?>" class="accordion-collapse collapse">
+      <div class="accordion-body">
+        <?php echo $this->partial('base/form', ['form' => $form]); ?>
+      </div>
+    </div>
+  </div>
+</div>
+<?php endif; ?>

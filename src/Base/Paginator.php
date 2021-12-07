@@ -5,6 +5,8 @@ abstract class Paginator extends Logic\AbstractLogic
 {
     protected $modelName;
     
+    protected $filterFormName;
+    
     protected $headers = [];
     
     protected $currentPage = 1;
@@ -24,6 +26,16 @@ abstract class Paginator extends Logic\AbstractLogic
         $this->initSelect();
         
         $this->setIsInitialized(true);
+    }
+    
+    public function getFilterFormName()
+    {
+        return $this->filterFormName;
+    }
+
+    public function setFilterFormName($filterFormName)
+    {
+        $this->filterFormName = $filterFormName;
     }
     
     public function getModelName()
@@ -207,6 +219,57 @@ abstract class Paginator extends Logic\AbstractLogic
     }
     
     /**
+     * Pobierz formularz filtra
+     * @return \Base\Form\AbstractForm
+     * @throws \Exception
+     */
+    public function getFilterForm()
+    {
+        $form = null;
+        $filterFormName = $this->getFilterFormName();
+        
+        if (!empty($filterFormName)) {
+            $form = $this->getServiceManager()->get($filterFormName);
+            
+            if (!$form instanceof Form\AbstractForm) {
+                throw new \Exception(sprintf("Filter form class has to extends %s", Form\AbstractForm::class));
+            }
+        }
+        
+        return $form;
+    }
+    
+    public function setFilterData($data)
+    {
+        $container = $this->getStorageContainer();
+        
+        foreach ($data as $key => $value) {
+            $container->{$key} = $value;
+        }
+    }
+    
+    public function getFilterData()
+    {
+        $return = [];
+        
+        $container = $this->getStorageContainer();
+        
+        foreach ($container as $key => $value) {
+            $return[$key] = $value;
+        }
+        
+        return $return;
+    }
+    
+    public function clearFilterData()
+    {
+        $container = $this->getStorageContainer();
+        $name = $container->getName();
+        
+        $container->getManager()->getStorage()->clear($name);
+    }
+    
+    /**
      * Pobierz obiekt modelu
      * @return \Base\Db\Table\AbstractModel
      * @throws \Exception
@@ -239,5 +302,18 @@ abstract class Paginator extends Logic\AbstractLogic
         $select = $model->select();
         
         $this->setSelect($select);
+    }
+    
+    /**
+     * Pobierz obiekt sesji przechowujący dane filtra
+     * @return \Laminas\Session\Container
+     */
+    protected function getStorageContainer()
+    {
+        $paginatorName = get_class($this);
+
+        $container = new \Laminas\Session\Container($paginatorName);
+        
+        return $container;
     }
 }

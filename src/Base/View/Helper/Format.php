@@ -8,6 +8,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_TRUNCATE = 'truncate';
     const FORMAT_CURRENCY = 'currency';
     const FORMAT_BYTE_FILE_SIZE = 'file_size';
+    const FORMAT_TIME_LEFT = 'time_left';
     
     public function format($format, $value, $params = [])
     {
@@ -40,6 +41,9 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                     $return = $this->getBytesFormatted($value);
                 }
                 break;
+            case self::FORMAT_TIME_LEFT:
+                $return = $this->getTimeLeftFormatted($value);
+                break;
             default:
                 $return = $value;
         }
@@ -71,6 +75,23 @@ class Format extends \Laminas\View\Helper\AbstractHelper
         }
         
         return $return;
+    }
+    
+    protected function getTimeLeftFormatted($seconds)
+    {
+        $hours = floor($seconds / (60 * 60));
+        
+        if ($hours > 0) {
+            $seconds = $seconds - $hours * (60 * 60);
+        }
+        
+        $minutes = floor($seconds / 60);
+        
+        if ($minutes > 0) {
+            $seconds = $seconds - $minutes * 60;
+        }
+        
+        return str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($seconds, 2, '0', STR_PAD_LEFT);
     }
 }
 
