@@ -4,6 +4,7 @@ $currentPage = $paginator->getCurrentPage();
 $totalPages = $paginator->getTotalPages();
 $firstPage = $paginator->getFirstPageInRange();
 $lastPage = $paginator->getLastPageInRange();
+$totalResults = $paginator->getTotalResults();
 ?>
 <nav aria-label="Page navigation example">
     <ul class="pagination">
@@ -25,6 +26,14 @@ $lastPage = $paginator->getLastPageInRange();
                 <span class="sr-only">Next</span>
                 <span aria-hidden="true">&raquo;</span>
             </a>
+        </li>
+        
+        <li class="page-item disabled">
+            <span class="page-link">Strona <strong><?php echo $currentPage; ?></strong>  z <strong><?php echo $totalPages; ?></strong></span>
+        </li>
+        
+        <li class="page-item disabled">
+            <span class="page-link">Wyników <strong><i class="fas fa-hashtag"></i><?php echo $totalResults; ?></strong></span>
         </li>
     </ul>
 </nav>
