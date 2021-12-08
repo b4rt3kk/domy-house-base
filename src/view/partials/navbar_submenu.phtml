@@ -15,11 +15,12 @@
         <li>
             <?php if ($hasChildrens) : ?>
                 <span class="dropdown-item">
-                    <?php echo $childrenPage->getLabel(); ?> <small style="float: right; margin-top: 3px;"><i class="fa fa-chevron-right"></i></small>
+                    <?php echo $childrenPage->getLabel() . ' ' . $childrenPage->renderBadge(); ?> <small style="float: right; margin-top: 3px;"><i class="fa fa-chevron-right"></i></small>
                 </span>
             <?php else : ?>
                 <a class="dropdown-item" href="<?php echo $this->url($childrenPage->getRoute(), ['action' => $childrenPage->getAction()]); ?>">
                     <?php echo $childrenPage->getLabel(); ?>
+                    <?php echo $childrenPage->renderBadge(); ?>
                 </a>
             <?php endif; ?>
             

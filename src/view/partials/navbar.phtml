@@ -35,7 +35,7 @@ $brandIcon = $navbar->getBrandIcon();
                         <?php echo $hasChildrens ? 'data-bs-toggle="dropdown"' : ''; ?>
                     >
                         <?php echo $page->getLabel(); ?>
-                        
+                        <?php echo $page->renderBadge(); ?>
                     </a>
                     <?php if ($hasChildrens) : ?>
                     <?php echo $this->partial('base/navbar_submenu', ['page' => $page, 'depth' => 1]); ?>

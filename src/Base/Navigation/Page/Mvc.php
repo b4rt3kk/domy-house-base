@@ -11,6 +11,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $class;
     
+    protected $badgeObjectClass;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -37,6 +39,53 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         parent::__construct($options);
     }
     
+    public function getBadgeObjectClass()
+    {
+        return $this->badgeObjectClass;
+    }
+
+    public function setBadgeObjectClass($badgeObjectClass)
+    {
+        $this->badgeObjectClass = $badgeObjectClass;
+    }
+    
+    /**
+     * @return \Base\Navigation\Page\AbstractBadge|null
+     */
+    public function getBadge()
+    {
+        $badge = null;
+        $serviceManager = $this->getServiceManager();
+        $className = $this->getBadgeObjectClass();
+        
+        if (!empty($className)) {
+            $badge = $serviceManager->get($className);
+            
+            if (!$badge instanceof AbstractBadge) {
+                throw new \Exception(sprintf("Obiekt do obsługi badges musi dziedziczyć po %s", AbstractBadge::class));
+            }
+        }
+        
+        return $badge;
+    }
+    
+    /**
+     * Wyrenderuj treść badge o ile obiekt został przekazany
+     * @return string
+     */
+    public function renderBadge()
+    {
+        $return = null;
+        // pobierz obiekt odpowiedzialny za renderowanie badge
+        $badge = $this->getBadge();
+        
+        if (!empty($badge)) {
+            $return = $badge->render();
+        }
+        
+        return $return;
+    }
+
     /**
      * @return \Base\Db\Table\AbstractEntity
      */
@@ -81,7 +130,7 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         return $this->class;
     }
 
-    public function setClass($class)
+    public function setClass($class = null)
     {
         $this->class = $class;
     }
