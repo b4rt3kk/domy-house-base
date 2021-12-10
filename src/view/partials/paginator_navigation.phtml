@@ -5,6 +5,7 @@ $totalPages = $paginator->getTotalPages();
 $firstPage = $paginator->getFirstPageInRange();
 $lastPage = $paginator->getLastPageInRange();
 $totalResults = $paginator->getTotalResults();
+$loadTime = $paginator->getPageLoadTimeMs();
 ?>
 <nav aria-label="Page navigation example">
     <ul class="pagination">
@@ -34,6 +35,10 @@ $totalResults = $paginator->getTotalResults();
         
         <li class="page-item disabled">
             <span class="page-link">Wyników <strong><i class="fas fa-hashtag"></i><?php echo $totalResults; ?></strong></span>
+        </li>
+        
+        <li class="page-item disabled">
+            <span class="page-link"><strong><i class="far fa-clock"></i></strong> <?php echo number_format($loadTime, 4); ?> s</span>
         </li>
     </ul>
 </nav>

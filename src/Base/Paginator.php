@@ -21,6 +21,8 @@ abstract class Paginator extends Logic\AbstractLogic
     
     protected $isResponsive = true;
     
+    protected $pageLoadTimeMs;
+    
     public function init()
     {
         $this->initSelect();
@@ -121,6 +123,16 @@ abstract class Paginator extends Logic\AbstractLogic
         $this->pagesRange = $pagesRange;
     }
     
+    public function getPageLoadTimeMs()
+    {
+        return $this->pageLoadTimeMs;
+    }
+
+    public function setPageLoadTimeMs($pageLoadTimeMs)
+    {
+        $this->pageLoadTimeMs = $pageLoadTimeMs;
+    }
+    
     public function getIsInitialized()
     {
         return $this->isInitialized;
@@ -213,7 +225,11 @@ abstract class Paginator extends Logic\AbstractLogic
         $select->limit($itemsPerPage)
                 ->offset(($currentPage - 1) * $itemsPerPage);
         
+        $microtime = microtime(true);
+        
         $data = $model->fetchAll($select);
+        
+        $this->setPageLoadTimeMs(microtime(true) - $microtime);
         
         return $data;
     }
