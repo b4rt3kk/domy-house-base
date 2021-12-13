@@ -9,6 +9,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_CURRENCY = 'currency';
     const FORMAT_BYTE_FILE_SIZE = 'file_size';
     const FORMAT_TIME_LEFT = 'time_left';
+    const FORMAT_DOWNLOAD_URL = 'download_url';
     
     public function format($format, $value, $params = [])
     {
@@ -43,6 +44,9 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                 break;
             case self::FORMAT_TIME_LEFT:
                 $return = $this->getTimeLeftFormatted($value);
+                break;
+            case self::FORMAT_DOWNLOAD_URL:
+                $return = '<a href="' . $value . '" title="Pobierz"><i class="fas fa-download"></i></a> ' . $value;
                 break;
             default:
                 $return = $value;
