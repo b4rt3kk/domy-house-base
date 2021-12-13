@@ -137,7 +137,10 @@ abstract class AbstractModel
         
         if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
             $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
-            $idUser = $authenticationService->getIdentity()->id;
+            
+            if ($authenticationService->getIdentity()) {
+                $idUser = $authenticationService->getIdentity()->id;
+            }
             
             if (!empty($idUser)) {
                 $data[$this->getCreatorColumnName()] = $idUser;
