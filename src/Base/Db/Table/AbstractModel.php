@@ -286,6 +286,11 @@ abstract class AbstractModel
         return $data;
     }
     
+    /**
+     * @param array|mixed $data
+     * @param array|mixed $where
+     * @return integer Liczba wierszy, których dotyczyło zapytanie
+     */
     public function update($data, $where)
     {
         $tableGateway = $this->getTableGateway();
@@ -299,6 +304,6 @@ abstract class AbstractModel
             }
         }
         
-        $tableGateway->update($data, $where);
+        return $tableGateway->update($data, $where);
     }
 }
