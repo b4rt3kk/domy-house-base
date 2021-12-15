@@ -28,7 +28,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                 break;
             case self::FORMAT_TRUNCATE:
                 if (!empty($value)) {
-                    $return = '<span class="d-inline-block text-truncate" data-bs-html="true" style="max-width: 150px;" data-bs-toggle="tooltip" title="' . $value . '">' . $value . '</span>';
+                    $return = '<span class="d-inline-block text-truncate" data-bs-html="true" style="max-width: 150px;" data-bs-toggle="tooltip" title="' . htmlspecialchars($value) . '">' . $value . '</span>';
                 }
                 break;
             case self::FORMAT_CURRENCY:
