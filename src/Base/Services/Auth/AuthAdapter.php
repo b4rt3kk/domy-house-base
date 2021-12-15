@@ -357,13 +357,25 @@ class AuthAdapter implements AdapterInterface
         
         $table->exchangeArray($data);
         
-        $id = $model->createRow($table);
+        $adapter = $this->getServiceManager()->get('main');
+        /* @var $adapter \Laminas\Db\Adapter\Adapter */
+
+        $adapter->getDriver()->getConnection()->beginTransaction();
         
-        $row = $this->getUserByIdRow($id);
-        
-        $this->setUserRow($row);
-        
-        $this->callEvent(self::EVENT_REGISTER_SUCCESS);
+        try {
+            $id = $model->createRow($table);
+
+            $row = $this->getUserByIdRow($id);
+
+            $this->setUserRow($row);
+
+            $this->callEvent(self::EVENT_REGISTER_SUCCESS);
+            
+            $adapter->getDriver()->getConnection()->commit();
+        } catch (\Exception $e) {
+            $adapter->getDriver()->getConnection()->rollback();
+            throw $e;
+        }
     }
     
     /**
