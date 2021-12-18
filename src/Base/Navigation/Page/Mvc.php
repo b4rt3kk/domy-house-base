@@ -13,6 +13,10 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $badgeObjectClass;
     
+    protected $icon;
+    
+    protected $id;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -37,6 +41,26 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         $this->setRouter($router);
         
         parent::__construct($options);
+    }
+    
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+        
+    public function getIcon()
+    {
+        return $this->icon;
+    }
+
+    public function setIcon($icon)
+    {
+        $this->icon = $icon;
     }
     
     public function getBadgeObjectClass()
