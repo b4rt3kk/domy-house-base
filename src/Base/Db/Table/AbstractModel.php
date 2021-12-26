@@ -299,8 +299,14 @@ abstract class AbstractModel
         // usunięcie kolumn nie występujących w tej tabeli
         // lub z pustymi wartościami
         foreach (array_keys($data) as $key) {
-            if (!in_array($key, array_keys($columns)) || (empty($data[$key]) && $data[$key] !== 0 && $data[$key] !== '0')) {
+            if (!in_array($key, array_keys($columns))) {
                 unset($data[$key]);
+                continue;
+            }
+            
+            if ((empty($data[$key]) && $data[$key] !== 0 && $data[$key] !== '0')) {
+                // podstawienie null gdy przekazana wartość ma być pusta
+                $data[$key] = new \Laminas\Db\Sql\Expression("NULL");
             }
         }
         
