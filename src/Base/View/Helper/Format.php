@@ -10,6 +10,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_BYTE_FILE_SIZE = 'file_size';
     const FORMAT_TIME_LEFT = 'time_left';
     const FORMAT_DOWNLOAD_URL = 'download_url';
+    const FORMAT_IP_GEOLOCATION = 'ip_geolocation';
     
     public function format($format, $value, $params = [])
     {
@@ -47,6 +48,9 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                 break;
             case self::FORMAT_DOWNLOAD_URL:
                 $return = '<a href="' . $value . '" title="Pobierz"><i class="fas fa-download"></i></a> ' . $value;
+                break;
+            case self::FORMAT_IP_GEOLOCATION:
+                $return = $value . ' <a href="https://ipgeolocation.io/ip-location/' . $value . '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
                 break;
             default:
                 $return = $value;
