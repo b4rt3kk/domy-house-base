@@ -67,7 +67,7 @@ class AuthManager extends AbstractLogic
         return $passwordEncrypted;
     }
     
-    public function register($data)
+    public function register($data, $forceAdd = false)
     {
         $serviceManager = $this->getServiceManager();
         
@@ -80,7 +80,7 @@ class AuthManager extends AbstractLogic
         $adapter = $authenticationService->getAdapter();
         /* @var $adapter \Base\Services\Auth\AuthAdapter */
 
-        if ($authenticationService->getIdentity() !== null) {
+        if ($authenticationService->getIdentity() !== null && !$forceAdd) {
             throw new \Exception('You are already logged');
         }
 
