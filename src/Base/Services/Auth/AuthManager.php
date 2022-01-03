@@ -9,6 +9,31 @@ class AuthManager extends AbstractLogic
     const ACCESS_DENIED = 'access_denied';
     const AUTH_REQUIRED = 'auth_required';
     
+    /**
+     * Pobierz route dla przekierowania po zalogowaniu
+     * @return \Laminas\Router\Http\RouteMatch|null
+     */
+    public function getRedirectRoute()
+    {
+        $container = $this->getStorageContainer();
+        
+        return $container->redirectRoute;
+    }
+
+    public function setRedirectRoute($redirectRoute)
+    {
+        $container = $this->getStorageContainer();
+
+        $container->redirectRoute = $redirectRoute;
+    }
+    
+    public function clearRedirectRoute()
+    {
+        $container = $this->getStorageContainer();
+        
+        $container->redirectRoute = null;
+    }
+    
     public function login($data)
     {
         $serviceManager = $this->getServiceManager();
@@ -117,5 +142,16 @@ class AuthManager extends AbstractLogic
         }
         
         return $return;
+    }
+    
+    /**
+     * Pobierz obiekt sesji przechowujący dane managera autoryzacji
+     * @return \Laminas\Session\Container
+     */
+    protected function getStorageContainer()
+    {
+        $container = new \Laminas\Session\Container(get_class($this));
+
+        return $container;
     }
 }

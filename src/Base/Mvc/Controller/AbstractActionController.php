@@ -34,7 +34,8 @@ abstract class AbstractActionController extends \Laminas\Mvc\Controller\Abstract
             case \Base\Services\Auth\AuthManager::AUTH_REQUIRED:
                 if ($routeName !== 'auth' || $actionName !== 'login') {
                     $controller->flashMessenger()->addErrorMessage('Musisz się zalogować by uzyskać dostęp do tego zasobu');
-
+                    $authManager->setRedirectRoute($e->getRouteMatch());
+                    
                     return $controller->redirect()->toRoute('auth', ['action' => 'login']);
                 }
                 break;
