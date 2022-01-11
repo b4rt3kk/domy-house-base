@@ -69,4 +69,9 @@ abstract class AbstractEntity
         
         return array_key_exists($name, $data);
     }
+    
+    public function toArray()
+    {
+        return $this->getData();
+    }
 }
