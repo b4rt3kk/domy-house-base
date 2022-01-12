@@ -17,6 +17,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $id;
     
+    protected $url;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -71,6 +73,16 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     public function setBadgeObjectClass($badgeObjectClass)
     {
         $this->badgeObjectClass = $badgeObjectClass;
+    }
+    
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    public function setUrl($url)
+    {
+        $this->url = $url;
     }
     
     /**
