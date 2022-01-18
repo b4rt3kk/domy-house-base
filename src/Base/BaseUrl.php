@@ -28,29 +28,83 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         return $baseUrl;
     }
     
+    /**
+     * Pobierz scheme dla obecnie otwartej strony (http:// lub https://)
+     * @return string
+     */
+    public function getScheme()
+    {
+        $baseUrl = $this->getUrl();
+        $matches = [];
+        
+        
+        preg_match('#^http?[s]://#', $baseUrl, $matches);
+        $scheme = $matches[0];
+        
+        return $scheme;
+    }
+    
+    /**
+     * Pobierz nazwę hosta (bez scheme)
+     * @return string
+     */
+    public function getHostName()
+    {
+        $url = $this->getUrl();
+        $scheme = $this->getScheme();
+        
+        return str_replace($scheme, '', $url);
+    }
+    
+    /**
+     * Pobierz nazwę hosta z wyłączeniem subdomeny, o ile jest to możliwe do określenia,
+     * tzn. jeśli nazwa hosta została podana w konfiguracji aplikacji
+     * @return string
+     */
+    public function getBaseHostName()
+    {
+        $config = $this->getServiceManager()->get('ApplicationConfig');
+        $hostName = $config['host_name'];
+        
+        if (empty($hostName)) {
+            // nie skonfigurowano nazwy hosta, należy go określić na podstawie url
+            // niestety w ten sposób nie zostanie wycięta subdomena
+            $hostName = $this->getHostName();
+        }
+        
+        return $hostName;
+    }
+    
     public function setSubdomain($subdomain)
     {
         $this->subdomain = $subdomain;
     }
     
+    /**
+     * Określ nazwę subdomeny lub jeśli nie jest to możliwe to zwróć null
+     * @return string|null
+     */
     public function getSubdomain()
     {
         $subdomain = $this->subdomain;
         
         if (empty($subdomain)) {
-            $url = $this->getUrl();
-            $fullUrl = $url;
-
-            preg_match('#^http?[s]://#', $url, $matches);
-            $scheme = $matches[0];
-
-            if (!empty($scheme)) {
-                $url = str_replace($scheme, '', $url);
-            }
-
-            $chunks = explode('.', ltrim($url, 'www.'));
+            $config = $this->getServiceManager()->get('ApplicationConfig');
             
-            $subdomain = $chunks[0];
+            $hostName = $this->getHostName();
+            $baseHostName = $config['host_name'];
+            
+            if (!empty($baseHostName) && 1 ==2) {
+                // określono bazową nazwę hosta w konfiguracji
+                // nazwa subomeny jest różnicą pomiędzy pobraną nazwą hosta, a nazwą hosta podaną w konfiguracji
+                $subdomain = trim(str_replace([$baseHostName, 'www.'], '', $hostName), '.');
+            } else {
+                $chunks = explode('.', ltrim($hostName, 'www.'));
+                
+                if (sizeof($chunks) > 2) {
+                    $subdomain = $chunks[0];
+                }
+            }
         }
         
         return $subdomain;
