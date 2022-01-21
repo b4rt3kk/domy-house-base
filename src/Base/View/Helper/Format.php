@@ -11,6 +11,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_TIME_LEFT = 'time_left';
     const FORMAT_DOWNLOAD_URL = 'download_url';
     const FORMAT_IP_GEOLOCATION = 'ip_geolocation';
+    const FORMAT_IMAGE_MINIATURE = 'image_miniature';
     
     public function format($format, $value, $params = [])
     {
@@ -52,6 +53,11 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             case self::FORMAT_IP_GEOLOCATION:
                 if (!empty($value)) {
                     $return = $value . ' <a href="https://ipgeolocation.io/ip-location/' . $value . '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
+                }
+                break;
+            case self::FORMAT_IMAGE_MINIATURE:
+                if (!empty($value)) {
+                    $return = '<img src="/home/image/' . $value . '" alt="No image" width="200" />';
                 }
                 break;
             default:
