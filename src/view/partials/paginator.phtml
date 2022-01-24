@@ -27,6 +27,6 @@ if ($paginator instanceof \Base\Paginator) {
             'responsive' => $paginator->getIsResponsive(),
         ]);
     } else {
-
+        echo $paginator->getNoResultsText();
     }
 }

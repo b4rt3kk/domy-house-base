@@ -23,6 +23,8 @@ abstract class Paginator extends Logic\AbstractLogic
     
     protected $pageLoadTimeMs;
     
+    protected $noResultsText = '<div class="card"><div class="card-body">Brak wyników</div></div>';
+    
     public function init()
     {
         $this->initSelect();
@@ -136,6 +138,16 @@ abstract class Paginator extends Logic\AbstractLogic
     public function getIsInitialized()
     {
         return $this->isInitialized;
+    }
+    
+    public function getNoResultsText()
+    {
+        return $this->noResultsText;
+    }
+    
+    public function setNoResultsText($noResultsText)
+    {
+        $this->noResultsText = $noResultsText;
     }
     
     /**
