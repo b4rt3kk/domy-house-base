@@ -12,7 +12,7 @@ class Migrate extends AbstractMigrations
         $this->runMigrations();
     }
     
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $output->writeln("Uruchomienie migracji...");
         
@@ -23,6 +23,8 @@ class Migrate extends AbstractMigrations
         }
         
         $output->writeln("Zakończono przetwarzanie migracji...");
+        
+        return 1;
     }
     
     /**

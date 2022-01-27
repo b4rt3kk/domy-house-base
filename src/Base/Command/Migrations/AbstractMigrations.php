@@ -71,7 +71,7 @@ abstract class AbstractMigrations extends \Base\Command\Command
             throw new \Exception(sprintf("Lokalizacja %s nie jest katalogiem", $dir));
         }
         
-        if (is_writable($dir)) {
+        if (!is_writable($dir)) {
             throw new \Exception(sprintf("Katalog %s nie jest zapisywalny. Ustaw uprawnienia na 777.", $dir));
         }
         
