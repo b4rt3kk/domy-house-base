@@ -107,15 +107,48 @@ abstract class AbstractModel
             $table = $table->getTable();
         }
         
-        switch ($platform) {
-            case 'Postgresql':
-                if (empty($sequenceName)) {
+        if (empty($sequenceName)) {
+            switch ($platform) {
+                case 'Postgresql':
                     $sequenceName = $table . '_' . $primaryKey . '_seq';
-                }
-                break;
+                    break;
+                default:
+                    throw new \Exception(sprintf("Dla platformy %s nie określono sposobu pobierania nazwy sekwencji i nie została ona określona w konfiguracji", $platform));
+            }
         }
         
         return $sequenceName;
+    }
+    
+    /**
+     * Sprawdź czy tabela do której przypisany jest model istnieje w bazie danych
+     * @return boolean
+     * @throws \Exception
+     */
+    public function isTableExists()
+    {
+        $return = false;
+        $tableGateway = $this->getTableGateway();
+        $tableName = $this->getTableName();
+        
+        $platform = $tableGateway->getAdapter()
+                ->getDriver()
+                ->getDatabasePlatformName();
+        
+        $adapter = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
+        
+        switch ($platform) {
+            case 'Postgresql':
+                $sql = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = '%s' AND table_name = '%s');";
+                $result = $adapter->execute(sprintf($sql, $tableGateway->getTable()->getSchema(), $tableGateway->getTable()->getTable()));
+                
+                $return = $result->current()['exists'];
+                break;
+            default:
+                throw new \Exception(sprintf("Dla platformy %s nie określono sposobu sprawdzania istnienia tabeli", $platform));
+        }
+        
+        return $return;
     }
 
     public function setSequenceName($sequenceName)
