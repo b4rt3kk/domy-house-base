@@ -2,6 +2,12 @@
 
 namespace Base\Command\Migrations;
 
+/**
+ * Używanie komend:
+ * https://docs.laminas.dev/laminas-cli/intro/
+ * 
+ * Przykład: ./vendor/bin/laminas [--container=<path>] <command-name>
+ */
 abstract class AbstractMigrations extends \Base\Command\Command
 {
     const COL_ID = 'id';
@@ -153,6 +159,13 @@ abstract class AbstractMigrations extends \Base\Command\Command
             /* @var $file \DirectoryIterator */
             if ($file->isDot() || $file->isDir()) {
                 // pominięcie katalogów
+                continue;
+            }
+            
+            $info = pathinfo($file);
+            
+            if ($info['extension'] !== 'php') {
+                // pominięcie plików nie będących plikami php
                 continue;
             }
             
