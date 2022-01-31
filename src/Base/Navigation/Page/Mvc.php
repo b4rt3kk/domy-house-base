@@ -50,7 +50,7 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         return $this->id;
     }
 
-    public function setId($id)
+    public function setId($id = null)
     {
         $this->id = $id;
     }

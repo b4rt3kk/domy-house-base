@@ -9,6 +9,12 @@ class Migrate extends AbstractMigrations
 {
     public function test()
     {
+        $model = $this->getModel();
+        
+        $this->runInitialQueries();
+        
+        diee();
+        
         $this->runMigrations();
     }
     
@@ -90,7 +96,10 @@ class Migrate extends AbstractMigrations
 
                 try {
                     // uruchomienie zapytań po kolei z tablicy
-                    foreach ($queries as $query) {
+                    foreach ($queries as $index => $query) {
+                        $output->writeln(sprintf("Uruchamianie zapytania %s:", $index));
+                        $output->writeln(mb_strcut($query, 0, 200, 'UTF-8'));
+                        
                         $adapter->execute($query);
                     }
 

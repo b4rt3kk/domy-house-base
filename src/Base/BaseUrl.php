@@ -75,6 +75,20 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         return $hostName;
     }
     
+    public function hasWwwPrefix()
+    {
+        $return = false;
+        $hostName = $this->getHostName();
+        
+        $chunks = explode('.', $hostName);
+        
+        if ($chunks[0] === 'www') {
+            $return = true;
+        }
+        
+        return $return;
+    }
+    
     public function setSubdomain($subdomain)
     {
         $this->subdomain = $subdomain;
@@ -94,7 +108,7 @@ class BaseUrl extends \Base\Logic\AbstractLogic
             $hostName = $this->getHostName();
             $baseHostName = $config['host_name'];
             
-            if (!empty($baseHostName) && 1 ==2) {
+            if (!empty($baseHostName)) {
                 // określono bazową nazwę hosta w konfiguracji
                 // nazwa subomeny jest różnicą pomiędzy pobraną nazwą hosta, a nazwą hosta podaną w konfiguracji
                 $subdomain = trim(str_replace([$baseHostName, 'www.'], '', $hostName), '.');
