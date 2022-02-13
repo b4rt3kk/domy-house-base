@@ -188,6 +188,13 @@ abstract class AbstractForm extends \Laminas\Form\Form
     public function setData(iterable $data)
     {
         $elements = $this->getElements();
+        
+        foreach ($data as $key => $value) {
+            if ($value === false) {
+                // zamiana wartości boolean false na string 0
+                $data[$key] = '0';
+            }
+        }
 
         foreach ($elements as $element) {
             /* @var $element \Laminas\Form\Element */
