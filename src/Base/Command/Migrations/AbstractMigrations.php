@@ -201,6 +201,10 @@ abstract class AbstractMigrations extends \Base\Command\Command
         
         require_once $fileName;
         
+        if (!class_exists($file)) {
+            throw new \Exception(sprintf("Klasa %s nie istnieje. Prawdopodobnie podałeś złą nazwę klasy w pliku migracyjnym.", $file));
+        }
+        
         $class = new $file();
         /* @var $class \Base\Migration\AbstractMigration */
         
