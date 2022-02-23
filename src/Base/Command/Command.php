@@ -108,7 +108,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         $modelName = $this->getActionsTableClassName();
         
         if (empty($modelName)) {
-            throw new \Exception("Nazwa modelu z wykonywanymi akcjami cli nie może być pusta");
+            throw new \Exception(sprintf("Nazwa modelu z wykonywanymi akcjami cli nie może być pusta. Utwórz fabrykę abstrakcyjną dziedziczącą po %s i określ nazwę modelu dla tabeli wykonywanych akcji", AbstractCommandFactory::class));
         }
         
         $model = $this->getServiceManager()->get($modelName);
