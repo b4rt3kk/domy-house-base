@@ -2,11 +2,16 @@
 
 namespace Base\Command;
 
-class Command extends \Symfony\Component\Console\Command\Command implements CommandInterface
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+abstract class Command extends \Symfony\Component\Console\Command\Command implements CommandInterface
 {
     const STATUS_WAITING = 1;
     const STATUS_EXECUTING = 2;
     const STATUS_ERROR = 3;
+    
+    const MESSAGE_SUCCESS = 'Operacja przebiegła pomyślnie';
     
     protected $serviceManager;
     
@@ -68,6 +73,29 @@ class Command extends \Symfony\Component\Console\Command\Command implements Comm
     public function setActionsTableMapping($actionsTableMapping)
     {
         $this->actionsTableMapping = $actionsTableMapping;
+    }
+    
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $command = $input->getArgument('command');
+        
+        if ($this->isExecuting($command)) {
+            throw new \Exception(sprintf("Komenda %s jest obecnie w trakcie wykonywania", $command));
+        }
+
+        $this->setCommandExecuting($command);
+
+        try {
+            $this->executeAction($input, $output);
+            
+            $this->setCommandMessage($command);
+        } catch (\Exception $e) {
+            $this->setCommandError($command, $e->getMessage());
+        }
+
+        $this->setCommandExecuted($command);
+
+        return 1;
     }
     
     /**
@@ -224,7 +252,7 @@ class Command extends \Symfony\Component\Console\Command\Command implements Comm
      * @param string $command
      * @throws \Exception
      */
-    protected function setCommandMessage($command, $message)
+    protected function setCommandMessage($command, $message = self::MESSAGE_SUCCESS)
     {
         $row = $this->getCommandRow($command);
         
@@ -255,4 +283,11 @@ class Command extends \Symfony\Component\Console\Command\Command implements Comm
         
         $model->update($mappedData, [$this->getMappedColumnName('id') => $id]);
     }
+    
+    /**
+     * Funkcja do wykonania
+     * @param $input
+     * @param $output
+     */
+    abstract protected function executeAction(InputInterface $input, OutputInterface $output);
 }

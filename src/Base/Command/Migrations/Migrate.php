@@ -6,19 +6,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Migrate extends AbstractMigrations
-{
-    public function test()
-    {
-        $model = $this->getModel();
-        
-        $this->runInitialQueries();
-        
-        diee();
-        
-        $this->runMigrations();
-    }
-    
-    protected function execute(InputInterface $input, OutputInterface $output) : int
+{    
+    protected function executeAction(InputInterface $input, OutputInterface $output) : int
     {
         $output->writeln("Uruchomienie migracji...");
         
@@ -65,9 +54,9 @@ class Migrate extends AbstractMigrations
                 if (!$this->hasMigrationRow($migration->getFileName())) {
                     // utworzenie wiersza dla migracji jeśli nie istnieje w bazie danych
                     $this->addMigrationRow([
-                        $this->getMappedColumnName(self::COL_FILE_NAME) => $migration->getFileName(),
-                        $this->getMappedColumnName(self::COL_INDEX) => $migration->getIndex(),
-                        $this->getMappedColumnName(self::COL_NAME) => $migration->getName(),
+                        $this->getMigrationMappedColumnName(self::COL_FILE_NAME) => $migration->getFileName(),
+                        $this->getMigrationMappedColumnName(self::COL_INDEX) => $migration->getIndex(),
+                        $this->getMigrationMappedColumnName(self::COL_NAME) => $migration->getName(),
                     ]);
                 }
 
@@ -78,7 +67,7 @@ class Migrate extends AbstractMigrations
                     throw new \Exception(sprintf("Nie udało się utworzyć lub odnaleźć wpisu w bazie danych dla migracji dla pliku %s", $file));
                 }
 
-                $isExecutedCol = $this->getMappedColumnName(self::COL_IS_EXECUTED);
+                $isExecutedCol = $this->getMigrationMappedColumnName(self::COL_IS_EXECUTED);
 
                 if ($row->{$isExecutedCol}) {
                     // ta migracja została już wykonana
@@ -104,7 +93,7 @@ class Migrate extends AbstractMigrations
                     }
 
                     // oznacz migrację jako wykonaną
-                    $this->setMigrationRowExecuted($row->{$this->getMappedColumnName(self::COL_ID)});
+                    $this->setMigrationRowExecuted($row->{$this->getMigrationMappedColumnName(self::COL_ID)});
 
                     $adapter->commit();
                 } catch (\Exception $e) {

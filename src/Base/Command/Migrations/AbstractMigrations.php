@@ -262,7 +262,7 @@ abstract class AbstractMigrations extends \Base\Command\Command
     {
         $model = $this->getModel();
         
-        $model->update([$this->getMappedColumnName(self::COL_IS_EXECUTED) => '1'], [$this->getMappedColumnName(self::COL_ID) => $idMigration]);
+        $model->update([$this->getMigrationMappedColumnName(self::COL_IS_EXECUTED) => '1'], [$this->getMigrationMappedColumnName(self::COL_ID) => $idMigration]);
     }
     
     /**
@@ -288,7 +288,7 @@ abstract class AbstractMigrations extends \Base\Command\Command
      * @return string
      * @throws \Exception
      */
-    protected function getMappedColumnName($columnName)
+    protected function getMigrationMappedColumnName($columnName)
     {
         $columnsMapping = $this->getTableMapping();
         
