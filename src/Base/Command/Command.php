@@ -33,6 +33,10 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         'removed_by' => 'removed_by',
         'ghost' => 'ghost',
     ];
+    
+    protected $isDebug = false;
+    
+    protected $isTestMode = false;
 
     /**
      * @return \Laminas\ServiceManager\ServiceManager
@@ -75,11 +79,47 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         $this->actionsTableMapping = $actionsTableMapping;
     }
     
+    public function getIsDebug()
+    {
+        return $this->isDebug;
+    }
+
+    /**
+     * W trybie debugowania wyświetlane są wszystkie błędy
+     * @param boolean $isDebug
+     */
+    public function setIsDebug($isDebug)
+    {
+        $this->isDebug = $isDebug;
+    }
+    
+    public function getIsTestMode()
+    {
+        return $this->isTestMode;
+    }
+
+    /**
+     * W trybie testowym ignorowany jest status wykonywanej akcji (uruchomienie następuje dla każdego statusu)
+     * @param boolean $isTestMode
+     */
+    public function setIsTestMode($isTestMode)
+    {
+        $this->isTestMode = $isTestMode;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $isDebug = $this->getIsDebug();
+        $isTestMode = $this->getIsTestMode();
+        
+        if ($isDebug) {
+            // włącz raportowanie błędów
+            $this->setDebugMode();
+        }
+        
         $command = $input->getArgument('command');
         
-        if ($this->isExecuting($command)) {
+        if ($this->isExecuting($command) && !$isTestMode) {
             throw new \Exception(sprintf("Komenda %s jest obecnie w trakcie wykonywania", $command));
         }
 
@@ -282,6 +322,15 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         $model = $this->getActionsTableModel();
         
         $model->update($mappedData, [$this->getMappedColumnName('id') => $id]);
+    }
+    
+    /**
+     * Włącz raportowanie błędów
+     */
+    protected function setDebugMode()
+    {
+        error_reporting(E_ALL);
+        ini_set("display_errors", '1');
     }
     
     /**
