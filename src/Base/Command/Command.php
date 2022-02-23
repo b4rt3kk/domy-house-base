@@ -201,6 +201,43 @@ class Command extends \Symfony\Component\Console\Command\Command implements Comm
     }
     
     /**
+     * Ustaw błąd dla komendy
+     * @param string $command
+     * @throws \Exception
+     */
+    protected function setCommandError($command, $message)
+    {
+        $row = $this->getCommandRow($command);
+        
+        if (empty($row)) {
+            throw new \Exception(sprintf("Komenda %s nie istnieje", $command));
+        }
+        
+        $this->updateCommandRow($row->id, [
+            $this->getMappedColumnName('id_status') => self::STATUS_ERROR,
+            $this->getMappedColumnName('message') => $message,
+        ]);
+    }
+    
+    /**
+     * Ustaw wiadomość dla komendy
+     * @param string $command
+     * @throws \Exception
+     */
+    protected function setCommandMessage($command, $message)
+    {
+        $row = $this->getCommandRow($command);
+        
+        if (empty($row)) {
+            throw new \Exception(sprintf("Komenda %s nie istnieje", $command));
+        }
+        
+        $this->updateCommandRow($row->id, [
+            $this->getMappedColumnName('message') => $message,
+        ]);
+    }
+    
+    /**
      * Zaktualizuj wiersz dla komendy o podanym id
      * @param integer $id
      * @param array $data
