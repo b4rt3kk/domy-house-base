@@ -18,6 +18,12 @@ class AbstractCommandFactory implements AbstractFactoryInterface
         return $return;
     }
 
+    /**
+     * @param ContainerInterface $container
+     * @param type $requestedName
+     * @param array $options
+     * @return \Base\Command\Command
+     */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $logic = new $requestedName();
