@@ -6,6 +6,8 @@ $firstPage = $paginator->getFirstPageInRange();
 $lastPage = $paginator->getLastPageInRange();
 $totalResults = $paginator->getTotalResults();
 $loadTime = $paginator->getPageLoadTimeMs();
+$perPageOptions = $paginator->getPerPageOptions();
+$perPage = $paginator->getItemsPerPage();
 ?>
 <nav aria-label="Page navigation example">
     <ul class="pagination">
@@ -31,6 +33,18 @@ $loadTime = $paginator->getPageLoadTimeMs();
         
         <li class="page-item disabled">
             <span class="page-link">Strona <strong><?php echo $currentPage; ?></strong>  z <strong><?php echo $totalPages; ?></strong></span>
+        </li>
+        
+        <li class="page-item disabled">
+            <span class="page-link">Wyników na stronę </span>
+        </li>
+        
+        <li class="page-item">
+            <select name="items_per_page" class="form-control">
+                <?php foreach ($perPageOptions as $option) : ?>
+                    <option value="<?php echo $option; ?>" <?php echo ($perPage == $option ? 'selected' : null); ?>><?php echo $option; ?></option>
+                <?php endforeach; ?>
+            </select>
         </li>
         
         <li class="page-item disabled">

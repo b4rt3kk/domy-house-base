@@ -1,7 +1,7 @@
 <?php
 namespace Base;
 
-abstract class Paginator extends Logic\AbstractLogic
+abstract class Paginator extends Logic\AbstractLogic implements Paginator\PaginatorInterface
 {
     protected $modelName;
     
@@ -24,6 +24,17 @@ abstract class Paginator extends Logic\AbstractLogic
     protected $pageLoadTimeMs;
     
     protected $noResultsText = '<div class="card"><div class="card-body">Brak wyników</div></div>';
+    
+    protected $perPageOptions = [
+        '10',
+        '20',
+        '50',
+        '100',
+    ];
+    
+    protected $ajaxUrl;
+    
+    protected $paginatorId;
     
     public function init()
     {
@@ -59,7 +70,14 @@ abstract class Paginator extends Logic\AbstractLogic
 
     public function getItemsPerPage()
     {
-        return $this->itemsPerPage;
+        $container = $this->getStorageContainer();
+        $itemsPerPage = $container->itemsPerPage;
+        
+        if (empty($itemsPerPage)) {
+            $itemsPerPage = $this->itemsPerPage;
+        }
+        
+        return $itemsPerPage;
     }
     
     public function getIsResponsive()
@@ -150,6 +168,43 @@ abstract class Paginator extends Logic\AbstractLogic
         $this->noResultsText = $noResultsText;
     }
     
+    public function getPerPageOptions()
+    {
+        return $this->perPageOptions;
+    }
+
+    public function setPerPageOptions(array $perPageOptions)
+    {
+        $this->perPageOptions = $perPageOptions;
+    }
+    
+    public function getAjaxUrl()
+    {
+        return $this->ajaxUrl;
+    }
+
+    public function setAjaxUrl($ajaxUrl)
+    {
+        $this->ajaxUrl = $ajaxUrl;
+    }
+    
+    public function getPaginatorId()
+    {
+        $paginatorId =  $this->paginatorId;
+        
+        if (empty($paginatorId)) {
+            $paginatorId = str_replace(['\\'], ['_'], get_class($this));
+        }
+        
+        return $paginatorId;
+    }
+
+    public function setPaginatorId($paginatorId)
+    {
+        $this->paginatorId = $paginatorId;
+    }
+
+        
     /**
      * Pobierz liczbę stron paginatora
      * @return integer
@@ -298,6 +353,15 @@ abstract class Paginator extends Logic\AbstractLogic
     }
     
     /**
+     * Pobierz nazwę kontenera przechowującego dane tego paginatora
+     * @return string
+     */
+    public function getStorageContainerName()
+    {
+        return $this->getPaginatorId();
+    }
+    
+    /**
      * Pobierz obiekt modelu
      * @return \Base\Db\Table\AbstractModel
      * @throws \Exception
@@ -338,9 +402,9 @@ abstract class Paginator extends Logic\AbstractLogic
      */
     protected function getStorageContainer()
     {
-        $paginatorName = get_class($this);
+        $containerName = $this->getStorageContainerName();
 
-        $container = new \Laminas\Session\Container($paginatorName);
+        $container = new \Laminas\Session\Container($containerName);
         
         return $container;
     }

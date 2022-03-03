@@ -37,8 +37,7 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         $baseUrl = $this->getUrl();
         $matches = [];
         
-        
-        preg_match('#^http?[s]://#', $baseUrl, $matches);
+        preg_match('#^https?://#', $baseUrl, $matches);
         $scheme = $matches[0];
         
         return $scheme;

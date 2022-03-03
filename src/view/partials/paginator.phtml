@@ -5,6 +5,10 @@ if ($paginator instanceof \Base\Paginator) {
         $paginator->init();
     }
     
+    $ajaxUrl = $paginator->getAjaxUrl();
+    $storageContainerName = $paginator->getStorageContainerName();
+    $paginatorId = $paginator->getPaginatorId();
+    
     $form = $paginator->getFilterForm();
     
     if ($form instanceof \Base\Form\AbstractForm) {
@@ -18,6 +22,8 @@ if ($paginator instanceof \Base\Paginator) {
     if ($totalResults > 0) {
         $data = $paginator->getData();
 
+        echo '<div id="' . $paginatorId . '">';
+        
         echo $this->partial('base/paginator_navigation', ['paginator' => $paginator]);
 
         echo $this->partial('base/table', [
@@ -26,7 +32,26 @@ if ($paginator instanceof \Base\Paginator) {
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
             'responsive' => $paginator->getIsResponsive(),
         ]);
+        
+        echo '</div>';
     } else {
         echo $paginator->getNoResultsText();
     }
+    
+    $this->inlineScript()->captureStart();
+echo <<<"JS"
+    $('#{$paginatorId}').find('select[name="items_per_page"]').on("change", function() {
+        let itemsPerPage = $(this).val();
+    
+        $.ajax({
+            url: '{$ajaxUrl}',
+            type: "POST",
+            data: {paginatorId: '{$paginatorId}', itemsPerPage: itemsPerPage},
+            success: function(response) {
+                window.location.reload(true);
+            }
+        });
+    });
+JS;
+    $this->inlineScript()->captureEnd();
 }
