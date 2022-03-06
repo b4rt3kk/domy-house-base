@@ -341,12 +341,24 @@ abstract class AbstractModel
         
         $cacheKey = $this->getCacheKey($select);
         
-        $data = $tableGateway->selectWith($select);
-        /* @var $data \Laminas\Db\ResultSet\ResultSet */
-        
-        if (empty($storage->getItem($cacheKey)) && $this->getUseCache()) {
-            $data = $this->prepareResultSetForCaching($data);
-            $storage->setItem($cacheKey, $data);
+        if ($this->getUseCache()) {
+            // w przypadku gdy używane jest cache
+            if (empty($storage->getItem($cacheKey))) {
+                // cache nie jest jeszcze uzupełniony
+                $data = $tableGateway->selectWith($select);
+                /* @var $data \Laminas\Db\ResultSet\ResultSet */
+                
+                $preparedData = $this->prepareResultSetForCaching($data);
+                $storage->setItem($cacheKey, $preparedData);
+            } else {
+                // dane istnieją w cache, pobranie ich do zwrócenia
+                $data = $storage->getItem($cacheKey);
+            }
+        } else {
+            // cache nie jest używane
+            // pobranie danych bezpośrednio z bazy danych
+            $data = $tableGateway->selectWith($select);
+            /* @var $data \Laminas\Db\ResultSet\ResultSet */
         }
         
         return $data;
