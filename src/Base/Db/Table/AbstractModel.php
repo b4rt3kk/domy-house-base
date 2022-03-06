@@ -345,11 +345,9 @@ abstract class AbstractModel
             // w przypadku gdy używane jest cache
             if (empty($storage->getItem($cacheKey))) {
                 // cache nie jest jeszcze uzupełniony
-                $data = $tableGateway->selectWith($select);
-                /* @var $data \Laminas\Db\ResultSet\ResultSet */
+                $data = $this->prepareResultSetForCaching($tableGateway->selectWith($select));
                 
-                $preparedData = $this->prepareResultSetForCaching($data);
-                $storage->setItem($cacheKey, $preparedData);
+                $storage->setItem($cacheKey, $data);
             } else {
                 // dane istnieją w cache, pobranie ich do zwrócenia
                 $data = $storage->getItem($cacheKey);
