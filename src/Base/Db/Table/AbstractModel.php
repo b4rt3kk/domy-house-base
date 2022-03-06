@@ -17,6 +17,8 @@ abstract class AbstractModel
     
     protected $creatorColumnName = 'created_by';
     
+    protected $useCache = false;
+    
     public function __construct(TableGatewayInterface $tableGateway, $serviceManager = null)
     {
         $this->setTableGateway($tableGateway);
@@ -54,6 +56,16 @@ abstract class AbstractModel
     public function setPrimaryKey($primaryKey)
     {
         $this->primaryKey = $primaryKey;
+    }
+    
+    public function getUseCache()
+    {
+        return $this->useCache;
+    }
+
+    public function setUseCache($useCache)
+    {
+        $this->useCache = !empty($useCache);
     }
 
     public function getData()
@@ -268,6 +280,8 @@ abstract class AbstractModel
      */
     public function fetchRow($where = null)
     {
+        $storage = $this->getStorage();
+        
         if (!$where instanceof \Laminas\Db\Sql\Select) {
             $select = $this->select();
             
@@ -280,11 +294,20 @@ abstract class AbstractModel
         
         $select->limit(1);
         
-        $tableGateway = $this->getTableGateway();
-        $data = $tableGateway->selectWith($select);
-        /* @var $data \Laminas\Db\ResultSet\ResultSet */
+        $cacheKey = $this->getCacheKey($select);
         
-        return $data->current();
+        $row = $storage->getItem($cacheKey);
+        
+        if (empty($row) || !$this->getUseCache()) {
+            $tableGateway = $this->getTableGateway();
+            $data = $tableGateway->selectWith($select);
+            /* @var $data \Laminas\Db\ResultSet\ResultSet */
+            $row = $data->current();
+            
+            $storage->setItem($cacheKey, $row);
+        }
+        
+        return $row;
     }
     
     /**
@@ -293,6 +316,8 @@ abstract class AbstractModel
      */
     public function fetchAll($where = null)
     {
+        $storage = $this->getStorage();
+        
         if ($where instanceof \Laminas\Db\Sql\Combine) {
             $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
             $data = $connection->execute($where->getSqlString());
@@ -313,8 +338,16 @@ abstract class AbstractModel
         }
         
         $tableGateway = $this->getTableGateway();
+        
+        $cacheKey = $this->getCacheKey($select);
+        
         $data = $tableGateway->selectWith($select);
         /* @var $data \Laminas\Db\ResultSet\ResultSet */
+        
+        if (empty($storage->getItem($cacheKey)) && $this->getUseCache()) {
+            $data = $this->prepareResultSetForCaching($data);
+            $storage->setItem($cacheKey, $data);
+        }
         
         return $data;
     }
@@ -344,5 +377,61 @@ abstract class AbstractModel
         }
         
         return $tableGateway->update($data, $where);
+    }
+    
+    /**
+     * Pobierz adapter cache
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
+     */
+    protected function getStorage()
+    {
+        $storageFactory = $this->getServiceManager()->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
+        /* @var $storageFactory \Laminas\Cache\Service\StorageAdapterFactory */
+        
+        $config = $this->getServiceManager()->get('Config')['cache'];
+        
+        $cache = $storageFactory->createFromArrayConfiguration($config);
+        
+        return $cache;
+    }
+    
+    protected function getCachePrefix()
+    {
+        return md5(get_class($this)) . '_';
+    }
+    
+    protected function getCacheKey($select)
+    {
+        $prefix = $this->getCachePrefix();
+        $key = $prefix;
+        
+        if ($select instanceof \Laminas\Db\Sql\Select) {
+            $key .= md5($select->getSqlString());
+        } else {
+            $key .= md5(serialize($select));
+        }
+        
+        return $key;
+    }
+    
+    protected function prepareResultSetForCaching(\Laminas\Db\ResultSet\ResultSet $resultSet)
+    {
+        $return = new \Base\Db\ResultSet\ResultSet();
+        $return->setArrayObjectPrototype($resultSet->getArrayObjectPrototype());
+        
+        $iterator = new \Base\Db\ResultSet\Iterator();
+        
+        foreach ($resultSet as $row) {
+            $prototype = clone $return->getArrayObjectPrototype();
+            
+            if (!empty($row)) {
+                $prototype->exchangeArray($row->toArray());
+                $iterator->add($prototype);
+            }
+        }
+        
+        $return->initialize($iterator);
+        
+        return $return;
     }
 }
