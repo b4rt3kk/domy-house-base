@@ -17,7 +17,7 @@ abstract class AbstractModel
     
     protected $creatorColumnName = 'created_by';
     
-    protected $useCache = false;
+    protected $useCache = true;
     
     public function __construct(TableGatewayInterface $tableGateway, $serviceManager = null)
     {
@@ -207,6 +207,10 @@ abstract class AbstractModel
             ->getDriver()
             ->getLastGeneratedValue($this->getSequenceName());
         
+        if ($this->getUseCache()) {
+            $this->clearCache();
+        }
+        
         return $id;
     }
     
@@ -386,7 +390,28 @@ abstract class AbstractModel
             }
         }
         
-        return $tableGateway->update($data, $where);
+        $return = $tableGateway->update($data, $where);
+        
+        if ($this->getUseCache()) {
+            // w przypadku używania cache wyczyszczenie danych
+            $this->clearCache();
+        }
+        
+        return $return;
+    }
+    
+    public function clearCache()
+    {
+        $storage = $this->getStorage();
+        
+        switch (get_class($storage)) {
+            case \Laminas\Cache\Storage\Adapter\Filesystem::class:
+                $options = $storage->getOptions();
+                /* @var $options \Laminas\Cache\Storage\Adapter\FilesystemOptions */
+                
+                $storage->flush();
+                break;
+        }
     }
     
     /**
