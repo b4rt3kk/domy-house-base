@@ -74,6 +74,24 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         return $hostName;
     }
     
+    /**
+     * Pobranie pełnego bazowego adresu url
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        $host = $this->getScheme();
+        
+        if ($this->hasWwwPrefix()) {
+            // sprawdzenie czy należy dodać prefix www
+            $host .= 'www.';
+        }
+        
+        $host .= $this->getBaseHostName();
+        
+        return $host;
+    }
+    
     public function hasWwwPrefix()
     {
         $return = false;
