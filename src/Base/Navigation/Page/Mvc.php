@@ -19,6 +19,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $url;
     
+    protected $attributesString;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -43,6 +45,16 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         $this->setRouter($router);
         
         parent::__construct($options);
+    }
+    
+    public function getAttributesString()
+    {
+        return $this->attributesString;
+    }
+
+    public function setAttributesString($attributesString)
+    {
+        $this->attributesString = $attributesString;
     }
     
     public function getId()
