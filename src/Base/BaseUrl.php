@@ -140,4 +140,15 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         
         return $subdomain;
     }
+    
+    /**
+     * Sprawdź czy obecny adres url jest subdomeną
+     * @return boolean
+     */
+    public function isSubdomain()
+    {
+        $subdomain = $this->getSubdomain();
+        
+        return !empty($subdomain);
+    }
 }

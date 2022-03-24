@@ -414,6 +414,13 @@ abstract class AbstractModel
         }
     }
     
+    public function insertMultiple($data)
+    {
+        $entity = $this->getEntity();
+        
+        
+    }
+    
     /**
      * Pobierz adapter cache
      * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter

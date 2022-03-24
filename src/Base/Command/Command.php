@@ -122,9 +122,9 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         if ($this->isExecuting($command) && !$isTestMode) {
             throw new \Exception(sprintf("Komenda %s jest obecnie w trakcie wykonywania", $command));
         }
-
+        
         $this->setCommandExecuting($command);
-
+        
         try {
             $this->executeAction($input, $output);
             

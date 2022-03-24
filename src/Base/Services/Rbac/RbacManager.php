@@ -94,17 +94,6 @@ class RbacManager extends AbstractLogic
     
     public function init()
     {
-        /*
-        error_reporting(E_ALL);
-        ini_set("display_errors", 1);
-        $cacheConfig = $this->getServiceManager()->get('config')['caches'];
-        
-        $storageFactory = $this->getServiceManager()->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
-        \Laminas\Cache\Service\StorageAdapterFactory::class;
-        //diee($cacheConfig[key($cacheConfig)]);
-        $storageFactory->createFromArrayConfiguration($cacheConfig[key($cacheConfig)]['adapter']);
-        */
-        
         $rbac = new Rbac();
         $rbac->setCreateMissingRoles(true);
         
@@ -185,11 +174,13 @@ class RbacManager extends AbstractLogic
             if ($rbac->isGranted($rowRole->{$nameColumn}, $permission)) {
                 if (empty($params)) {
                     $isGranted = true;
+                    break;
                 }
             
                 foreach ($assertionManagers as $assertionManager) {
                     if ($assertionManager->assert($rbac, $permission, $params)) {
                         $isGranted = true;
+                        break 2;
                     }
                 }
             }
