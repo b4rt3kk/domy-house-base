@@ -324,7 +324,7 @@ abstract class AbstractModel
         
         if ($where instanceof \Laminas\Db\Sql\Combine) {
             $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
-            $data = $connection->execute($where->getSqlString());
+            $data = $connection->execute($where->getSqlString($this->getTableGateway()->getAdapter()->getPlatform()));
             
             $prototype = $this->getTableGateway()->getResultSetPrototype();
             /* @var $prototype \Laminas\Db\ResultSet\ResultSet */
@@ -448,7 +448,7 @@ abstract class AbstractModel
         $key = $prefix;
         
         if ($select instanceof \Laminas\Db\Sql\Select) {
-            $key .= md5($select->getSqlString());
+            $key .= md5($select->getSqlString($this->getTableGateway()->getAdapter()->getPlatform()));
         } else {
             $key .= md5(serialize($select));
         }

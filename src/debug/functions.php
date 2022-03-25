@@ -11,5 +11,14 @@ function diee() {
     $backtrace = debug_backtrace();
     
     echo '<p><strong>DIEE called in ' . $backtrace[0]['file'] . ' [line: ' . $backtrace[0]['line'] . '] </strong></p>';
+    
+    echo '<pre>';
+    
+    foreach ($backtrace as $row) {
+        echo '<p>' . $row['file'] . ' [line: ' . $row['line'] . '] </p>';
+    }
+    
+    echo '</pre>';
+    
     exit;
 }
