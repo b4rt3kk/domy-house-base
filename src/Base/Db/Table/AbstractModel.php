@@ -468,6 +468,10 @@ abstract class AbstractModel
             
             $tableGateway->getAdapter()->getDriver()->getConnection()->execute(rtrim($query, ", "));
         }
+        
+        if ($this->getUseCache()) {
+            $this->clearCache();
+        }
     }
     
     /**
