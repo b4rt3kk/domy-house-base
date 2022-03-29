@@ -414,11 +414,60 @@ abstract class AbstractModel
         }
     }
     
-    public function insertMultiple($data)
+    /**
+     * Wstaw wiele wierszy na raz
+     * @param array $data
+     * @param integer $chunkSize
+     */
+    public function insertMultiple($data, $chunkSize = 10000)
     {
         $entity = $this->getEntity();
         
+        $tableGateway = $this->getTableGateway();
+        $platform = $tableGateway->getAdapter()->getPlatform();
+        // pobranie kolumn na podstawie pierwszego wiersza z przekazanej tablicy
+        $columns = array_keys($data[0]);
+
+        $serviceManager = $this->getServiceManager();
         
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
+            
+            if ($authenticationService->getIdentity()) {
+                $idUser = $authenticationService->getIdentity()->id;
+            }
+        }
+        
+        $chunks = array_chunk($data, $chunkSize);
+        
+        foreach ($chunks as $chunk) {
+            // przygotowanie zapytania do bezpośredniego wstawienia
+            $query = "INSERT INTO " . $this->getTableName() . "(" . implode(", ", $columns) . ") VALUES ";
+            
+            foreach ($chunk as $row) {
+                $queryRow = "(";
+                $queryValues = null;
+                
+                foreach ($columns as $column) {
+                    switch (true) {
+                        case empty($row[$column]) && $row[$column] !== 0 && $row[$column] !== '0':
+                            $queryValues .= "NULL, ";
+                            break;
+                        case is_numeric($row[$column]):
+                            $queryValues .= $row[$column] . ", ";
+                            break;
+                        default:
+                            $queryValues .= $platform->quoteValue($row[$column]) . ", ";
+                    }
+                }
+                
+                $queryRow .= rtrim($queryValues, ", ") .  "),";
+                
+                $query .= $queryRow;
+            }
+            
+            $tableGateway->getAdapter()->getDriver()->getConnection()->execute(rtrim($query, ", "));
+        }
     }
     
     /**
