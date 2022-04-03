@@ -40,4 +40,17 @@ abstract class AbstractLogic implements LogicInterface
         
         return $return;
     }
+    
+    public function getAsUrlName($name, $separator = '-')
+    {
+        $charsToReplace = 'ęóąśłżźćń';
+        $charsReplacements = 'eoaslzzcn';
+        
+        $return = mb_strtolower(preg_replace("#\s#", $separator, trim($name)), 'UTF-8');
+        
+        // zamiana polskich znaków
+        $return = str_replace(mb_str_split($charsToReplace, 1, 'UTF-8'), str_split($charsReplacements), $return);
+        
+        return $return;
+    }
 }

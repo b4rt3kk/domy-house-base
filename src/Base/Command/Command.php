@@ -129,6 +129,10 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
             $this->executeAction($input, $output);
             
             $this->setCommandMessage($command);
+            
+            $output->writeln("");
+            //$output->writeln(sprintf("Czas wykonywania: %s", microtime(true) - $time));
+            //$output->writeln("");
         } catch (\Exception $e) {
             $this->setCommandError($command, $e->getMessage());
         }
