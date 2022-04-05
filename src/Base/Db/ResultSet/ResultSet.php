@@ -28,4 +28,9 @@ class ResultSet extends \Laminas\Db\ResultSet\ResultSet
     {
         $this->dataSource->next();
     }
+    
+    public function count()
+    {
+        return $this->dataSource->count();
+    }
 }

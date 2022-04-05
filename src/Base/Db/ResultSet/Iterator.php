@@ -37,4 +37,9 @@ class Iterator implements \Iterator
     {
         return isset($this->data[$this->position]);
     }
+    
+    public function count()
+    {
+        return sizeof($this->data);
+    }
 }
