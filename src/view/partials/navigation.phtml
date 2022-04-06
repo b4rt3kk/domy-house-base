@@ -8,7 +8,7 @@ foreach ($navigation as $page) {
     if ($page->isAllowed() && $page->isShowable()) {
         $class = $page->getClass();
         
-        echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary ' . $class . '">';
+        echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary ' . $class . '"' . $page->getAttributesAsString() . '>';
         echo $page->getLabel();
         echo '</a>&nbsp;';
     }

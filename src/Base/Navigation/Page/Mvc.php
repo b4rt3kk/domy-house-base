@@ -21,6 +21,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $attributesString;
     
+    protected $attributes = [];
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -33,6 +35,10 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         
         if (array_key_exists('where', $options)) {
             $this->setWhere($options['where']);
+        }
+        
+        if (array_key_exists('attributes', $options)) {
+            $this->setAttributes($options['attributes']);
         }
         
         $options['params'] = $this->prepareParams($options);
@@ -57,6 +63,32 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         $this->attributesString = $attributesString;
     }
     
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+    
+    /**
+     * Pobierz listę atrybutów w postaci stringa do podstawienia w elemencie HTML
+     * @return string
+     */
+    public function getAttributesAsString()
+    {
+        $return = null;
+        $attributes = $this->getAttributes();
+        
+        foreach ($attributes as $name => $value) {
+            $return .= $name . '="' . $value . '" ';
+        }
+        
+        return $return;
+    }
+
+    public function setAttributes($attributes)
+    {
+        $this->attributes = $attributes;
+    }
+
     public function getId()
     {
         return $this->id;
