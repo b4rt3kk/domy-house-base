@@ -79,7 +79,14 @@ foreach ($headers as $header) {
     
     // formatowanie
     if (!empty($headersMapping[$header]['format'])) {
-        $value = $this->format()->format($headersMapping[$header]['format'], $value);
+        switch ($headersMapping[$header]['format']) {
+            case Base\View\Helper\Format::FORMAT_TRUNCATE:
+                // w przypadku truncate na wyświetlaniu wiersza brak ucinania treści
+                break;
+            default:
+                $value = $this->format()->format($headersMapping[$header]['format'], $value);
+        }
+        
     }
 
     echo $value;
