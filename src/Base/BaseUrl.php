@@ -75,7 +75,7 @@ class BaseUrl extends \Base\Logic\AbstractLogic
     }
     
     /**
-     * Pobranie pełnego bazowego adresu url
+     * Pobranie pełnego bazowego adresu url wraz z scheme
      * @return string
      */
     public function getBaseUrl()

@@ -11,6 +11,8 @@ abstract class AbstractEntity
     
     protected $dictionaries = [];
     
+    protected $actionsPartial = 'base/table_actions';
+    
     public function exchangeArray(array $data)
     {
         $this->setData($data);
@@ -56,6 +58,16 @@ abstract class AbstractEntity
         $this->dictionaries = $dictionaries;
     }
     
+    public function getActionsPartial()
+    {
+        return $this->actionsPartial;
+    }
+
+    public function setActionsPartial($actionsPartial)
+    {
+        $this->actionsPartial = $actionsPartial;
+    }
+
     public function __get($name)
     {
         $data = $this->getData();
