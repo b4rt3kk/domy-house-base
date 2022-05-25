@@ -29,8 +29,31 @@ class Logger extends \Base\Logic\AbstractLogic
         $this->drivers[] = $driver;
     }
     
+    public function getDriverByCode($code)
+    {
+        $return = null;
+        $drivers = $this->getDrivers();
+        
+        foreach ($drivers as $driver) {
+            if ($driver->getCode() === $code) {
+                $return = $driver;
+                break;
+            }
+        }
+        
+        if (empty($return)) {
+            throw new \Exception(sprintf("Driver o kodzie %s nie istnieje", $code));
+        }
+        
+        return $return;
+    }
+    
     public function logMessage($message, $messageType, $additionalData = [])
     {
+        $drivers = $this->getDrivers();
         
+        foreach ($drivers as $driver) {
+            $driver->logMessage($message, $messageType, $additionalData);
+        }
     }
 }

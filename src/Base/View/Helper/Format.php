@@ -6,6 +6,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_DATE_TIME = 'date_time';
     const FORMAT_DATE = 'date';
     const FORMAT_TRUNCATE = 'truncate';
+    const FORMAT_TEXT_TRUNCATE = 'text_truncate';
     const FORMAT_CURRENCY = 'currency';
     const FORMAT_BYTE_FILE_SIZE = 'file_size';
     const FORMAT_TIME_LEFT = 'time_left';
@@ -31,6 +32,16 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             case self::FORMAT_TRUNCATE:
                 if (!empty($value)) {
                     $return = '<span class="d-inline-block text-truncate" data-bs-html="true" style="max-width: 150px;" data-bs-toggle="tooltip" title="' . htmlspecialchars($value) . '">' . $value . '</span>';
+                }
+                break;
+            case self::FORMAT_TEXT_TRUNCATE:
+                if (!empty($value)) {
+                    if (mb_strlen($value, 'UTF-8') > 200) {
+                        $return = mb_strcut($value, 0, 200, 'UTF-8') . '...';
+                    } else {
+                        $return = $value;
+                    }
+                    
                 }
                 break;
             case self::FORMAT_CURRENCY:

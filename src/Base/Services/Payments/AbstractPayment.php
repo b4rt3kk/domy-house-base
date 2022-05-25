@@ -66,6 +66,10 @@ abstract class AbstractPayment extends AbstractInput
     
     protected $events = [];
     
+    protected $isSandbox = false;
+    
+    protected $isDebug = false;
+    
     /**
      * @return \Laminas\ServiceManager\ServiceManager
      */
@@ -255,6 +259,26 @@ abstract class AbstractPayment extends AbstractInput
         $this->paymentModelName = $paymentModelName;
     }
     
+    public function getIsSandbox()
+    {
+        return $this->isSandbox;
+    }
+
+    public function setIsSandbox($isSandbox)
+    {
+        $this->isSandbox = $isSandbox;
+    }
+    
+    public function getIsDebug()
+    {
+        return $this->isDebug;
+    }
+
+    public function setIsDebug($isDebug): void
+    {
+        $this->isDebug = $isDebug;
+    }
+    
     public function getParamsValues()
     {
         $return = [];
@@ -307,6 +331,13 @@ abstract class AbstractPayment extends AbstractInput
         }
         
         return $model;
+    }
+    
+    protected function getAllowedParamsValues($params)
+    {
+        $values = $this->getParamsValues();
+        
+        diee($values);
     }
     
     abstract public function isLandingPagePaymentSuccess($params);

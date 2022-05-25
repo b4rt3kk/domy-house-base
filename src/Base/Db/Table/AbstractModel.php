@@ -346,12 +346,25 @@ abstract class AbstractModel
         $cacheKey = $this->getCacheKey($select);
         
         if ($this->getUseCache()) {
+            // @todo należy uprościć, tak żeby nie powtarzać kodu pobierania selectWith
+            $isError = false;
+            
+            try {
+                $item = $storage->getItem($cacheKey);
+            } catch (\Exception $e) {
+                // @todo do ogarnięcia
+                $isError = true;
+            }
+            
             // w przypadku gdy używane jest cache
-            if (empty($storage->getItem($cacheKey))) {
+            if (empty($item) && !$isError) {
                 // cache nie jest jeszcze uzupełniony
                 $data = $this->prepareResultSetForCaching($tableGateway->selectWith($select));
                 
                 $storage->setItem($cacheKey, $data);
+            } else if ($isError) {
+                // w przypadku błędu pobranie z bazy
+                $data = $tableGateway->selectWith($select);
             } else {
                 // dane istnieją w cache, pobranie ich do zwrócenia
                 $data = $storage->getItem($cacheKey);
@@ -404,13 +417,17 @@ abstract class AbstractModel
     {
         $storage = $this->getStorage();
         
-        switch (get_class($storage)) {
-            case \Laminas\Cache\Storage\Adapter\Filesystem::class:
-                $options = $storage->getOptions();
-                /* @var $options \Laminas\Cache\Storage\Adapter\FilesystemOptions */
-                
-                $storage->flush();
-                break;
+        try {
+            switch (get_class($storage)) {
+                case \Laminas\Cache\Storage\Adapter\Filesystem::class:
+                    $options = $storage->getOptions();
+                    /* @var $options \Laminas\Cache\Storage\Adapter\FilesystemOptions */
+
+                    $storage->flush();
+                    break;
+            }
+        } catch (\Exception $e) {
+            // tymczasowo pominięcie błędów czyszczenia cache
         }
     }
     

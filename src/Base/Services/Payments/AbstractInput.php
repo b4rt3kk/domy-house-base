@@ -27,7 +27,7 @@ abstract class AbstractInput
     {
         $normalizedName = $this->getNormalizedName($name);
         $methodName = 'set' . $normalizedName;
-
+        
         if (method_exists($this, $methodName)) {
             $this->{$methodName}($value);
         }
@@ -40,6 +40,34 @@ abstract class AbstractInput
         $data = $this->getData();
 
         return array_key_exists($name, $data) ? $data[$name] : $default;
+    }
+    
+    /**
+     * Pobierz wartości dla parametrów
+     * @return array
+     */
+    public function getParamsData($params = [])
+    {
+        $data = [];
+        $properties = $this->getPropertiesNames();
+        
+        foreach ($properties as $property) {
+            $methodName = 'get' . ucfirst($property);
+            
+            if (method_exists($this, $methodName)) {
+                $value = $this->{$methodName}();
+                
+                if (!empty($params)) {
+                    if (in_array($property, $params)) {
+                        $data[$property] = $value;
+                    }
+                } else {
+                    $data[$property] = $value;
+                }
+            }
+        }
+        
+        return $data;
     }
 
     protected function getPropertiesNames()
