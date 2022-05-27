@@ -476,11 +476,9 @@ class Przelewy24 extends AbstractPayment
         /* @var $adapter \Laminas\Http\Client\Adapter\Curl */
         $adapter->setCurlOption(CURLOPT_POST, 1);
         
-        // wygenerowanie sign
-        $this->setSign($this->getSignString());
-        
         $input = new Przelewy24\TransactionRegister();
         $input->setData($this->getParamsData($params));
+        $input->setSign($input->getSignString(trim($this->getConfigValue('crc'))));
         
         $inputObject = $input->getDataObject();
         
@@ -524,21 +522,22 @@ class Przelewy24 extends AbstractPayment
         $client = $this->getHttpClient();
         $client->setUri($targetUrl . '/api/v1/transaction/verify');
         $client->setHeaders(['Content-Type:application/json']);
+        $client->setMethod(\Laminas\Http\Request::METHOD_PUT);
         
         $adapter = $client->getAdapter();
         /* @var $adapter \Laminas\Http\Client\Adapter\Curl */
         $adapter->setCurlOption(CURLOPT_PUT, 1);
-        
-        // wygenerowanie sign
-        $this->setSign($this->getSignString());
+        $adapter->setCurlOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         
         $input = new Przelewy24\TransactionVerify();
         $input->setData($this->getParamsData($params));
+        $input->setSign($input->getSignString(trim($this->getConfigValue('crc'))));
         
         $inputObject = $input->getDataObject();
         
         // treść przesłanego body
-        $adapter->setCurlOption(CURLOPT_POSTFIELDS, json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        //$adapter->setCurlOption(CURLOPT_POSTFIELDS, json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $client->setRawBody(json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         
         $response = $client->send();
         
@@ -546,7 +545,7 @@ class Przelewy24 extends AbstractPayment
         
         if (!empty($body->error)) {
             if ($this->getIsSandbox()) {
-                throw new \Exception(sprintf("Wystąpił błąd płatności: %s", $body->error));
+                throw new \Exception(sprintf("Wystąpił błąd płatności: %s, %s %s", $body->error, serialize($this->getParamsData($params)), serialize($inputObject)));
             }
             
             throw new \Exception("Wystąpił błąd płatności");
@@ -559,7 +558,7 @@ class Przelewy24 extends AbstractPayment
      * Odbierz dane transakcji
      * @return \Base\Services\Payments\Przelewy24\Notify
      */
-    public function notify()
+    public function getNotify()
     {
         $params = [
             "merchantId",
@@ -577,6 +576,10 @@ class Przelewy24 extends AbstractPayment
         $input = new Przelewy24\Notify();
         $input->setData($this->getParamsData($params));
         
+        if (!$input->validateSign(trim($this->getConfigValue('crc')))) {
+            throw new \Exception("Nieprawidłowa suma kontrolna");
+        }
+        
         return $input;
     }
     
@@ -593,28 +596,6 @@ class Przelewy24 extends AbstractPayment
     public function afterConfirmationDataRecieved()
     {
         ;
-    }
-    
-    /**
-     * Pobierz string dla sumy kontrolnej (sign)
-     * @return sring
-     */
-    public function getSignString()
-    {
-        $sign = [
-            'sessionId' => $this->getSessionId(),
-            'merchantId' => $this->getMerchantId(),
-            'amount' => $this->getAmount(),
-            'currency' => $this->getCurrency(),
-            'crc' => trim($this->getConfigValue('crc')),
-        ];
-        
-        return hash('sha384', json_encode($sign, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    }
-    
-    public function validateSign($signHash)
-    {
-        return $this->getSignString() === $signHash;
     }
     
     /**
@@ -636,6 +617,9 @@ class Przelewy24 extends AbstractPayment
         
         $client = new \Laminas\Http\Client();
         $client->setAdapter($adapter);
+        $client->setOptions([
+            'timeout' => 0,
+        ]);
 
         return $client;
     }

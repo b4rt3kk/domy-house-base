@@ -363,5 +363,27 @@ class TransactionRegister extends AbstractObject
     {
         $this->additional = $additional;
     }
+    
+    /**
+     * Pobierz string dla sumy kontrolnej (sign)
+     * @return sring
+     */
+    public function getSignString($crc)
+    {
+        $sign = [
+            'sessionId' => $this->getSessionId(),
+            'merchantId' => $this->getMerchantId(),
+            'amount' => $this->getAmount(),
+            'currency' => $this->getCurrency(),
+            'crc' => trim($crc),
+        ];
+
+        return hash('sha384', json_encode($sign, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    public function validateSign($crc, $signHash)
+    {
+        return $this->getSignString($crc) === $signHash;
+    }
 }
 

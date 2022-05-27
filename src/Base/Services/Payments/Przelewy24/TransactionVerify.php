@@ -4,19 +4,19 @@ namespace Base\Services\Payments\Przelewy24;
 
 class TransactionVerify extends AbstractObject
 {
-    protected $merchantId;
+    public $merchantId;
     
-    protected $posId;
+    public $posId;
     
-    protected $sessionId;
+    public $sessionId;
     
-    protected $amount;
+    public $amount;
     
-    protected $currency;
+    public $currency;
     
-    protected $orderId;
+    public $orderId;
     
-    protected $sign;
+    public $sign;
     
     public function getMerchantId()
     {
@@ -86,6 +86,28 @@ class TransactionVerify extends AbstractObject
     public function setSign($sign): void
     {
         $this->sign = $sign;
+    }
+    
+    /**
+     * Pobierz string dla sumy kontrolnej (sign)
+     * @return sring
+     */
+    public function getSignString($crc)
+    {
+        $sign = [
+            'sessionId' => $this->getSessionId(),
+            'orderId' => $this->getOrderId(),
+            'amount' => $this->getAmount(),
+            'currency' => $this->getCurrency(),
+            'crc' => trim($crc),
+        ];
+        
+        return hash('sha384', json_encode($sign, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    public function validateSign($crc, $signHash)
+    {
+        return $this->getSignString($crc) === $signHash;
     }
 }
 

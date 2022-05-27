@@ -8,7 +8,7 @@ class File extends \Base\Logger\Driver\AbstractDriver
     
     protected $fileName;
     
-    protected $maxFileSize = 1024 * 10;
+    protected $maxFileSize = 1024 * 1000;
     
     public function getLogsDir()
     {

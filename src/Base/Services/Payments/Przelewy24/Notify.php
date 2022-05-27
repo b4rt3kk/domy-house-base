@@ -123,5 +123,30 @@ class Notify extends AbstractObject
     {
         $this->sign = $sign;
     }
+    
+    public function getSignString($crc)
+    {
+        $sign = [
+            'merchantId' => $this->getMerchantId(),
+            'posId' => $this->getPosId(),
+            'sessionId' => $this->getSessionId(),
+            'amount' => $this->getAmount(),
+            'originAmount' => $this->getOriginAmount(),
+            'currency' => $this->getCurrency(),
+            'orderId' => $this->getOrderId(),
+            'methodId' => $this->getMethodId(),
+            'statement' => $this->getStatement(),
+            'crc' => $crc,
+        ];
+
+        return hash('sha384', json_encode($sign, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+    
+    public function validateSign($crc)
+    {
+        $sign = $this->getSignString($crc);
+        
+        return $sign === $this->getSign();
+    }
 }
 
