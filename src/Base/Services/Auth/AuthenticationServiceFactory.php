@@ -26,6 +26,13 @@ abstract class AuthenticationServiceFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $sessionManager = $container->get(SessionManager::class);
+        /* @var $sessionManager SessionManager */
+        
+        if (!$sessionManager->isValid()) {
+            // jeśli sesja nie jest poprawna (np. zmieniły się parametry przeglądarki)
+            $sessionManager->destroy();
+        }
+        
         $authStorage = new SessionStorage('Laminas_Auth', 'session', $sessionManager);
         $authAdapter = new AuthAdapter();
         /* @var $authAdapter AuthAdapter */
