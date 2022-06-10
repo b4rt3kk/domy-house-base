@@ -36,6 +36,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     
     protected $paginatorId;
     
+    protected $arrayObjectPrototype;
+    
     public function init()
     {
         $this->initSelect();
@@ -204,6 +206,15 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         $this->paginatorId = $paginatorId;
     }
 
+    public function getArrayObjectPrototype()
+    {
+        return $this->arrayObjectPrototype;
+    }
+
+    public function setArrayObjectPrototype($arrayObjectPrototype)
+    {
+        $this->arrayObjectPrototype = $arrayObjectPrototype;
+    }
         
     /**
      * Pobierz liczbę stron paginatora
@@ -375,6 +386,19 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         }
         
         $model = $this->getServiceManager()->get($modelName);
+        /* @var $model \Base\Db\Table\AbstractModel */
+        
+        $prototype = $this->getArrayObjectPrototype();
+        
+        if (!empty($prototype)) {
+            $prototypeClass = new $prototype();
+            
+            if (!$prototypeClass instanceof \Base\Db\Table\AbstractEntity) {
+                throw new \Exception(sprintf("Klasa %s musi dziedziczyć po %s", $prototype, \Base\Db\Table\AbstractEntity::class));
+            }
+            
+            $model->setArrayObjectPrototype($prototype);
+        }
         
         if (!$model instanceof Db\Table\AbstractModel) {
             throw new \Exception(sprintf('Model have to extend %s class', Db\Table\AbstractModel::class));

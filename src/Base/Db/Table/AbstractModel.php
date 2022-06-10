@@ -168,6 +168,19 @@ abstract class AbstractModel
         $this->sequenceName = $sequenceName;
     }
     
+    public function setArrayObjectPrototype($entity)
+    {
+        if (is_string($entity)) {
+            $entity = new $entity();
+        }
+        
+        if (!$entity instanceof \Base\Db\Table\AbstractEntity) {
+            throw new \Exception(sprintf("Obiekt entity musi dziedziczyć po %s", AbstractEntity::class));
+        }
+        
+        $this->getTableGateway()->getResultSetPrototype()->setArrayObjectPrototype($entity);
+    }
+    
     /**
      * Create table row and returns its id
      * @param \Base\Db\Table\AbstractEntity $entity
