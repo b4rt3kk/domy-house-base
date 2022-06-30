@@ -46,10 +46,14 @@ abstract class AbstractLogic implements LogicInterface
         $charsToReplace = 'ęóąśłżźćń';
         $charsReplacements = 'eoaslzzcn';
         
-        $return = mb_strtolower(preg_replace("#\s#", $separator, trim($name)), 'UTF-8');
+        // zamiania wszystkich białych znaków na separator
+        $return = mb_strtolower(preg_replace("#\s+#", $separator, trim($name)), 'UTF-8');
         
         // zamiana polskich znaków
         $return = str_replace(mb_str_split($charsToReplace, 1, 'UTF-8'), str_split($charsReplacements), $return);
+        
+        // wyrzucenie wszystkich niedozwolonych znaków
+        $return = preg_replace(sprintf("#[^A-Za-z0-9\%s]#", $separator), '', $return);
         
         return $return;
     }

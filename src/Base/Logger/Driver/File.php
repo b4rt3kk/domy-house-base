@@ -62,8 +62,8 @@ class File extends \Base\Logger\Driver\AbstractDriver
             $fileSize = filesize($fileDir);
             
             if ($fileSize > $maxFileSize) {
-                if (!$this->moveFileToArchieve($fileName)) {
-                    throw new \Exception(sprintf("Nie udało się zarchiwizować pliku %s", $fileName));
+                if (!$this->moveFileToArchieve($fileDir)) {
+                    throw new \Exception(sprintf("Nie udało się zarchiwizować pliku %s", $fileDir));
                 }
             }
         }

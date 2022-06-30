@@ -31,6 +31,8 @@ abstract class AbstractForm extends \Laminas\Form\Form
     
     protected $csrfTimeout = 600;
     
+    protected $cancelUrl;
+    
     protected $specialElementsTypes = [
         \Laminas\Form\Element\Csrf::class,
     ];
@@ -85,6 +87,16 @@ abstract class AbstractForm extends \Laminas\Form\Form
     public function setSpecialElementsTypes($specialElementsTypes)
     {
         $this->specialElementsTypes = $specialElementsTypes;
+    }
+    
+    public function getCancelUrl()
+    {
+        return $this->cancelUrl;
+    }
+
+    public function setCancelUrl($cancelUrl)
+    {
+        $this->cancelUrl = $cancelUrl;
     }
     
     /**
