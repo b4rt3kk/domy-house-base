@@ -39,6 +39,8 @@ class AuthAdapter implements AdapterInterface
     
     protected $passwordColumnName = 'password';
     
+    protected $isVirtualColumnName = 'is_virtual';
+    
     protected $cryptClass = \Laminas\Crypt\Password\Bcrypt::class;
     
     protected $callables = [];
@@ -142,6 +144,16 @@ class AuthAdapter implements AdapterInterface
         $this->passwordColumnName = $passwordColumnName;
     }
     
+    public function getIsVirtualColumnName()
+    {
+        return $this->isVirtualColumnName;
+    }
+
+    public function setIsVirtualColumnName($isVirtualColumnName)
+    {
+        $this->isVirtualColumnName = $isVirtualColumnName;
+    }
+
     public function getRowPreConditions()
     {
         return $this->rowPreConditions;
@@ -305,6 +317,16 @@ class AuthAdapter implements AdapterInterface
                     return $result;
                 }
             }
+        }
+        
+        if ($rowUser->{$this->getIsVirtualColumnName()}) {
+            // użytkownik wirtualny/systemowy
+            // taki użytkownik nie powinien posiadać żadnych ról, nie ma hasła, 
+            // więc nie powinien mieć żadnych uprawnień
+            $result = new Result(Result::SUCCESS, $rowUser, ['Authenticated successfully']);
+            $this->callEvent(self::EVENT_LOGIN_SUCCESS);
+            
+            return $result;
         }
         
         $crypt = $this->getCrypt();

@@ -9,6 +9,8 @@ class AuthManager extends AbstractLogic
     const ACCESS_DENIED = 'access_denied';
     const AUTH_REQUIRED = 'auth_required';
     
+    const DEFAULT_VIRTUAL_USER = 'System';
+    
     /**
      * Pobierz route dla przekierowania po zalogowaniu
      * @return \Laminas\Router\Http\RouteMatch|null

@@ -111,6 +111,8 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     {
         $isDebug = $this->getIsDebug();
         $isTestMode = $this->getIsTestMode();
+        // zalogowanie jako domyślny użytkownik wirtualny
+        $this->loginAsVirtualUser();
         
         if ($isDebug) {
             // włącz raportowanie błędów
@@ -335,6 +337,24 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     {
         error_reporting(E_ALL);
         ini_set("display_errors", '1');
+    }
+    
+    /**
+     * Zaloguj się jako użytkownik wirtualny
+     * @param string $login Nazwa użytkownika wirtualnego
+     */
+    protected function loginAsVirtualUser($login = \Base\Services\Auth\AuthManager::DEFAULT_VIRTUAL_USER)
+    {
+        $authManager = $this->getServiceManager()->get(\Base\Services\Auth\AuthManager::class);
+        /* @var $authManager \Base\Services\Auth\AuthManager */
+        $authenticationService = $this->getServiceManager()->get(\Laminas\Authentication\AuthenticationService::class);
+        /* @var $authenticationService \Laminas\Authentication\AuthenticationService */
+        $adapter = $authenticationService->getAdapter();
+        /* @var $adapter \Base\Services\Auth\AuthAdapter */
+        
+        $authManager->login([
+            $adapter->getLoginColumnName() => $login,
+        ]);
     }
     
     /**
