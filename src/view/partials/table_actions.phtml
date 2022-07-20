@@ -10,7 +10,7 @@ foreach ($actions as $action) {
     if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
         $showedPages[] = $page->getHref();
         
-        echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary">';
+        echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary" ' . $page->getAttributesAsString() . '>';
         echo $page->getLabel();
         echo '</a>&nbsp;';
     }

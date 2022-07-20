@@ -23,6 +23,8 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     
     protected $attributes = [];
     
+    protected $htmlTitle;
+    
     public function __construct($options = null)
     {
         if (array_key_exists('row', $options)) {
@@ -53,6 +55,16 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         parent::__construct($options);
     }
     
+    public function getHtmlTitle()
+    {
+        return $this->htmlTitle;
+    }
+
+    public function setHtmlTitle($htmlTitle)
+    {
+        $this->htmlTitle = $htmlTitle;
+    }
+
     public function getAttributesString()
     {
         return $this->attributesString;

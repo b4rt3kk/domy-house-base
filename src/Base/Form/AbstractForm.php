@@ -12,7 +12,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     const UPLOAD_ERR_CANT_WRITE = 7;
     const UPLOAD_ERR_EXTENSION = 8;
     
-    protected $phpFileUploadErrors = [
+    public static $phpFileUploadErrors = [
         self::UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
         self::UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
         self::UPLOAD_ERR_FORM_SIZE => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
