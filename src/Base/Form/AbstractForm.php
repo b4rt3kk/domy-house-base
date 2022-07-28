@@ -100,6 +100,25 @@ abstract class AbstractForm extends \Laminas\Form\Form
     }
     
     /**
+     * Ustaw url powrotu na podstawie parametrów route
+     * @param string $name
+     * @param array $params
+     * @param array $options
+     * @param boolean $reuseMatchedParams
+     */
+    public function setCancelRoute($name = null, $params = [], $options = [], $reuseMatchedParams = false)
+    {
+        $manager = $this->getServiceManager()->get('ViewHelperManager');
+        /* @var $m \Laminas\View\HelperPluginManager */
+        $plugin = $manager->get('url');
+        /* @var $plugin \Laminas\View\Helper\Url */
+        
+        $url = $plugin($name, $params, $options, $reuseMatchedParams);
+        
+        $this->setCancelUrl($url);
+    }
+    
+    /**
      * Pobierz specjalne elementy formularza
      * @return \Laminas\Form\Element[]
      */
@@ -287,9 +306,14 @@ abstract class AbstractForm extends \Laminas\Form\Form
     protected function cancel($value = 'Cancel', $options = [])
     {
         $options['name'] = 'cancel_form';
-        $options['attributes'] = [
-            'class' => 'btn btn-secondary',
-        ];
+        
+        if (!empty($options['attributes']['class'])) {
+            $options['attributes']['class'] = 'btn form-button-cancel ' . $options['attributes']['class'];
+        } else {
+            $options['attributes']['class'] = 'btn btn-secondary form-button-cancel';
+        }
+        
+        $options['attributes']['data-cancel-url'] = $this->getCancelUrl();
         
         $this->submit($value, $options);
     }
