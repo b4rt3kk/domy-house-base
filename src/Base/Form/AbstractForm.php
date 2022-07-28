@@ -108,14 +108,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
      */
     public function setCancelRoute($name = null, $params = [], $options = [], $reuseMatchedParams = false)
     {
-        $manager = $this->getServiceManager()->get('ViewHelperManager');
-        /* @var $m \Laminas\View\HelperPluginManager */
-        $plugin = $manager->get('url');
-        /* @var $plugin \Laminas\View\Helper\Url */
-        
-        $url = $plugin($name, $params, $options, $reuseMatchedParams);
-        
-        $this->setCancelUrl($url);
+        $this->setCancelUrl($this->getUrlFromRoute($name, $params, $options, $reuseMatchedParams));
     }
     
     /**
@@ -318,6 +311,23 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $this->submit($value, $options);
     }
     
+    protected function actionUrlButton($value, $options = [])
+    {
+        if (empty($options['url'])) {
+            throw new \Exception("Url przekierowania nie może być puste");
+        }
+        
+        $options['attributes']['data-url'] = $options['url'];
+        
+        if (!empty($options['attributes']['class'])) {
+            $options['attributes']['class'] = 'btn form-button-direct_url ' . $options['attributes']['class'];
+        } else {
+            $options['attributes']['class'] = 'btn btn-primary form-button-direct_url';
+        }
+        
+        $this->submit($value, $options);
+    }
+    
     protected function clear($value = 'Clear', $options = [])
     {
         $options['name'] = 'clear_form';
@@ -331,5 +341,24 @@ abstract class AbstractForm extends \Laminas\Form\Form
     protected function addClearStart($values, $label = '-- wybierz --')
     {
         return ['' => $label] + $values;
+    }
+    
+    /**
+     * Wygeneruj url string na podstawie parametrów route
+     * @param string $name
+     * @param array $params
+     * @param array $options
+     * @param boolean $reuseMatchedParams
+     */
+    protected function getUrlFromRoute($name = null, $params = [], $options = [], $reuseMatchedParams = false)
+    {
+        $manager = $this->getServiceManager()->get('ViewHelperManager');
+        /* @var $m \Laminas\View\HelperPluginManager */
+        $plugin = $manager->get('url');
+        /* @var $plugin \Laminas\View\Helper\Url */
+        
+        $url = $plugin($name, $params, $options, $reuseMatchedParams);
+        
+        return $url;
     }
 }
