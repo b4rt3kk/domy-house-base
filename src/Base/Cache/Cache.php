@@ -30,6 +30,13 @@ class Cache extends \Base\Logic\AbstractLogic
         return $storage->getItem($name);
     }
     
+    public function hasItem($name)
+    {
+        $item = $this->getItem($name);
+        
+        return !empty($item);
+    }
+    
     /**
      * Pobierz adapter cache
      * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
