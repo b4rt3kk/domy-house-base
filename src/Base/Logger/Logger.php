@@ -48,7 +48,7 @@ class Logger extends \Base\Logic\AbstractLogic
         return $return;
     }
     
-    public function logMessage($message, $messageType, $additionalData = [])
+    public function logMessage($message, $messageType = \Base\Logger\Logger::MESSAGE_INFO, $additionalData = [])
     {
         $drivers = $this->getDrivers();
         

@@ -55,37 +55,37 @@ class TransactionVerify extends AbstractObject
 
     public function setMerchantId($merchantId): void
     {
-        $this->merchantId = $merchantId;
+        $this->merchantId = (int) $merchantId;
     }
 
     public function setPosId($posId): void
     {
-        $this->posId = $posId;
+        $this->posId = (int) $posId;
     }
 
     public function setSessionId($sessionId): void
     {
-        $this->sessionId = $sessionId;
+        $this->sessionId = (string) $sessionId;
     }
 
     public function setAmount($amount): void
     {
-        $this->amount = $amount;
+        $this->amount = (int) $amount;
     }
 
     public function setCurrency($currency): void
     {
-        $this->currency = $currency;
+        $this->currency = (string) $currency;
     }
 
     public function setOrderId($orderId): void
     {
-        $this->orderId = $orderId;
+        $this->orderId = (int) $orderId;
     }
 
     public function setSign($sign): void
     {
-        $this->sign = $sign;
+        $this->sign = (string) $sign;
     }
     
     /**

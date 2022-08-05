@@ -507,6 +507,8 @@ class Przelewy24 extends AbstractPayment
      */
     public function transactionVerify()
     {
+        $logger = $this->getServiceManager()->get(\Base\Logger\Logger::class);
+        /* @var $logger \Base\Logger\Logger */
         $targetUrl = $this->getConfigValue('target_url');
         
         $params = [
@@ -519,6 +521,8 @@ class Przelewy24 extends AbstractPayment
             'sign',
         ];
         
+        $logger->logMessage("VERIFY TARGET URL " . $targetUrl . '/api/v1/transaction/verify');
+        
         $client = $this->getHttpClient();
         $client->setUri($targetUrl . '/api/v1/transaction/verify');
         $client->setHeaders(['Content-Type:application/json']);
@@ -526,8 +530,9 @@ class Przelewy24 extends AbstractPayment
         
         $adapter = $client->getAdapter();
         /* @var $adapter \Laminas\Http\Client\Adapter\Curl */
-        $adapter->setCurlOption(CURLOPT_PUT, 1);
+        $adapter->setCurlOption(CURLOPT_POST, true);
         $adapter->setCurlOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        $adapter->setCurlOption(CURLOPT_CUSTOMREQUEST, \Laminas\Http\Request::METHOD_PUT);
         
         $input = new Przelewy24\TransactionVerify();
         $input->setData($this->getParamsData($params));
@@ -535,11 +540,19 @@ class Przelewy24 extends AbstractPayment
         
         $inputObject = $input->getDataObject();
         
+        $logger->logMessage("VERIFY OBJECT " . serialize($inputObject));
+        
+        $adapter->setCurlOption(CURLOPT_POSTFIELDS, json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        
         // treść przesłanego body
         //$adapter->setCurlOption(CURLOPT_POSTFIELDS, json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         $client->setRawBody(json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         
         $response = $client->send();
+        
+        $logger->logMessage("VERIFY OBJECT REQUEST " . serialize($client->getLastRawRequest()));
+        $logger->logMessage("VERIFY OBJECT RESPONSE " . serialize($response));
+        $logger->logMessage("VERIFY OBJECT STATUS " . $response->getStatusCode());
         
         $body = json_decode($response->getBody());
         
@@ -622,5 +635,64 @@ class Przelewy24 extends AbstractPayment
         ]);
 
         return $client;
+    }
+    
+    public function rawCurlTransactionVerify()
+    {
+        $logger = $this->getServiceManager()->get(\Base\Logger\Logger::class);
+        /* @var $logger \Base\Logger\Logger */
+        
+        $user = $this->getConfigValue('merchant_id');
+        $password = $this->getConfigValue('secret_id');
+        
+        $params = [
+            'merchantId',
+            'posId',
+            'sessionId',
+            'amount',
+            'currency',
+            'orderId',
+            'sign',
+        ];
+        
+        $targetUrl = $this->getConfigValue('target_url') . '/api/v1/transaction/verify';
+
+        $curl = curl_init($targetUrl);
+        curl_setopt($curl, CURLOPT_URL, $targetUrl);
+        //curl_setopt($curl, CURLOPT_PUT, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        $headers = [
+            "Content-Type: application/json",
+        ];
+        
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_USERPWD, "{$user}:{$password}");
+        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_setopt($curl, CURLOPT_POST, true);
+        
+        $input = new Przelewy24\TransactionVerify();
+        $input->setData($this->getParamsData($params));
+        $input->setSign($input->getSignString(trim($this->getConfigValue('crc'))));
+        
+        $inputObject = $input->getDataObject();
+
+        $data = json_encode($inputObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+        $resp = curl_exec($curl);
+        
+        //var_dump(curl_error($curl), curl_errno($curl));
+        
+        curl_close($curl);
+        
+        $logger->logMessage("RESPONSE " . serialize($resp));
     }
 }
