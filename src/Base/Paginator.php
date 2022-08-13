@@ -38,6 +38,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     
     protected $arrayObjectPrototype;
     
+    protected $sortingOptions = [];
+    
     public function init()
     {
         $this->initSelect();
@@ -211,11 +213,29 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         return $this->arrayObjectPrototype;
     }
 
+    /**
+     * Ustaw prototyp, z którego będą pobierane dane kolumn oraz akcje kolumn dla modelu
+     * @param type $arrayObjectPrototype
+     */
     public function setArrayObjectPrototype($arrayObjectPrototype)
     {
         $this->arrayObjectPrototype = $arrayObjectPrototype;
     }
-        
+    
+    /**
+     * Pobierz tablicę zawierającą dostępne opcje sortowania
+     * @return array
+     */
+    public function getSortingOptions()
+    {
+        return $this->sortingOptions;
+    }
+
+    public function setSortingOptions($sortingOptions): void
+    {
+        $this->sortingOptions = $sortingOptions;
+    }
+     
     /**
      * Pobierz liczbę stron paginatora
      * @return integer
