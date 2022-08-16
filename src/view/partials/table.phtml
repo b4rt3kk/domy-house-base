@@ -8,6 +8,10 @@ $headersMapping = $prototype->getHeadersMapping();
 $rowActions = $prototype->getRowActions();
 $rowDictionaries = $prototype->getDictionaries();
 
+if (empty($table_actions_partial)) {
+    $table_actions_partial = $prototype->getActionsPartial();
+}
+
 $dictionaries = [];
 
 foreach ($rowDictionaries as $key => $rowDictionary) {
@@ -93,7 +97,7 @@ foreach ($data as $row) {
     
     if (!empty($rowActions)) {
         echo '<td class="text-nowrap">';
-        echo $this->partial($prototype->getActionsPartial(), ['actions' => $rowActions, 'row' => $row]);
+        echo $this->partial($table_actions_partial, ['actions' => $rowActions, 'row' => $row]);
         echo '</td>';
     }
     

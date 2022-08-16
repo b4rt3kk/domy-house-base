@@ -40,6 +40,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     
     protected $sortingOptions = [];
     
+    protected $tableActionsPartial;
+    
     public function init()
     {
         $this->initSelect();
@@ -234,6 +236,16 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     public function setSortingOptions($sortingOptions): void
     {
         $this->sortingOptions = $sortingOptions;
+    }
+    
+    public function getTableActionsPartial()
+    {
+        return $this->tableActionsPartial;
+    }
+
+    public function setTableActionsPartial($tableActionsPartial): void
+    {
+        $this->tableActionsPartial = $tableActionsPartial;
     }
      
     /**

@@ -8,6 +8,7 @@ if ($paginator instanceof \Base\Paginator) {
     $ajaxUrl = $paginator->getAjaxUrl();
     $storageContainerName = $paginator->getStorageContainerName();
     $paginatorId = $paginator->getPaginatorId();
+    $tableActionsPartial = $paginator->getTableActionsPartial();
     
     $form = $paginator->getFilterForm();
     
@@ -31,6 +32,7 @@ if ($paginator instanceof \Base\Paginator) {
             'headers' => $paginator->getHeaders(),
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
             'responsive' => $paginator->getIsResponsive(),
+            'table_actions_partial' => $tableActionsPartial,
         ]);
         
         echo '</div>';
