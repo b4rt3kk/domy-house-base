@@ -6,7 +6,7 @@ class Iterator implements \Iterator
 {
     protected $position = 0;
     
-    protected $data;
+    protected $data = [];
     
     public function add($item)
     {
@@ -40,6 +40,6 @@ class Iterator implements \Iterator
     
     public function count()
     {
-        return sizeof($this->data);
+        return is_countable($this->data) ? sizeof($this->data) : 0;
     }
 }
