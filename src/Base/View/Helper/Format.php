@@ -8,6 +8,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_TRUNCATE = 'truncate';
     const FORMAT_TEXT_TRUNCATE = 'text_truncate';
     const FORMAT_CURRENCY = 'currency';
+    const FORMAT_CURRENCY_WITH_SYMBOL = 'currency_with_symbol';
     const FORMAT_BYTE_FILE_SIZE = 'file_size';
     const FORMAT_TIME_LEFT = 'time_left';
     const FORMAT_DOWNLOAD_URL = 'download_url';
@@ -17,6 +18,8 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     public function format($format, $value, $params = [])
     {
         $return = null;
+        
+        $config = \Base\Config\Config::getInstance();
         
         switch ($format) {
             case self::FORMAT_DATE_TIME:
@@ -47,6 +50,11 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             case self::FORMAT_CURRENCY:
                 if (!empty($value)) {
                     $return = number_format($value, 2, '.', ' ');
+                }
+                break;
+            case self::FORMAT_CURRENCY_WITH_SYMBOL:
+                if (!empty($value)) {
+                    $return = number_format($value, 2, '.', ' ') . ' ' . $config->getVariable('currency_symbol');
                 }
                 break;
             case self::FORMAT_BYTE_FILE_SIZE:
