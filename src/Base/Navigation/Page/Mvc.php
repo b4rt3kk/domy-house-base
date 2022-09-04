@@ -277,13 +277,21 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     {
         $return = [];
         $params = isset($options['params']) ? $options['params'] : [];
+        $aliases = isset($options['aliases']) ? $options['aliases'] : [];
         $row = $this->getRow();
         
         foreach ($params as $name => $value) {
-            $return[$name] = $value;
+            $paramValue = $value;
             
             if (null === $value) {
-                $return[$name] = $row->{$name};
+                $paramValue = $row->{$name};
+            }
+            
+            if (isset($aliases[$name])) {
+                // istnieje alias dla tego parametru
+                $return[$aliases[$name]] = $paramValue;
+            } else {
+                $return[$name] = $paramValue;
             }
         }
         

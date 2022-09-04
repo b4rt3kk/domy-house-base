@@ -86,7 +86,7 @@ class Przelewy24 extends AbstractPayment
 
     public function getSessionId()
     {
-        return $this->sessionId;
+        return (string) $this->sessionId;
     }
 
     public function getAmount()
