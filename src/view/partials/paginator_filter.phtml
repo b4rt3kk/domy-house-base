@@ -5,14 +5,27 @@ $id = 'paginator_filter_' . str_replace('\\', '_', get_class($form));
 $filterData = $paginator->getFilterData();
 ?>
 <?php if ($form instanceof Base\Form\AbstractForm) : ?>
+<?php 
+$isFilteringActive = false;
+
+$formElements = $form->getElements();
+
+// sprawdzenie czy klucz tablicy filter data jest tożsamy z nazwą elementu z elementów formularza filtra paginatora
+foreach ($formElements as $element) {
+    /* @var $element \Laminas\Form\Element */
+    if (in_array($element->getName(), array_keys($filterData))) {
+        $isFilteringActive = true;
+    }
+}
+?>
 <div class="accordion">
   <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo $id; ?>" aria-expanded="false" aria-controls="<?php echo $id; ?>">
-        Filtr wyszukiwania <?php echo !empty($filterData) ? '&nbsp;<strong>[Tak]</strong>' : ''; ?>
+      <button class="accordion-button <?php echo $form->isValid() ? "collapsed" : null; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo $id; ?>" aria-expanded="false" aria-controls="<?php echo $id; ?>">
+        Filtr wyszukiwania <?php echo !empty($isFilteringActive) ? '&nbsp;<strong>[Tak]</strong>' : ''; ?>
       </button>
     </h2>
-    <div id="<?php echo $id; ?>" class="accordion-collapse collapse">
+    <div id="<?php echo $id; ?>" class="accordion-collapse collapse <?php echo !$form->isValid() ? "show" : null; ?>">
       <div class="accordion-body">
         <?php echo $this->partial('base/form', ['form' => $form]); ?>
       </div>
