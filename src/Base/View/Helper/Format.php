@@ -14,6 +14,7 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_DOWNLOAD_URL = 'download_url';
     const FORMAT_IP_GEOLOCATION = 'ip_geolocation';
     const FORMAT_IMAGE_MINIATURE = 'image_miniature';
+    const FORMAT_PHONE_NUMBER = 'phone_number';
     
     public function format($format, $value, $params = [])
     {
@@ -77,6 +78,20 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             case self::FORMAT_IMAGE_MINIATURE:
                 if (!empty($value)) {
                     $return = '<img src="/home/image/' . $value . '" alt="No image" width="200" />';
+                }
+                break;
+            case self::FORMAT_PHONE_NUMBER:
+                $phoneNumber = preg_replace("#[^0-9]+#", '', $value);
+                
+                $number = substr($phoneNumber, -9);
+                $prefix = substr($phoneNumber, 0, strpos($phoneNumber, $number));
+                
+                if (strlen($phoneNumber) > 9) {
+                    $tmp = str_split($number, 3);
+                    $return = '+' . $prefix . ' ' . implode(' ', $tmp);
+                } else {
+                    $tmp = str_split($number, 3);
+                    $return = implode(' ', $tmp);
                 }
                 break;
             default:
