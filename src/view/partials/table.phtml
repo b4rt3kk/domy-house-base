@@ -7,6 +7,10 @@ $index = isset($index) ? $index : 1;
 $headersMapping = $prototype->getHeadersMapping();
 $rowActions = $prototype->getRowActions();
 $rowDictionaries = $prototype->getDictionaries();
+$sort = isset($sort) ? $sort : [];
+$ajaxUrl = isset($ajax_url) ? $ajax_url : null;
+$ajaxParams = isset($ajax_params) ? $ajax_params : json_encode([]);
+$tableId = isset($table_id) ? $table_id : uniqid();
 
 if (empty($table_actions_partial)) {
     $table_actions_partial = $prototype->getActionsPartial();
@@ -50,14 +54,32 @@ if ($responsive) {
     echo '<div class="table-responsive">';
 }
 
-echo '<table class="table">';
+echo '<table class="table" id="' . $tableId . '">';
 echo '<thead class="table-light">';
 echo '<tr>';
 echo '<th class="fw-bold">#</th>';
 
 foreach ($headers as $header) {
-    echo '<th class="fw-bold">';
-    echo $headersMapping[$header]['title'];
+    echo '<th class="fw-bold ' . (!empty($headersMapping[$header]['sortable']) ? 'sortable' : null) . '" data-column_name="' . $header . '">';
+    
+    if (!empty($headersMapping[$header]['sortable'])) {
+        echo '<a href="#"> '; 
+        
+        if ($sort[$header] === 'ASC') {
+            echo '<i class="fa fa-sort-up"></i> ';
+        } else if ($sort[$header] === 'DESC') {
+            echo '<i class="a fa-sort-down"></i> ';
+        } else {
+            echo '<i class="fa fa-sort"></i> ';
+        }
+        
+        echo $headersMapping[$header]['title'] . ' ';
+        
+        echo '</a>';
+    } else {
+        echo $headersMapping[$header]['title'];
+    }
+    
     echo '</th>';
 }
 
@@ -111,3 +133,30 @@ echo '</table>';
 if ($responsive) {
     echo '</div>';
 }
+
+$this->inlineScript()->captureStart();
+echo <<<"JS"
+    let ajaxUrl = "{$ajaxUrl}";
+    let ajaxParams = $.parseJSON('{$ajaxParams}');
+
+    $('#{$tableId}').find('thead th.sortable a').each(function() {
+        $(this).on("click", function() {
+           let columnName = $(this).closest('th').attr('data-column_name');
+           let data = ajaxParams;
+    
+           data['columnName'] = columnName;
+    
+           $.ajax({
+               url: ajaxUrl,
+               type: "POST",
+               data: data,
+               success: function(response) {
+                   window.location.reload(true);
+               }
+           });
+    
+           return false;
+        });
+    });
+JS;
+    $this->inlineScript()->captureEnd();

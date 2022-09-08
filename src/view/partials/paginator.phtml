@@ -33,6 +33,9 @@ if ($paginator instanceof \Base\Paginator) {
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
             'responsive' => $paginator->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
+            'ajax_url' => $ajaxUrl,
+            'ajax_params' => json_encode(['paginatorId' => $paginatorId]),
+            'sort' => $paginator->getSortingData(),
         ]);
         
         echo '</div>';

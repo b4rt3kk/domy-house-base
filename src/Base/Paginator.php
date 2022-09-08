@@ -40,6 +40,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     
     protected $sortingOptions = [];
     
+    protected $defaultSorting = [];
+    
     protected $tableActionsPartial;
     
     public function init()
@@ -238,6 +240,16 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         $this->sortingOptions = $sortingOptions;
     }
     
+    public function getDefaultSorting()
+    {
+        return $this->defaultSorting;
+    }
+
+    public function setDefaultSorting(array $defaultSorting)
+    {
+        $this->defaultSorting = $defaultSorting;
+    }
+
     public function getTableActionsPartial()
     {
         return $this->tableActionsPartial;
@@ -328,12 +340,20 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         
         $itemsPerPage = $this->getItemsPerPage();
         $currentPage = $this->getCurrentPage();
+        $sortingData = $this->getSortingData();
+        $defaultSorting = $this->getDefaultSorting();
         
         $model = $this->getModel();
         $select = clone $this->getSelect();
         
         $select->limit($itemsPerPage)
                 ->offset(($currentPage - 1) * $itemsPerPage);
+        
+        if (!empty($sortingData)) {
+            $select->order($sortingData);
+        } else if (!empty($defaultSorting)) {
+            $select->order($defaultSorting);
+        }
         
         $microtime = microtime(true);
         
@@ -382,6 +402,23 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         
         foreach ($container as $key => $value) {
             $return[$key] = $value;
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Pobierz dane sortowania w postaci tablicy, gdzie kluczem jest nazwa kolumny, a wartością kolejność sortowania ASC lub DESC
+     * @return array
+     */
+    public function getSortingData()
+    {
+        $return = [];
+        
+        $filterData = $this->getFilterData();
+        
+        if (isset($filterData['sort'])) {
+            $return = $filterData['sort'];
         }
         
         return $return;
