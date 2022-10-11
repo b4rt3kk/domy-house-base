@@ -1,5 +1,5 @@
+<div class="base-navigation">
 <?php
-
 foreach ($navigation as $page) {
     $page = new \Base\Navigation\Page\Mvc(array_merge($page, [
         'serviceManager' => $this->serviceManager(),
@@ -13,3 +13,5 @@ foreach ($navigation as $page) {
         echo '</a>&nbsp;';
     }
 }
+?>
+</div>
