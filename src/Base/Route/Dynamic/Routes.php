@@ -171,4 +171,23 @@ class Routes
         
         return $return;
     }
+    
+    /**
+     * Wyszukaj Route na podstawie przekazanego stringa oraz parametrów.
+     * W przypadku przekazaniu w parametrach klucza o nazwie `parents` sprawdzane są dodatkowo wartości pod kątem zgodności z wskazanymi wartościami parents
+     * @param string $routeString String, który jest pełną ścieżką z podstawionymi wartościami, na podstawie której zostanie wyszukane odpowiednie Route
+     * @param array $params
+     * @return RouteMatch
+     */
+    public function matchRoute($routeString, $params = [])
+    {
+        $routeMatch = new RouteMatch();
+        
+        return $routeMatch->match($routeString, $params);
+    }
+    
+    public function assembleRoute($params)
+    {
+        
+    }
 }

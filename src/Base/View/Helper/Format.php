@@ -15,6 +15,8 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_IP_GEOLOCATION = 'ip_geolocation';
     const FORMAT_IMAGE_MINIATURE = 'image_miniature';
     const FORMAT_PHONE_NUMBER = 'phone_number';
+    const FORMAT_HIDDEN_EMAIL = 'hidden_email';
+    const FORMAT_HIDDEN_PHONE_NUMBER = 'hidden_phone_number';
     
     public function format($format, $value, $params = [])
     {
@@ -93,6 +95,24 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                     $tmp = str_split($number, 3);
                     $return = implode(' ', $tmp);
                 }
+                break;
+            case self::FORMAT_HIDDEN_PHONE_NUMBER:
+                $phoneNumber = preg_replace("#[^0-9]+#", '', $value);
+                $part = substr($phoneNumber, -4);
+                $number = "*****" . $part;
+                
+                $tmp = str_split($number, 3);
+                
+                $return = implode(' ', $tmp);
+                break;
+            case self::FORMAT_HIDDEN_EMAIL:
+                $chunks = explode('@', $value);
+                $return  = $chunks[0][0];
+                $return .= '***';
+                $return .= $chunks[0][strlen($chunks[0]) - 1];
+                $return .= '@';
+                $return .= $chunks[1];
+                
                 break;
             default:
                 $return = $value;
