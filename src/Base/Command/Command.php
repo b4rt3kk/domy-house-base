@@ -37,6 +37,11 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     protected $isDebug = false;
     
     protected $isTestMode = false;
+    
+    /**
+     * @var \Base\Logger\Logger
+     */
+    protected $logger;
 
     /**
      * @return \Laminas\ServiceManager\ServiceManager
@@ -49,6 +54,16 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     public function setServiceManager($serviceManager)
     {
         $this->serviceManager = $serviceManager;
+    }
+    
+    public function getLogger(): \Base\Logger\Logger
+    {
+        return $this->logger;
+    }
+
+    public function setLogger(\Base\Logger\Logger $logger)
+    {
+        $this->logger = $logger;
     }
     
     public function getActionsTableClassName()
@@ -106,6 +121,11 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     {
         $this->isTestMode = $isTestMode;
     }
+    
+    protected function configure()
+    {
+        $this->addOption('no-output', null, \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL, "Turn off all output data", false);
+    }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -119,6 +139,8 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
             $this->setDebugMode();
         }
         
+        $noOutput = !empty($input->getOption('no-output'));
+        
         $command = $input->getArgument('command');
         
         if ($this->isExecuting($command) && !$isTestMode) {
@@ -127,19 +149,32 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         
         $this->setCommandExecuting($command);
         
+        $this->logMessage(sprintf("Rozpoczęto przetwarzanie komendy: %s", $command), \Base\Logger\Logger::MESSAGE_INFO);
+        
         try {
+            $startTime = microtime(true);
+            
             $this->executeAction($input, $output);
             
             $this->setCommandMessage($command);
             
-            $output->writeln("");
-            //$output->writeln(sprintf("Czas wykonywania: %s", microtime(true) - $time));
-            //$output->writeln("");
+            $endTime = microtime(true);
+            
+            if (!$noOutput) {
+                $output->writeln("");
+                $output->writeln(sprintf("Czas wykonywania: %s sec", number_format($endTime - $startTime, 6, '.', '')));
+                $output->writeln("");
+            }
+            
+            $this->logMessage(sprintf("Czas wykonywania: %s sec", number_format($endTime - $startTime, 6, '.', '')), \Base\Logger\Logger::MESSAGE_INFO);
         } catch (\Exception $e) {
             $this->setCommandError($command, $e->getMessage());
+            $this->logMessage($e, \Base\Logger\Logger::MESSAGE_ERROR);
         }
 
         $this->setCommandExecuted($command);
+        
+        $this->logMessage(sprintf("Zakończono przetwarzanie komendy: %s", $command), \Base\Logger\Logger::MESSAGE_INFO);
 
         return 1;
     }
@@ -355,6 +390,15 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         $authManager->login([
             $adapter->getLoginColumnName() => $login,
         ]);
+    }
+    
+    protected function logMessage($message, $messageType = \Base\Logger\Logger::MESSAGE_SUCCESS, $additionalData = [])
+    {
+        $logger = $this->getLogger();
+        
+        if ($logger instanceof \Base\Logger\Logger) {
+            $logger->logMessage($message, $messageType, $additionalData);
+        }
     }
     
     /**
