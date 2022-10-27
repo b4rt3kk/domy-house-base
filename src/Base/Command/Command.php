@@ -127,6 +127,12 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         $this->addOption('no-output', null, \Symfony\Component\Console\Input\InputOption::VALUE_OPTIONAL, "Turn off all output data", false);
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int 0 if everything went fine, or an exit code
+     * @throws \Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $isDebug = $this->getIsDebug();
@@ -176,7 +182,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         
         $this->logMessage(sprintf("Zakończono przetwarzanie komendy: %s", $command), \Base\Logger\Logger::MESSAGE_INFO);
 
-        return 1;
+        return 0;
     }
     
     /**
