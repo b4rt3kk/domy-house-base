@@ -67,7 +67,7 @@ foreach ($headers as $header) {
         $class = $headersMapping[$header]['class'];
     }
 
-    echo '<td class="' . $class . '">';
+    echo '<td class="' . $class . ' text-break">';
     
     // wartość wiersza
     $value = $row->{$header};

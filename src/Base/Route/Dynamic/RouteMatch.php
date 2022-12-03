@@ -22,6 +22,20 @@ class RouteMatch
             for ($i = 0; $i < sizeof($parts); $i++) {
                 $placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $parts[$i]);
                 
+                if ($routeParts[$i] instanceof RoutePart) {
+                    if ($routeParts[$i]->hasSpecifiedValues()) {
+                        // w przypadku gdy route part ma określone stałe wartości
+                        
+                        foreach ($placeholderValues as $name => $value) {
+                            $routePartValue = $routeParts[$i]->getValue($name);
+                            if ($value instanceof \Base\Route\Dynamic\PlaceholderValue && $routePartValue !== $value->getValue()) {
+                                continue 2;
+                            }
+                        }
+                    }
+                    
+                }
+                
                 $values[$i] = $placeholderValues;
             }
             

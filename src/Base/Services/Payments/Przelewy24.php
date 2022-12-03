@@ -555,7 +555,7 @@ class Przelewy24 extends AbstractPayment
         $logger->logMessage("VERIFY OBJECT STATUS " . $response->getStatusCode());
         
         $body = json_decode($response->getBody());
-        
+        /*
         if (!empty($body->error)) {
             if ($this->getIsSandbox()) {
                 throw new \Exception(sprintf("Wystąpił błąd płatności: %s, %s %s", $body->error, serialize($this->getParamsData($params)), serialize($inputObject)));
@@ -563,7 +563,7 @@ class Przelewy24 extends AbstractPayment
             
             throw new \Exception("Wystąpił błąd płatności");
         }
-        
+        */
         return $body;
     }
     

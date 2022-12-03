@@ -11,6 +11,7 @@ class Routes
     protected static $instance;
     
     /**
+     * Lista placeholderów obsługiwanych przez routes
      * @var \Base\Route\Dynamic\Placeholders
      */
     protected $placeholders;
@@ -177,7 +178,7 @@ class Routes
      * W przypadku przekazaniu w parametrach klucza o nazwie `parents` sprawdzane są dodatkowo wartości pod kątem zgodności z wskazanymi wartościami parents
      * @param string $routeString String, który jest pełną ścieżką z podstawionymi wartościami, na podstawie której zostanie wyszukane odpowiednie Route
      * @param array $params
-     * @return RouteMatch
+     * @return Route
      */
     public function matchRoute($routeString, $params = [])
     {

@@ -7,6 +7,9 @@ class Route
     
     protected $routeParams = [];
     
+    /**
+     * @var RoutePart[]
+     */
     protected $routeParts = [];
     
     protected $partsSeparator = Routes::SEPARATOR_SLASH;
@@ -61,6 +64,9 @@ class Route
         return md5($routeString . serialize($params));
     }
     
+    /**
+     * @return RoutePart[]
+     */
     public function getRouteParts()
     {
         return $this->routeParts;
@@ -203,6 +209,10 @@ class Route
             }
         }
         
+        if (empty($matchedValues)) {
+            $isValid = false;
+        }
+        
         $state->setIsValid($isValid);
         
         return $state;
@@ -235,7 +245,15 @@ class Route
     
     protected function setRouteParts($routeParts): void
     {
-        $this->routeParts = $routeParts;
+        foreach ($routeParts as $routePart) {
+            $part = new RoutePart($routePart);
+            $this->addRoutePart($part);
+        }
+    }
+    
+    protected function addRoutePart(RoutePart $routePart)
+    {
+        $this->routeParts[] = $routePart;
     }
     
     protected function getPlaceholderFromName($placeholderName)
