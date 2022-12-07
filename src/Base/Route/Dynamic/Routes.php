@@ -63,7 +63,7 @@ class Routes
     /**
      * Pobierz placeholder na podstawie nazwy
      * @param string $name
-     * @return \Base\Route\Dynamic\Placeholder
+     * @return \Base\Route\Dynamic\Placeholder|null
      */
     public function getPlaceholder($name)
     {
@@ -180,15 +180,125 @@ class Routes
      * @param array $params
      * @return Route
      */
-    public function matchRoute($routeString, $params = [])
+    public function matchRoute($routeString, array $params = [])
     {
         $routeMatch = new RouteMatch();
         
         return $routeMatch->match($routeString, $params);
     }
     
-    public function assembleRoute($params)
+    /**
+     * Znajdź odpowiednie Route na podstawie przekazanych parametrów i opcji.
+     * W opcjach można (i należy) przekazać w tablicy dla klucza `parents` kolejną tablicę, która zawiera tablicę klucz => wartość,
+     * gdzie wartość to nazwa parametru, a wartość to wartość parametru. Minimalnie wymagana jest wartość dla subdomain => name.
+     * @param array $params
+     * @param array $options
+     * @return \Base\Route\Dynamic\Route
+     */
+    public function assembleRoute(array $params = [], array $options = [])
     {
+        $return = null;
+        $placeholders = $this->getValidPlaceholdersFromArray($params);
+        $routes = $this->getRoutesWithGivenPlaceholders($placeholders);
         
+        foreach ($routes as $route) {
+            $rowRoute = clone $route;
+            /* @var $rowRoute Route */
+            $routeString = $rowRoute->getRouteStringNormalized();
+            
+            // podmiana znaczników na wartości
+            foreach ($params as $placeholder => $value) {
+                $routeString = str_replace('{' . $placeholder . '}', $value, $routeString);
+            }
+            
+            $values = $rowRoute->getRouteValuesFromString($routeString);
+            
+            if (empty($values)) {
+                // nie odnaleziono prawidłowych wartości
+                continue;
+            }
+            
+            $state = $rowRoute->isRouteValid($routeString, $values, $options);
+            
+            if ($state->getIsValid()) {
+                $rowRoute->setRouteAssembledParams($params);
+                
+                $return = $rowRoute;
+                break;
+            }
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Pobierz tablicę dostępnych dla routingów placeholderów na podstawie tablicy, gdzie klucz to nazwa placeholdera
+     * @param array $placeholders
+     * @return \Base\Route\Dynamic\Placeholder[]|null
+     */
+    protected function getValidPlaceholdersFromArray(array $placeholders)
+    {
+        $return = [];
+        
+        foreach ($placeholders as $name => $value) {
+            $placeholder = clone $this->getPlaceholder($name);
+            
+            if (!empty($placeholder) && $placeholder->hasValue($value)) {
+                $placeholder->setAssembledValue($value);
+                $return[$placeholder->getRawName()] = $placeholder;
+            }
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Pobierz tablicę Route, która zawiera jedynie Route, które posiadają placeholdery przekazane w parametrze bez żadnych dodatkowych/nadmiarowych
+     * @param array $placeholders
+     * @return Route[]
+     */
+    protected function getRoutesWithGivenPlaceholders(array $placeholders)
+    {
+        $return = [];
+        $data = $this->getRoutes();
+        
+        foreach ($data as $route) {
+            // stringi placeholderów z route stringa
+            $valid = true;
+            // unikalne (usunięte duplikaty) nazwy placeholderów dla Route
+            $routePlaceholders = array_unique($route->getCleanPlaceholders());
+            $matchedPlaceholders = [];
+            
+            foreach (array_keys($placeholders) as $placeholder) {
+                $matchedPlaceholders[$placeholder] = 0;
+                
+                foreach ($routePlaceholders as $routePlaceholder) {
+                    if ($placeholder === $routePlaceholder) {
+                        // znaleziono placeholder w Route
+                        $matchedPlaceholders[$placeholder]++;
+                    }
+                }
+            }
+            
+            foreach ($matchedPlaceholders as $matchedPlaceholder) {
+                if ($matchedPlaceholder <= 0) {
+                    // pominięcie routes dla których nie znaleziono odpowiedniej liczby parametrów
+                    continue 2;
+                }
+            }
+            
+            foreach ($routePlaceholders as $routePlaceholder) {
+                if (!in_array($routePlaceholder, array_keys($placeholders))) {
+                    // pominięcie routes, dla których brakuje odpowiednich parametrów
+                    continue 2;
+                }
+            }
+            
+            if ($valid) {
+                $return[] = clone $route;
+            }
+        }
+        
+        return $return;
     }
 }

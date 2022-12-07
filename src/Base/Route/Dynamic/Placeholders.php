@@ -43,7 +43,7 @@ class Placeholders
     /**
      * Pobierz obiekt placeholdera na podstawie jego nazwy
      * @param string $name
-     * @return \Base\Route\Dynamic\Placeholder
+     * @return \Base\Route\Dynamic\Placeholder|null
      */
     public function getPlaceholderByName($name)
     {

@@ -9,6 +9,8 @@ class Placeholder
     
     protected $values;
     
+    protected $assembledValue;
+    
     /**
      * Nazwa placeholdera
      * @return string
@@ -105,5 +107,15 @@ class Placeholder
         }
         
         return $return;
+    }
+    
+    public function getAssembledValue()
+    {
+        return $this->assembledValue;
+    }
+
+    public function setAssembledValue($assembledValue): void
+    {
+        $this->assembledValue = $assembledValue;
     }
 }

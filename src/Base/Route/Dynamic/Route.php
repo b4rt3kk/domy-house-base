@@ -28,6 +28,29 @@ class Route
     {
         return $this->routeString;
     }
+    
+    /**
+     * Pobierz oryginalny routeString w postaci znormalizowanej (pozbawionej dodatkowych parametrów)
+     * @return $string
+     */
+    public function getRouteStringNormalized()
+    {
+        $routeString = $this->getRouteString();
+        $matches = [];
+        
+        preg_match_all("#\{[^\}]+\}#", $routeString, $matches);
+        
+        foreach ($matches[0] as $match) {
+            if (strpos($match, '=') !== false) {
+                $chunks = explode('=', str_replace(['{', '}'], '', $match));
+                $replacement = '{' . $chunks[0] . '}';
+                
+                $routeString = str_replace($match, $replacement, $routeString);
+            }
+        }
+        
+        return $routeString;
+    }
 
     public function setRouteString($routeString): void
     {
@@ -106,6 +129,27 @@ class Route
     }
     
     /**
+     * Pobierz listę placeholderów z route stringa pozbawionych przypisanych wartości
+     * @return array
+     */
+    public function getCleanPlaceholders()
+    {
+        $return = [];
+        $placeholders = $this->getPlaceholders();
+        
+        foreach ($placeholders as $placeholder) {
+            if (strpos($placeholder, '=') !== false) {
+                $tmp = explode('=', str_replace(['{', '}'], '', $placeholder));
+                $placeholder = '{' . $tmp[0] . '}';
+            }
+            
+            $return[] = $placeholder;
+        }
+        
+        return $return;
+    }
+    
+    /**
      * Sprawdź czy $testedRouteString odpowiada liście odnalezionych wartości przekazanej w $matchedValues
      * W parametrach można przekazać w kluczu `parents` listę rodziców, którą muszą zgadzać się z  $matchedValues
      * Lista rodziców jest również uzupełniane o te, które są powiązane z przekazanymi wartościami
@@ -148,7 +192,11 @@ class Route
                 // tablica przechowuje rodziców globalnie - niezależnie w którym route part występuje
                 if ($value->hasParentValue()) {
                     $parentValue = $value->getParentValue();
-                    $parents[$parentValue->getPlaceholderName()] = $parentValue->getValue();
+                    
+                    if (!array_key_exists($parentValue->getPlaceholderName(), $parents)) {
+                        // klucz mógł być zdefiniowany wcześniej, więc jego przypisanie odbywa się dopiero po sprawdzeniu czy nie istnieje
+                        $parents[$parentValue->getPlaceholderName()] = $parentValue->getValue();
+                    }
                 }
             }
             
@@ -170,7 +218,7 @@ class Route
         
         if ($isValid) {
             // sprawdzenie parametrów dodatkowych względem parametrów route
-            foreach ($params['parents'] as $name => $value) {
+            foreach ($parents as $name => $value) {
                 if (array_key_exists($name, $routeParams) && $routeParams[$name] !== $value) {
                     $state->setMessage(sprintf("Niezgodna wartość parametru route % z przekazanym %s", $routeParams[$name], $value));
                     
@@ -179,33 +227,29 @@ class Route
                 }
             }
         }
-        
+        //diee($testedRouteString, $parents);
+        /* @todo Tutaj jest błąd w tym bloku!!! 
+         * TO TRZEBA ZDEBUGOWAĆ JUTRO - JESTEŚMY BLISKO!!!
+         */
         if ($isValid) {
             // w tym momencie jeśli route jest prawidłowe to znaczy, że wszystkie przekazane wartości są prawidłowe i zgadzają się z testowanym stringiem
             // sprawdzamy wszystkie $matchedValues czy posiadają rodziców o odnalezionych wcześniej wartościach
-            $matchedParents = 0;
-            $parentsToMatch = 0;
-            
-            foreach ($parents as $parentPlaceholderName => $parentTestedValue) {
-                foreach ($matchedValues as $values) {
-                    foreach ($values as $value) {
-                        // jeśli value jest rodzicem to sprawdzenie czy jego wartość jest zgodna z odnalezionymi wcześniej wartościami rodziców
-                        if ($value->getPlaceholderName() === $parentPlaceholderName) {
-                            // istnieje taka odnaleziona value, należy ją sprawdzić z wartością
-                            $parentsToMatch++;
-                            
-                            if ($value->getValue() === $parentTestedValue) {
-                                // wartość value jest zgodna z odnalezioną wartością parent
-                                $matchedParents++;
-                            }
-                        }
+            // należy sprawdzić jeszcze zależności wartości względem siebie na podstawie wcześniej odłożonych rodziców
+            foreach ($matchedValues as $matchedValuesArray) {
+                // iteracja po samych wartościach
+                foreach ($matchedValuesArray as $matchedValue) {
+                    /* @var $matchedValue \Base\Route\Dynamic\PlaceholderValue */
+                    if (array_key_exists($matchedValue->getPlaceholderName(), $parents) && $matchedValue->getValue() !== $parents[$matchedValue->getPlaceholderName()]) {
+                        $isValid = false;
+                        
+                        $state->setMessage(sprintf(
+                                "Odnaleziona wartość rodzica dla %s wskazuje na %s tymczasem przekazano %s", 
+                                $matchedValue->getPlaceholderName(),
+                                $parents[$matchedValue->getPlaceholderName()],
+                                $matchedValue->getValue()
+                        ));
                     }
                 }
-            }
-            
-            if ($parentsToMatch !== $matchedParents) {
-                $state->setMessage("Liczba pasujących rodziców różni się od liczby wszystkich odnalezionych rodziców");
-                $isValid = false;
             }
         }
         
@@ -243,10 +287,46 @@ class Route
         $this->routeAssembledParams[$name] = $value;
     }
     
+    /**
+     * Pobierz tablicę wartości dla poszczególnych części routeStringa w rozbiciu na ich pozycję w routeStringu 
+     * @param string $routeString
+     * @return \Base\Route\Dynamic\PlaceholderValue[] Wielowymiarowa tablica route values, gdzie jej klucz to index route part, a wartości to znalezione wartości
+     */
+    public function getRouteValuesFromString($routeString)
+    {
+        $routeParts = $this->getRouteParts();
+        $separator = $this->getPartsSeparator();
+        $stringParts = explode($separator, $routeString);
+        $values = [];
+        
+        for ($i = 0; $i < sizeof($stringParts); $i++) {
+            $placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $stringParts[$i]);
+
+            if ($routeParts[$i] instanceof RoutePart) {
+                if ($routeParts[$i]->hasSpecifiedValues()) {
+                    // w przypadku gdy route part ma określone stałe wartości
+
+                    foreach ($placeholderValues as $name => $value) {
+                        $routePartValue = $routeParts[$i]->getValue($name);
+                        if ($value instanceof \Base\Route\Dynamic\PlaceholderValue && $routePartValue !== $value->getValue()) {
+                            continue 2;
+                        }
+                    }
+                }
+            }
+
+            $values[$i] = $placeholderValues;
+        }
+        
+        return $values;
+    }
+    
     protected function setRouteParts($routeParts): void
     {
-        foreach ($routeParts as $routePart) {
+        foreach ($routeParts as $index => $routePart) {
             $part = new RoutePart($routePart);
+            $part->setIndex($index);
+            
             $this->addRoutePart($part);
         }
     }
@@ -259,5 +339,70 @@ class Route
     protected function getPlaceholderFromName($placeholderName)
     {
         return '{' . $placeholderName . '}';
+    }
+    
+    /**
+     * 
+     * @return \Base\Route\Dynamic\Routes
+     */
+    protected function getRoutes()
+    {
+        $routes = Routes::getInstance();
+        
+        return $routes;
+    }
+    
+    /**
+     * Znajdź wartości route part stringa na podstawie part string (stringa z podstawionymi wartościami)
+     * Wynikowa tablica to para nazwa placeholdera => wartość placeholdera
+     * @param string $routePartString
+     * @param string $partString
+     * @param array $params
+     * @return \Base\Route\Dynamic\PlaceholderValue[]
+     * @throws \Exception
+     */
+    protected function getMappedPlaceholders($routePartString, $partString)
+    {
+        $return = [];
+
+        // wartości dla placeholderów
+        $matchedValues = [];
+        // lista znalezionych placeholderów
+        $matchedPlaceholders = [];
+
+        // klucze dla tablic $matchedValues oraz $matchedPlaceholders powinny być sobie zgodne
+        // wyszukanie placeholderów
+        preg_match_all("#\{[^\}]+\}#", $routePartString, $matchedPlaceholders);
+
+        // expression zamienia wszystkie znaczniki na znaczniki wyszukiwania
+        $pattern = '#^' . preg_replace("#\{[^\}]+\}#", '([a-zA-Z0-9\-\_]+)', $routePartString) . '$#';
+
+        preg_match($pattern, $partString, $matchedValues);
+
+        if (!empty($matchedValues)) {
+            if (in_array($partString, $matchedValues) !== false) {
+                unset($matchedValues[array_search($partString, $matchedValues)]);
+                $matchedValues = array_values($matchedValues);
+            }
+        }
+
+        if (sizeof($matchedPlaceholders[0]) !== sizeof($matchedValues)) {
+            throw new \Exception("Coś poszło nie tak... Odnaleziono więcej wartości placeholderów niż placeholderów");
+        }
+
+        // sprawdzenie czy znalezione placeholdery mają zgodne wartości (słownikowe) z tymi odnalezionymi 
+        foreach ($matchedPlaceholders[0] as $key => $placeholderName) {
+            $placeholderObject = $this->getRoutes()->getPlaceholderByRawName($placeholderName);
+
+            $return[$placeholderName] = null;
+
+            if ($placeholderObject instanceof Placeholder) {
+                $value = $placeholderObject->getValueByValue($matchedValues[$key]);
+
+                $return[$placeholderName] = $value;
+            }
+        }
+
+        return $return;
     }
 }

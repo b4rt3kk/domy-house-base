@@ -21,6 +21,12 @@ class RoutePart
      */
     protected $values = [];
     
+    /**
+     * Kolejność RoutePart w całym stringu liczona od zera
+     * @var integer
+     */
+    protected $index;
+    
     public function __construct($rawString)
     {
         if (!empty($rawString)) {
@@ -95,6 +101,25 @@ class RoutePart
         }
         
         return $return;
+    }
+    
+    public function getIndex()
+    {
+        return $this->index;
+    }
+
+    public function setIndex($index): void
+    {
+        $this->index = $index;
+    }
+    
+    /**
+     * Pobierz placeholdery ze stringa RoutePart
+     * @return array
+     */
+    public function getPlaceholdersNamesFromString()
+    {
+        return $this->getPlaceholdersFromString($this->getString());
     }
     
     public function __toString()
