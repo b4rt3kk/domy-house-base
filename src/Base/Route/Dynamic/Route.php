@@ -227,10 +227,7 @@ class Route
                 }
             }
         }
-        //diee($testedRouteString, $parents);
-        /* @todo Tutaj jest błąd w tym bloku!!! 
-         * TO TRZEBA ZDEBUGOWAĆ JUTRO - JESTEŚMY BLISKO!!!
-         */
+        
         if ($isValid) {
             // w tym momencie jeśli route jest prawidłowe to znaczy, że wszystkie przekazane wartości są prawidłowe i zgadzają się z testowanym stringiem
             // sprawdzamy wszystkie $matchedValues czy posiadają rodziców o odnalezionych wcześniej wartościach
@@ -243,11 +240,30 @@ class Route
                         $isValid = false;
                         
                         $state->setMessage(sprintf(
-                                "Odnaleziona wartość rodzica dla %s wskazuje na %s tymczasem przekazano %s", 
-                                $matchedValue->getPlaceholderName(),
-                                $parents[$matchedValue->getPlaceholderName()],
-                                $matchedValue->getValue()
+                            "Odnaleziona wartość rodzica dla %s wskazuje na %s tymczasem przekazano %s #1", 
+                            $matchedValue->getPlaceholderName(),
+                            $parents[$matchedValue->getPlaceholderName()],
+                            $matchedValue->getValue()
                         ));
+                    }
+                    
+                    // dodatkowo jeśli Value posiada rodzica sprawdzenie poprawności jego wartości
+                    if ($matchedValue->hasParentValue()) {
+                        $parentValue = $matchedValue->getParentValue();
+                        
+                        if (in_array($parentValue->getPlaceholderName(), array_keys($parents))) {
+                            // Nazwa ParentValue znajduje się w tablicy odnalezionych wcześniej rodziców
+                            if ($parentValue->getValue() !== $parents[$parentValue->getPlaceholderName()]) {
+                                $isValid = false;
+
+                                $state->setMessage(sprintf(
+                                    "Odnaleziona wartość rodzica dla %s wskazuje na %s tymczasem przekazano %s #2",
+                                    $parentValue->getPlaceholderName(),
+                                    $parents[$parentValue->getPlaceholderName()],
+                                    $parentValue->getValue()
+                                ));
+                            }
+                        }
                     }
                 }
             }
