@@ -178,7 +178,7 @@ class Routes
      * W przypadku przekazaniu w parametrach klucza o nazwie `parents` sprawdzane są dodatkowo wartości pod kątem zgodności z wskazanymi wartościami parents
      * @param string $routeString String, który jest pełną ścieżką z podstawionymi wartościami, na podstawie której zostanie wyszukane odpowiednie Route
      * @param array $params
-     * @return Route
+     * @return \Base\Route\Dynamic\Route
      */
     public function matchRoute($routeString, array $params = [])
     {
@@ -255,7 +255,7 @@ class Routes
     /**
      * Pobierz tablicę Route, która zawiera jedynie Route, które posiadają placeholdery przekazane w parametrze bez żadnych dodatkowych/nadmiarowych
      * @param array $placeholders
-     * @return Route[]
+     * @return \Base\Route\Dynamic\Route[]
      */
     protected function getRoutesWithGivenPlaceholders(array $placeholders)
     {

@@ -42,6 +42,7 @@ class RouteMatch
                     $param->setParamName($value->getPlaceholderName());
                     $param->setParamValue($value->getValue());
                     $param->setRoutePartIndex($routeIndex);
+                    $param->setValue($value);
                     
                     $assembledValues[] = $param;
                 }

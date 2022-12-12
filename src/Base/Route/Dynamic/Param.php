@@ -10,6 +10,8 @@ class Param
     
     protected $paramValue;
     
+    protected $value;
+    
     public function getRoutePartIndex()
     {
         return $this->routePartIndex;
@@ -38,5 +40,18 @@ class Param
     public function setParamValue($paramValue): void
     {
         $this->paramValue = $paramValue;
+    }
+    
+    /**
+     * @return \Base\Route\Dynamic\PlaceholderValue
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    public function setValue($value)
+    {
+        $this->value = $value;
     }
 }

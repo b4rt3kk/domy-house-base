@@ -1,72 +1,17 @@
 <?php
 namespace Base\Route;
 
-abstract class DynamicRoute implements \Laminas\Router\Http\RouteInterface
+class DynamicRoute implements \Laminas\Router\Http\RouteInterface
 {
-    const SEPARATOR_SLASH = "/";
-    const SEPARATOR_HASH = "#";
-    
     protected static $instance;
     
     protected $options = [];
     
-    protected $partsSeparator = self::SEPARATOR_SLASH;
-    
-    protected $placeholderExpression = '#\{[a-zA-Z0-9\_\#]+\}#';
-    
-    protected $serviceManager;
-    
-    public function __construct($options = [])
-    {
-        $this->setOptions($options);
-    }
-    
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
-
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager() : \Laminas\ServiceManager\ServiceManager
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
-        
-    public function getPartsSeparator()
-    {
-        return $this->partsSeparator;
-    }
-
-    public function setPartsSeparator($partsSeparator)
-    {
-        $this->partsSeparator = $partsSeparator;
-    }
-    
-    public function getPlaceholderExpression()
-    {
-        return $this->placeholderExpression;
-    }
-
-    public function setPlaceholderExpression($placeholderExpression)
-    {
-        $this->placeholderExpression = $placeholderExpression;
-    }
+    protected $assembledParams = [];
     
     /**
      * @param array $options
-     * @return \Base\Route\DynamicRoute
+     * @return \Application\Route\DynamicRoute
      */
     public static function getInstance($options = [])
     {
@@ -77,17 +22,77 @@ abstract class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         return self::$instance;
     }
     
-    public function assemble(array $params = [], array $options = []): mixed
+    public static function factory($options = []): \Laminas\Router\RouteInterface
     {
-        ;
+        return self::getInstance($options);
     }
     
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    public function setOptions($options): void
+    {
+        $this->options = $options;
+    }
+    
+    /**
+     * Utwórz adres url na podstawie przekazanych parametrów lub null gdy nie udało się dopasować route do parametrów
+     * @param array $params
+     * @param array $options
+     * @return string|null
+     */
+    public function assemble(array $params = [], array $options = [])
+    {
+        $url = null;
+        $routes = $this->getRoutes();
+        
+        $route = $routes->assembleRoute($params, $options);
+        /* @var $route \Base\Route\Dynamic\Route */
+        
+        if (!empty($route)) {
+            // ustawienie wartości pobranych z Route
+            $this->setAssembledParams(array_merge($route->getRouteAssembledParams(), $route->getRouteParams()));
+            $rawRouteString = $route->getRouteString();
+            $url = '/' . $rawRouteString;
+
+            $assembledParams = $this->getAssembledParams();
+
+            foreach ($assembledParams as $assembledParamName => $assembledParamValue) {
+                $url = str_replace('{' . $assembledParamName . '}', $assembledParamValue, $url);
+            }
+        }
+        
+        return $url;
+    }
+
+    public function setAssembledParams(array $assembledParams): void
+    {
+        $this->assembledParams = $assembledParams;
+    }
+    
+    public function getAssembledParams(): array
+    {
+        return $this->assembledParams;
+    }
+
+    /**
+     * Zmatchuj request z route
+     * @param \Laminas\Stdlib\RequestInterface $request
+     * @param string $pathOffset
+     * @return \Laminas\Router\Http\RouteMatch|null
+     */
     public function match(\Laminas\Stdlib\RequestInterface $request, $pathOffset = null)
     {
+        $routes = $this->getRoutes();
+        $routeParams = [];
+        $routeParamsIds = [];
+        
         if (!method_exists($request, 'getUri')) {
             return null;
         }
-
+        
         // Get the URL and its path part.
         $uri = $request->getUri();
         $path = $uri->getPath();
@@ -97,147 +102,53 @@ abstract class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         }
 
         // Get the array of path segments.
-        $routeSet = $this->getRouteSet($path);
+        $segments = explode('/', $path);
         
-        // pobierz listę routingów o podanej długości
-        $dataRoutes = $this->getRoutesWithGivenLength($routeSet->length());
-        
-        foreach ($dataRoutes as $rowRouteWithGivenLength) {
-            if ($routeSet->isRouteSetMatching($rowRouteWithGivenLength)) {
-                // przepisanie parametrów wyszukanego route, zgodnego z obecnym
-                $routeSet->setRouteParams($rowRouteWithGivenLength->getRouteParams());
-                
-                foreach ($rowRouteWithGivenLength->getRouteParts() as $routePart) {
-                    // przepisanie placeholderów na obecny route set
-                    $routeSet->get($routePart->getIndex())->setPlaceholders($routePart->getPlaceholders());
-                }
-                
-                $routeSet->autodiscoverParams();
-            }
-        }
-        
-        diee($routeSet);
-        foreach ($dataRoutes as $index => $rowRoute) {
-            $routeSetElement = $routeSet->get($index);
-            
-            if ($routeSetElement !== null) {
-                $routeSetElement->setRawString($rowRoute);
-            }
-        }
-        
-        diee($routeSet, $dataRoutes->toArray());
         // usunięcie pustych stringów z url
         foreach ($segments as $key => $segment) {
             if (strlen($segment) === 0) {
                 unset($segments[$key]);
             }
         }
-
-        $segmentParams = array_values($segments);
-
-        if ($this->hasStaticPage(implode('/', $segmentParams))) {
-            // pobranie strony statycznej, jeśli istnieje, tj. wygenerowanej indywidualnie dla routingu
-            $routeMatch = $this->getStaticRouteMatch($segmentParams);
-        } else {
-            // pobranie strony dynamicznej, tj. z dynamicznymi parametrami określonymi na routingu
-            $routeMatch = $this->getDynamicRouteMatch($segmentParams);
+        
+        $route = $routes->matchRoute(implode($routes->getRouteStringSeparator(), $segments));
+        /* @var $route \Base\Route\Dynamic\Route */
+        
+        if (empty($route)) {
+            return null;
         }
-
+        
+        $assembledParams = $route->getRouteAssembledParams();
+        
+        foreach ($assembledParams as $assembledParam) {
+            /* @var $assembledParam \Base\Route\Dynamic\Param */
+            $name = $assembledParam->getParamName();
+            $value = $assembledParam->getParamValue();
+            $id = $assembledParam->getValue()->getParamByName('id');
+            
+            $routeParams[$name] = $value;
+            $routeParamsIds[$name] = $id;
+        }
+        
+        $routeMatch = new \Laminas\Router\Http\RouteMatch(array_merge([
+            'controller' => \Application\Controller\LandingController::class,
+            'action' => 'index',
+            'idRoutingRule' => $route->getRouteParam('id'),
+            'isStaticRoute' => false,
+            'routeParams' => $routeParams,
+            'routeParamsIds' => $routeParamsIds,
+        ], $routeParams));
+        
         return $routeMatch;
     }
     
-    public static function factory($options = []): \Laminas\Router\RouteInterface
-    {
-        return self::getInstance($options);
-    }
-    
-    public function getAssembledParams(): array
-    {
-        ;
-    }
-    
     /**
-     * Pobierz zestaw routingów dla route stringa
-     * @param string $routeString
-     * @return \Base\Route\RouteSet
+     * @return \Base\Route\Dynamic\Routes
      */
-    public function getRouteSet($routeString)
+    protected function getRoutes()
     {
-        $return = new RouteSet();
-        $return->setRouteString(trim($routeString, self::SEPARATOR_SLASH));
+        $routes = Dynamic\Routes::getInstance();
         
-        $separator = $this->getPartsSeparator();
-        // zamiana zwieloktrotnionych separatorów na pojedyncze
-        $string = preg_replace("#{$separator}+#", $separator, $routeString);
-        
-        $parts = explode($separator, trim($string, $separator));
-        
-        foreach ($parts as $index => $string) {
-            $routePart = new RoutePart();
-            $routePart->setRawString($string);
-            $routePart->setIndex($index);
-            $routePart->setPlaceholderExpression($this->getPlaceholderExpression());
-            
-            $placeholders = $this->getPlaceholdersFromString($string);
-            
-            foreach ($placeholders as $placeholder) {
-                // ustalenie wszystkich wartości placeholdera
-                $placeholder->setValuesData($this->getPlaceholderValues($placeholder->getName()));
-            }
-            
-            $routePart->setPlaceholders($placeholders);
-            
-            $return->addRoutePart($routePart);
-        }
-        
-        return $return;
+        return $routes;
     }
-    
-    /**
-     * Pobierz nazwę dla obecnej subdomeny
-     * @return string
-     */
-    public function getSubdomainName()
-    {
-        $baseUrl = \Base\BaseUrl::getInstance();
-        /* @var $baseUrl \Base\BaseUrl */
-        
-        if (!$baseUrl->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            $baseUrl->setServiceManager($this->getServiceManager());
-        }
-
-        return $baseUrl->getSubdomain();
-    }
-    
-    /**
-     * Pobierz listę placeholderów ze stringa
-     * @param string $string
-     * @return \Base\Route\Placeholder[]
-     */
-    protected function getPlaceholdersFromString($string)
-    {
-        $return = [];
-        $matches = [];
-        
-        preg_match_all($this->getPlaceholderExpression(), $string, $matches);
-        
-        if (!empty($matches[0])) {
-            foreach ($matches[0] as $match) {
-                $placeholder = new Placeholder();
-                $placeholder->setRawName($match);
-                
-                $return[] = $placeholder;
-            }
-        }
-        
-        return $return;
-    }
-    
-    /**
-     * Pobierz listę routingów z długością określoną w parametrze
-     * @return \Base\Route\RouteSet[]
-     */
-    abstract public function getRoutesWithGivenLength($length = null) : array;
-    
-    abstract public function getPlaceholderValues($placeholder, $params = []);
 }
