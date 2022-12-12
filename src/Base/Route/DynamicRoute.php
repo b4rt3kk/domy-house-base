@@ -11,7 +11,7 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
     
     /**
      * @param array $options
-     * @return \Application\Route\DynamicRoute
+     * @return \Base\Route\DynamicRoute
      */
     public static function getInstance($options = [])
     {
