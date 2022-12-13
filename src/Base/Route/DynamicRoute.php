@@ -71,11 +71,20 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         return $url;
     }
 
+    /**
+     * Ustaw parametry dla znalezionego Route (metoda match)
+     * @param array $assembledParams
+     * @return void
+     */
     public function setAssembledParams(array $assembledParams): void
     {
         $this->assembledParams = $assembledParams;
     }
     
+    /**
+     * Pobierz tablicę parametrów (nazwa => wartość) znalezionych podczas określania obecnego Route (metoda match)
+     * @return array
+     */
     public function getAssembledParams(): array
     {
         return $this->assembledParams;
