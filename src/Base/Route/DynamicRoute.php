@@ -9,6 +9,11 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
     
     protected $assembledParams = [];
     
+    public function __construct($options = [])
+    {
+        $this->setOptions($options);
+    }
+    
     /**
      * @param array $options
      * @return \Base\Route\DynamicRoute
@@ -53,11 +58,10 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         
         if (!empty($route)) {
             // ustawienie wartości pobranych z Route
-            $this->setAssembledParams(array_merge($route->getRouteAssembledParams(), $route->getRouteParams()));
+            $assembledParams = array_merge($route->getRouteAssembledParams(), $route->getRouteParams());
+            
             $rawRouteString = $route->getRouteString();
             $url = '/' . $rawRouteString;
-
-            $assembledParams = $this->getAssembledParams();
 
             foreach ($assembledParams as $assembledParamName => $assembledParamValue) {
                 $url = str_replace('{' . $assembledParamName . '}', $assembledParamValue, $url);
@@ -111,6 +115,10 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             }
         }
         
+        if (empty($segments)) {
+            return null;
+        }
+        
         $route = $routes->matchRoute(implode($routes->getRouteStringSeparator(), $segments));
         /* @var $route \Base\Route\Dynamic\Route */
         
@@ -129,6 +137,11 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             $routeParams[$name] = $value;
             $routeParamsIds[$name] = $id;
         }
+        
+        // ustawienie ustalonych parametrów znalezionego Route
+        $this->setAssembledParams(array_merge($routeParams, [
+            'idRoutingRule' => $route->getRouteParam('id'),
+        ]));
         
         $routeMatch = new \Laminas\Router\Http\RouteMatch(array_merge([
             'controller' => \Application\Controller\LandingController::class,
