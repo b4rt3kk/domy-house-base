@@ -403,7 +403,8 @@ class Route
         }
 
         if (sizeof($matchedPlaceholders[0]) !== sizeof($matchedValues)) {
-            throw new \Exception("Coś poszło nie tak... Odnaleziono więcej wartości placeholderów niż placeholderów");
+            //throw new \Exception("Coś poszło nie tak... Odnaleziono więcej wartości placeholderów niż placeholderów");
+            return [];
         }
 
         // sprawdzenie czy znalezione placeholdery mają zgodne wartości (słownikowe) z tymi odnalezionymi 

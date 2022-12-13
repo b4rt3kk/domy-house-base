@@ -241,7 +241,11 @@ class Routes
         $return = [];
         
         foreach ($placeholders as $name => $value) {
-            $placeholder = clone $this->getPlaceholder($name);
+            $placeholder = $this->getPlaceholder($name);
+            
+            if (is_object($placeholder)) {
+                $placeholder = clone $placeholder;
+            }
             
             if (!empty($placeholder) && $placeholder->hasValue($value)) {
                 $placeholder->setAssembledValue($value);
