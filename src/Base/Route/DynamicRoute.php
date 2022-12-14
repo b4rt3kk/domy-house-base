@@ -60,7 +60,7 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             // ustawienie wartości pobranych z Route
             $assembledParams = array_merge($route->getRouteAssembledParams(), $route->getRouteParams());
             
-            $rawRouteString = $route->getRouteString();
+            $rawRouteString = $route->getRouteStringNormalized();
             $url = '/' . $rawRouteString;
 
             foreach ($assembledParams as $assembledParamName => $assembledParamValue) {
@@ -98,9 +98,13 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
      */
     public function match(\Laminas\Stdlib\RequestInterface $request, $pathOffset = null)
     {
+        $baseUrl = \Base\BaseUrl::getInstance();
         $routes = $this->getRoutes();
         $routeParams = [];
         $routeParamsIds = [];
+        $params = [];
+        // pobranie nazwy subdomeny
+        $subdomain = $baseUrl->getSubdomain();
         
         if (!method_exists($request, 'getUri')) {
             return null;
@@ -113,7 +117,7 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         if ($pathOffset != null) {
             $path = substr($path, $pathOffset);
         }
-
+        
         // Get the array of path segments.
         $segments = explode('/', $path);
         
@@ -128,7 +132,12 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             return null;
         }
         
-        $route = $routes->matchRoute(implode($routes->getRouteStringSeparator(), $segments));
+        if (!empty($subdomain)) {
+            // przypisanie wyszukiwanej subdomeny
+            $params['parents'] = ['subdomain' => $subdomain];
+        }
+        
+        $route = $routes->matchRoute(implode($routes->getRouteStringSeparator(), $segments), $params);
         /* @var $route \Base\Route\Dynamic\Route */
         
         if (empty($route)) {
