@@ -3,6 +3,13 @@ namespace Base\Route\Dynamic;
 
 class RouteMatch
 {
+    /**
+     * Znajdź Route na podstawie route string i przekazanych parametrów.
+     * Obecnie obsługiwanym parametrem jest tablica o kluczu parents zawierająca kolejną tablicę, gdzie klucz to nazwa rodzica, a wartość jest wartością rodzica (np. subdomain)
+     * @param string $routeString
+     * @param array $params
+     * @return \Base\Route\Dynamic\Route
+     */
     public function match($routeString, $params = [])
     {
         $return = null;

@@ -168,6 +168,7 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             'isStaticRoute' => false,
             'routeParams' => $routeParams,
             'routeParamsIds' => $routeParamsIds,
+            'routeString' => $path,
         ], $routeParams));
         
         return $routeMatch;
