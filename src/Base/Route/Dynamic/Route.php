@@ -3,6 +3,10 @@ namespace Base\Route\Dynamic;
 
 class Route
 {
+    /**
+     * Czysty route string bez podstawionych wartości
+     * @var string
+     */
     protected $routeString;
     
     protected $routeParams = [];
@@ -176,6 +180,17 @@ class Route
         foreach ($matchedValues as $routeIndex => $values) {
             /* @var $values \Base\Route\Dynamic\PlaceholderValue[] */
             
+            if (empty($values) && !empty($mappedRouteParts[$routeIndex])) {
+                // w odnalezionych wartościach dla route brak wartości dla RoutePart o tym indexie
+                // a jednocześnie ten route part wymaga wartości znacznikowych
+                if ($mappedRouteParts[$routeIndex]->hasPlaceholders()) {
+                    $state->setMessage(sprintf("Brak wartości dla part o indexie %s i treści %s", $routeIndex, $mappedRouteParts[$routeIndex]->getString()));
+                    $isValid = false;
+                    // przerwanie dalszego przetwarzania tej części route part
+                    break;
+                }
+            }
+            
             // pobranie wartości rodziców dla odnalezionych wartości route part i odłożenie ich w osobnej tablicy
             foreach ($values as $placeholder => $value) {
                 if (empty($value)) {
@@ -316,8 +331,9 @@ class Route
         $values = [];
         
         for ($i = 0; $i < sizeof($stringParts); $i++) {
-            $placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $stringParts[$i]);
-
+            //$placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $stringParts[$i]);
+            $placeholderValues = $routeParts[$i]->getValuesFromString($stringParts[$i]);
+            
             if ($routeParts[$i] instanceof RoutePart) {
                 if ($routeParts[$i]->hasSpecifiedValues()) {
                     // w przypadku gdy route part ma określone stałe wartości
@@ -379,6 +395,9 @@ class Route
      */
     protected function getMappedPlaceholders($routePartString, $partString)
     {
+        // @todo Ta metoda jest do naprawy, należy lecieć po wartośćiach placeholderów i w pętli podmieniać po kolei na wszystkie kombinacje
+        // i sprawdzać czy zmontowany string zgadza się z $partString
+        // matchedPlaceholders jest ok i zostaje i na tej podstawie pobieramy Placeholder i wszystkie value z niego
         $return = [];
 
         // wartości dla placeholderów
@@ -394,7 +413,7 @@ class Route
         $pattern = '#^' . preg_replace("#\{[^\}]+\}#", '([a-zA-Z0-9\-\_]+)', $routePartString) . '$#';
 
         preg_match($pattern, $partString, $matchedValues);
-
+        
         if (!empty($matchedValues)) {
             if (in_array($partString, $matchedValues) !== false) {
                 unset($matchedValues[array_search($partString, $matchedValues)]);

@@ -146,6 +146,28 @@ class Routes
         return $return;
     }
     
+    /**
+     * Pobierz listę Route, które posiadają parametr o podanej nazwie i wartości
+     * @param string $paramName
+     * @param mixed $paramValue
+     * @return \Base\Route\Dynamic\Route[]
+     */
+    public function getRoutesWithGivenParamValue($paramName, $paramValue)
+    {
+        $return = [];
+        $routes = $this->getRoutes();
+        
+        foreach ($routes as $route) {
+            $param = $route->getRouteParam($paramName);
+            
+            if ($param == $paramValue) {
+                $return[] = $route;
+            }
+        }
+        
+        return $return;
+    }
+    
     public function setRoutes($routes)
     {
         foreach ($routes as $route) {

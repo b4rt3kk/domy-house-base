@@ -21,6 +21,7 @@ class Placeholder
     }
 
     /**
+     * Pobierz wszystkie możliwe wartości dla tego placeholdera
      * @return \Base\Route\Dynamic\PlaceholderValue[]
      */
     public function getValues()
