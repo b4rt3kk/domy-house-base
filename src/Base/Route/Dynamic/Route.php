@@ -22,10 +22,25 @@ class Route
     
     protected $routeAssembledParams = [];
     
+    protected $serviceManager;
+    
     public function __construct($routeString, $routeParams = [])
     {
         $this->setRouteString($routeString);
         $this->setRouteParams($routeParams);
+    }
+    
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->serviceManager;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        $this->serviceManager = $serviceManager;
     }
     
     public function getRouteString()
@@ -359,12 +374,15 @@ class Route
             $part = new RoutePart($routePart);
             $part->setIndex($index);
             
+            $part->setServiceManager($this->getServiceManager());
+            
             $this->addRoutePart($part);
         }
     }
     
     protected function addRoutePart(RoutePart $routePart)
     {
+        $routePart->setServiceManager($this->getServiceManager());
         $this->routeParts[] = $routePart;
     }
     

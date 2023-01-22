@@ -27,6 +27,10 @@ class RoutePart
      */
     protected $index;
     
+    protected $serviceManager;
+    
+    protected $storageKeyPrefix;
+    
     public function __construct($rawString)
     {
         if (!empty($rawString)) {
@@ -34,6 +38,29 @@ class RoutePart
             // string pozbawiony wartości parametrów, dostosowany do wyszukiwania
             $this->setString($this->normalizeStringAndAssignValues($rawString));
         }
+    }
+    
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->serviceManager;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        $this->serviceManager = $serviceManager;
+    }
+    
+    public function getStorageKeyPrefix()
+    {
+        return $this->storageKeyPrefix;
+    }
+
+    public function setStorageKeyPrefix($storageKeyPrefix)
+    {
+        $this->storageKeyPrefix = $storageKeyPrefix;
     }
     
     public function getRawString()
@@ -141,26 +168,42 @@ class RoutePart
     /**
      * Pobierz listę dopasowanych wartości do tego route part i testowanego stringa przyrównując do podstawowego (czystego) stringa dla tego route
      * @param string $stringToTest
-     * @return 
+     * @return \Base\Route\Dynamic\PlaceholderValue[]
      */
     public function getValuesFromString($stringToTest)
     {
         $return = [];
         // czysty string części routingu
         $string = $this->getString();
+        $placeholders = $this->getPlaceholdersNamesFromString();
+        $storage = $this->getStorage();
         
-        // wszystkie możliwe warianty route stringa po podstawieniu odpowiednich wartości
-        $routePartVariants = [$string => []];
-        
-        // pobierz listę wszystkich możliwych wariantów dla route stringa
-        $this->getAllRoutePartVariants($routePartVariants);
-        
-        foreach ($routePartVariants as $routeString => $routeStringData) {
-            if ($stringToTest === $routeString) {
-                // odnaleziono poszukiwane wartości route stringa
-                $return = $routeStringData['values'];
-                break;
+        if (sizeof($placeholders) > 1) {
+            $storageKey = $this->getStorageKeyName();
+            
+            if ($storage->hasItem($storageKey)) {
+                // pobranie wartości z cache
+                $return = unserialize($storage->getItem($storageKey));
+            } else {
+                // wszystkie możliwe warianty route stringa po podstawieniu odpowiednich wartości
+                $routePartVariants = [$string => []];
+
+                // pobierz listę wszystkich możliwych wariantów dla route stringa
+                $this->getAllRoutePartVariants($routePartVariants);
+
+                foreach ($routePartVariants as $routeString => $routeStringData) {
+                    if ($stringToTest === $routeString) {
+                        // odnaleziono poszukiwane wartości route stringa
+                        $return = $routeStringData['values'];
+                        break;
+                    }
+                }
+                
+                $storage->addItem($storageKey, serialize($return));
             }
+        } else {
+            // w przypadku gdy w stringu występuje tylko 1 placeholder nie ma potrzeby na generowanie wszystkich możliwych wariantów
+            $return = $this->getPlaceholderValueFromString($stringToTest);
         }
         
         return $return;
@@ -237,7 +280,7 @@ class RoutePart
         foreach (array_keys($variants) as $variant) {
             // pobranie placeholderów z tego wariantu i wykorzystanie pierwszego nieuzupełnionego
             $variantPlaceholders = $this->getPlaceholdersFromString($variant);
-            // pobranie obiektu placeholdera
+            
             $placeholder = $routes->getPlaceholder(str_replace(['{', '}'], '', $variantPlaceholders[0]));
             
             $currentVariantValues = array_key_exists('values', $variants[$variant]) ? $variants[$variant]['values'] : [];
@@ -258,5 +301,82 @@ class RoutePart
         }
         
         $this->getAllRoutePartVariants($variants);
+    }
+    
+    /**
+     * Pobierz adapter cache
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
+     */
+    protected function getStorage()
+    {
+        $dynamicRoute = \Base\Route\DynamicRoute::getInstance();
+        /* @todo Do ogarnięcia w inny sposób */
+        $serviceManager = $dynamicRoute->getServiceManager();
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $storageFactory = $serviceManager->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
+            /* @var $storageFactory \Laminas\Cache\Service\StorageAdapterFactory */
+
+            $config = $serviceManager->get('Config')['cache'];
+
+            $cache = $storageFactory->createFromArrayConfiguration($config);
+        }
+        
+        return $cache;
+    }
+    
+    /**
+     * Pobierz wartość placeholdera. 
+     * Metoda jest właściwa tylko i wyłącznie dla przypadków, gdzie istnieje tylko 1 znacznik w treści RoutePart
+     * @param string $testedString
+     * @return \Base\Route\Dynamic\PlaceholderValue[]
+     */
+    protected function getPlaceholderValueFromString($testedString)
+    {
+        $placeholders = $this->getPlaceholdersNamesFromString();
+        
+        if (sizeof($placeholders) > 1) {
+            throw new \Exception("Ta metoda nie obsługuje wyszukiwania wartości znaczników dla stringów posiadających więcej jak jeden znacznik");
+        }
+        
+        $return = [];
+        $routes = Routes::getInstance();
+        $routePartString = $this->getString();
+
+        // wartości dla placeholderów
+        $matchedValues = [];
+
+        // expression zamienia wszystkie znaczniki na znaczniki wyszukiwania
+        $pattern = '#^' . preg_replace("#\{[^\}]+\}#", '([a-zA-Z0-9\-\_]+)', $routePartString) . '$#';
+
+        preg_match($pattern, $testedString, $matchedValues);
+        
+        if (sizeof($placeholders) !== sizeof(array_unique($matchedValues))) {
+            //throw new \Exception("Coś poszło nie tak... Odnaleziono więcej wartości placeholderów niż placeholderów");
+            return [];
+        }
+        
+        // sprawdzenie czy znalezione placeholdery mają zgodne wartości (słownikowe) z tymi odnalezionymi 
+        foreach ($placeholders as $key => $placeholderName) {
+            $placeholderObject = $routes->getPlaceholderByRawName($placeholderName);
+
+            $return[$placeholderName] = null;
+
+            if ($placeholderObject instanceof Placeholder) {
+                $value = $placeholderObject->getValueByValue($matchedValues[$key]);
+
+                $return[$placeholderName] = $value;
+            }
+        }
+        
+        return $return;
+    }
+    
+    protected function getStorageKeyName()
+    {
+        $prefix = $this->getStorageKeyPrefix();
+        $string = $this->getString();
+        
+        return $prefix . md5($string);
     }
 }
