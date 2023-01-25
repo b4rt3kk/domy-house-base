@@ -183,7 +183,7 @@ class RoutePart
             
             if ($storage->hasItem($storageKey)) {
                 // pobranie wartości z cache
-                $return = unserialize($storage->getItem($storageKey));
+                $routePartVariants = unserialize($storage->getItem($storageKey));
             } else {
                 // wszystkie możliwe warianty route stringa po podstawieniu odpowiednich wartości
                 $routePartVariants = [$string => []];
@@ -191,15 +191,15 @@ class RoutePart
                 // pobierz listę wszystkich możliwych wariantów dla route stringa
                 $this->getAllRoutePartVariants($routePartVariants);
 
-                foreach ($routePartVariants as $routeString => $routeStringData) {
-                    if ($stringToTest === $routeString) {
-                        // odnaleziono poszukiwane wartości route stringa
-                        $return = $routeStringData['values'];
-                        break;
-                    }
+                $storage->addItem($storageKey, serialize($routePartVariants));
+            }
+            
+            foreach ($routePartVariants as $routeString => $routeStringData) {
+                if ($stringToTest === $routeString) {
+                    // odnaleziono poszukiwane wartości route stringa
+                    $return = $routeStringData['values'];
+                    break;
                 }
-                
-                $storage->addItem($storageKey, serialize($return));
             }
         } else {
             // w przypadku gdy w stringu występuje tylko 1 placeholder nie ma potrzeby na generowanie wszystkich możliwych wariantów
