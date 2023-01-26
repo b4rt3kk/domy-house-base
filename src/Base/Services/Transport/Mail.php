@@ -56,6 +56,7 @@ class Mail
         'sent_date' => 'sent_date',
         'email' => 'email',
         'sent_message' => 'sent_message',
+        'sender_email' => 'sender_email',
         'is_error' => 'is_error',
         'created_at' => 'created_at',
         'created_by' => 'created_by',
@@ -156,11 +157,20 @@ class Mail
         $id = $rowData[$this->getMappedColumnName('id')];
         
         if (empty($id)) {
+            // pobranie adresów email nadawców
+            $messageFrom = null;
+            
+            foreach ($message->getFrom() as $from) {
+                /* @var $from \Laminas\Mail\Address */
+                $messageFrom = $from->getEmail() . ';';
+            }
+            
             // nowy wiersz wiadomości
             $id = $this->createMailSentRow(array_merge([
                 $this->getMappedColumnName('subject') => $message->getSubject(),
                 $this->getMappedColumnName('body') => $message->getBodyText(),
                 $this->getMappedColumnName('email') => rtrim($recipients, ';'),
+                $this->getMappedColumnName('sender_email') => $messageFrom,
             ], $rowData));
         }
         
