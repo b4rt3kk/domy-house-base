@@ -168,9 +168,10 @@ class RoutePart
     /**
      * Pobierz listę dopasowanych wartości do tego route part i testowanego stringa przyrównując do podstawowego (czystego) stringa dla tego route
      * @param string $stringToTest
+     * @param bool $forceSimpleMatching Wymuś matchowanie stringa na podstawie prostego odszukiwania wartości
      * @return \Base\Route\Dynamic\PlaceholderValue[]
      */
-    public function getValuesFromString($stringToTest)
+    public function getValuesFromString($stringToTest, $forceSimpleMatching = false)
     {
         $return = [];
         // czysty string części routingu
@@ -178,7 +179,7 @@ class RoutePart
         $placeholders = $this->getPlaceholdersNamesFromString();
         $storage = $this->getStorage();
         
-        if (sizeof($placeholders) > 1) {
+        if (sizeof($placeholders) > 1 && !$forceSimpleMatching) {
             $storageKey = $this->getStorageKeyName();
             
             if ($storage->hasItem($storageKey)) {
@@ -203,6 +204,7 @@ class RoutePart
             }
         } else {
             // w przypadku gdy w stringu występuje tylko 1 placeholder nie ma potrzeby na generowanie wszystkich możliwych wariantów
+            // lub gdy wymuszono proste matchowanie wartości
             $return = $this->getPlaceholderValueFromString($stringToTest);
         }
         
@@ -326,8 +328,9 @@ class RoutePart
     }
     
     /**
-     * Pobierz wartość placeholdera. 
-     * Metoda jest właściwa tylko i wyłącznie dla przypadków, gdzie istnieje tylko 1 znacznik w treści RoutePart
+     * Pobierz wartość placeholdera lub placeholderów. 
+     * Metoda sprawdza się w przypadku, gdzie istnieje tylko 1 znacznik w treści RoutePart.
+     * Przy większej liczbie parametrów może zwracać złą liczbę, jak i wartości parametrów.
      * @param string $testedString
      * @return \Base\Route\Dynamic\PlaceholderValue[]
      */
@@ -336,7 +339,7 @@ class RoutePart
         $placeholders = $this->getPlaceholdersNamesFromString();
         
         if (sizeof($placeholders) > 1) {
-            throw new \Exception("Ta metoda nie obsługuje wyszukiwania wartości znaczników dla stringów posiadających więcej jak jeden znacznik");
+            //throw new \Exception("Ta metoda nie obsługuje wyszukiwania wartości znaczników dla stringów posiadających więcej jak jeden znacznik");
         }
         
         $return = [];
@@ -347,13 +350,13 @@ class RoutePart
         $matchedValues = [];
 
         // expression zamienia wszystkie znaczniki na znaczniki wyszukiwania
-        $pattern = '#^' . preg_replace("#\{[^\}]+\}#", '([a-zA-Z0-9\-\_]+)', $routePartString) . '$#';
+        $pattern = '#^' . preg_replace("#\{[^\}]+\}#", '([a-zA-Z0-9\-\_]+)', str_replace(['-', '_'], ['\-', '\_'], $routePartString)) . '$#';
 
         preg_match($pattern, $testedString, $matchedValues);
-        
+
         if (sizeof($placeholders) !== sizeof(array_unique($matchedValues))) {
             //throw new \Exception("Coś poszło nie tak... Odnaleziono więcej wartości placeholderów niż placeholderów");
-            return [];
+            //return [];
         }
         
         // sprawdzenie czy znalezione placeholdery mają zgodne wartości (słownikowe) z tymi odnalezionymi 
@@ -363,9 +366,17 @@ class RoutePart
             $return[$placeholderName] = null;
 
             if ($placeholderObject instanceof Placeholder) {
-                $value = $placeholderObject->getValueByValue($matchedValues[$key]);
-
-                $return[$placeholderName] = $value;
+                foreach ($matchedValues as $matchedValue) {
+                    $value = $placeholderObject->getValueByValue($matchedValue);
+                    
+                    if (empty($value)) {
+                        continue;
+                    }
+                    
+                    $return[$placeholderName] = $value;
+                    // odnaleziono wartość, przerwanie dalszego wyszukiwania
+                    break;
+                }
             }
         }
         

@@ -347,7 +347,7 @@ class Route
         
         for ($i = 0; $i < sizeof($stringParts); $i++) {
             //$placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $stringParts[$i]);
-            $placeholderValues = $routeParts[$i]->getValuesFromString($stringParts[$i]);
+            $placeholderValues = $routeParts[$i]->getValuesFromString($stringParts[$i], true);
             
             if ($routeParts[$i] instanceof RoutePart) {
                 if ($routeParts[$i]->hasSpecifiedValues()) {
