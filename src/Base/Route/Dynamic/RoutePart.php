@@ -212,6 +212,61 @@ class RoutePart
     }
     
     /**
+     * Pobierz tablicę wszystkich możliwych wartości dla route stringa
+     * @param array $variants
+     * @return array Tablica wszystkich możliwych wartości route stringa, gdzie klucz to routeString, a wartości to kolejna tablica zawierająca values
+     */
+    public function getAllRoutePartVariants(&$variants)
+    {
+        $hasPlaceholders = false;
+
+        foreach (array_keys($variants) as $string) {
+            $placeholders = $this->getPlaceholdersFromString($string);
+
+            if (!empty($placeholders)) {
+                $hasPlaceholders = true;
+            }
+        }
+
+        if (!$hasPlaceholders) {
+            return $variants;
+        }
+
+        $routes = Routes::getInstance();
+
+        // pobranie pierwszego nieuzupełnionego placeholdera i podstawienie jego wartości dla wszystkich kluczy tablicy wariantów
+        // oraz ich zduplikowanie jeśli jest to lista wartości
+        foreach (array_keys($variants) as $variant) {
+            // pobranie placeholderów z tego wariantu i wykorzystanie pierwszego nieuzupełnionego
+            $variantPlaceholders = $this->getPlaceholdersFromString($variant);
+
+            $placeholder = $routes->getPlaceholder(str_replace(['{', '}'], '', $variantPlaceholders[0]));
+
+            $currentVariantValues = array_key_exists('values', $variants[$variant]) ? $variants[$variant]['values'] : [];
+            // odnalezione wartości
+            $variantValues = [];
+            
+            if (empty($placeholder)) {
+                continue;
+            }
+
+            foreach ($placeholder->getValues() as $value) {
+                $variantValues[str_replace('{' . $placeholder->getName() . '}', $value->getValue(), $variant)] = [
+                    'values' => array_merge($currentVariantValues, [
+                        '{' . $placeholder->getName() . '}' => $value,
+                    ]),
+                ];
+            }
+
+            // zastąpienie obecnego klucza odnalezionymi wartościami
+            unset($variants[$variant]);
+            $variants = array_merge($variants, $variantValues);
+        }
+
+        $this->getAllRoutePartVariants($variants);
+    }
+
+    /**
      * Zwróć string, który może być wykorzystany jako route part, wyłuskując przekazane wartości placeholderów o ile je przekazano i zapisując je w $values
      * @param string $string
      * @return string
@@ -255,62 +310,13 @@ class RoutePart
     }
     
     /**
-     * Pobierz tablicę wszystkich możliwych wartości dla route stringa
-     * @param array $variants
-     * @return array Tablica wszystkich możliwych wartości route stringa, gdzie klucz to routeString, a wartości to kolejna tablica zawierająca values
-     */
-    protected function getAllRoutePartVariants(&$variants)
-    {
-        $hasPlaceholders = false;
-        
-        foreach (array_keys($variants) as $string) {
-            $placeholders = $this->getPlaceholdersFromString($string);
-            
-            if (!empty($placeholders)) {
-                $hasPlaceholders = true;
-            }
-        }
-        
-        if (!$hasPlaceholders) {
-            return $variants;
-        }
-        
-        $routes = Routes::getInstance();
-        
-        // pobranie pierwszego nieuzupełnionego placeholdera i podstawienie jego wartości dla wszystkich kluczy tablicy wariantów
-        // oraz ich zduplikowanie jeśli jest to lista wartości
-        foreach (array_keys($variants) as $variant) {
-            // pobranie placeholderów z tego wariantu i wykorzystanie pierwszego nieuzupełnionego
-            $variantPlaceholders = $this->getPlaceholdersFromString($variant);
-            
-            $placeholder = $routes->getPlaceholder(str_replace(['{', '}'], '', $variantPlaceholders[0]));
-            
-            $currentVariantValues = array_key_exists('values', $variants[$variant]) ? $variants[$variant]['values'] : [];
-            // odnalezione wartości
-            $variantValues = [];
-            
-            foreach ($placeholder->getValues() as $value) {
-                $variantValues[str_replace('{' . $placeholder->getName() . '}', $value->getValue(), $variant)] = [
-                    'values' => array_merge($currentVariantValues, [
-                        '{' . $placeholder->getName() . '}' => $value,
-                    ]),
-                ];
-            }
-            
-            // zastąpienie obecnego klucza odnalezionymi wartościami
-            unset($variants[$variant]);
-            $variants = array_merge($variants, $variantValues);
-        }
-        
-        $this->getAllRoutePartVariants($variants);
-    }
-    
-    /**
      * Pobierz adapter cache
-     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter|null
      */
     protected function getStorage()
     {
+        $cache = null;
+        
         $dynamicRoute = \Base\Route\DynamicRoute::getInstance();
         /* @todo Do ogarnięcia w inny sposób */
         $serviceManager = $dynamicRoute->getServiceManager();

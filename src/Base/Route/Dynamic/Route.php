@@ -352,6 +352,10 @@ class Route
             if ($routeParts[$i] instanceof RoutePart) {
                 if ($routeParts[$i]->hasSpecifiedValues()) {
                     // w przypadku gdy route part ma określone stałe wartości
+                    
+                    if (empty($routeParts[$i]->getServiceManager())) {
+                        $routeParts[$i]->setServiceManager($this->getServiceManager());
+                    }
 
                     foreach ($placeholderValues as $name => $value) {
                         $routePartValue = $routeParts[$i]->getValue($name);
@@ -368,6 +372,102 @@ class Route
         return $values;
     }
     
+    /**
+     * Pobierz tablicę wszystkich możliwych wartości dla route stringa w postaci tablicy stringów
+     * @param array $variants
+     * @return array Tablica wszystkich możliwych wartości route stringa
+     */
+    public function getAllValidRouteVariants()
+    {
+        $routeParts = $this->getRouteParts();
+        $variants = [];
+        $routeParams = $this->getRouteParams();
+        
+        foreach ($routeParts as $index => $routePart) {
+            $variants[$index][$routePart->getString()] = [];
+            
+            $routePart->getAllRoutePartVariants($variants[$index]);
+        }
+        
+        // pierwsze odnalezione wartości RoutePart są zarazem początkiem route stringa
+        // route stringi generowane są na kluczu, ponieważ w wartości zachowujemy dostępne wartości dla tego wariantu w postaci kolejnej tablicy obiektów \Base\Route\Dynamic\PlaceholderValue
+        $foundRouteStrings = [];
+        $parents = [];
+        
+        foreach ($variants[0] as $key => $variant) {
+            // przefiltrowanie tej tablicy wariantów w celu odnalezienia ewentualnych rodziców dla wartości i zachowanie jedynie tych zgodnych
+            // z parametrami przekazanymi do tego Route
+            if (!empty($variant['values'])) {
+                foreach ($variant['values'] as $variantValue) {
+                    /* @var $variantValue \Base\Route\Dynamic\PlaceholderValue */
+                    if ($variantValue->hasParentValue()) {
+                        $parentValue = $variantValue->getParentValue();
+                        $parents[$parentValue->getPlaceholderName()] = $parentValue;
+                        
+                        // wstępne przefiltrowanie parametrów na podstawie zgodnych routeParams
+                        if (in_array($parentValue->getPlaceholderName(), array_keys($routeParams))) {
+                            if ($parentValue->getValue() !== $routeParams[$parentValue->getPlaceholderName()]) {
+                                // pominięcie niedopasowanych wyników
+                                // dla tego wariantu, ponieważ conajmniej jeden z parametrów jest niezgodny z odnalezionymi
+                                continue 2;
+                            } else {
+                                $variant['values']['{' . $parentValue->getPlaceholderName() . '}'] = $parentValue;
+                            }
+                        }
+                        
+                        $foundRouteStrings[$key] = $variant['values'];
+                    }
+                }
+            }
+        }
+        
+        $index = 1;
+        
+        while ($index < sizeof($variants)) {
+            // pomnożenie każdego route o każdą kolejną wartość z kolejnego RoutePart
+            // przy okazji sprawdzenie poprawności odpowiednich rodziców dla wartości
+            $newValues = [];
+            
+            foreach ($foundRouteStrings as $key => $routeValues) {
+                foreach ($variants[$index] as $variantString => $variant) {
+                    $variantValues = $variant['values'];
+                    /* @var $variantValues \Base\Route\Dynamic\PlaceholderValue[] */
+                    
+                    // sprawdzenie rodziców
+                    foreach ($variantValues as $variantValueKey => $variantValueValue) {
+                        if ($variantValueValue->hasParentValue()) {
+                            // sprawdzenie czy rodzic ma odpowiednią wartość dla odnalezionych wartości dla tego route stringa
+                            $variantValueValueParent = $variantValueValue->getParentValue();
+                            
+                            if (!in_array('{' . $variantValueValueParent->getPlaceholderName() . '}', array_keys($routeValues))) {
+                                // brak rodzica o tej samej nazwie placeholdera co odnalezione wartości dla tego route
+                                // całkowite pominięcie tego route
+                                continue 2;
+                            }
+                            
+                            // istnieje rodzic dla wartości wariantu oraz posiada odnalezioną wartość dla sprawdzanego route
+                            if ($routeValues['{' . $variantValueValueParent->getPlaceholderName() . '}']->getValue() !== $variantValueValueParent->getValue()) {
+                                // wartość rodzica jest różna od odpowiadającej wartości odnalezionej dla route
+                                // całkowite pominięcie tego route
+                                continue 2;
+                            }
+                        }
+                    }
+                    
+                    // utworzenie nowej tablicy do zastąpienia poprzedniej
+                    $newKey = $key . $this->getPartsSeparator() . $variantString;
+                    $newValues[$newKey] = array_merge($routeValues, $variantValues);
+                }
+            }
+            
+            // przepisanie znalezionych wartości jako kolejne route stringi
+            $foundRouteStrings = $newValues;
+            $index++;
+        }
+        
+        return array_keys($foundRouteStrings);
+    }
+
     protected function setRouteParts($routeParts): void
     {
         foreach ($routeParts as $index => $routePart) {
@@ -391,6 +491,22 @@ class Route
         return '{' . $placeholderName . '}';
     }
     
+    /**
+     * Pobierz listę placeholderów ze stringa
+     * @param string $string
+     * @return array
+     */
+    protected function getPlaceholdersFromString($string)
+    {
+        // lista znalezionych placeholderów
+        $matchedPlaceholders = [];
+
+        // wyszukanie placeholderów
+        preg_match_all("#\{[^\}]+\}#", $string, $matchedPlaceholders);
+
+        return array_key_exists(0, $matchedPlaceholders) ? $matchedPlaceholders[0] : $matchedPlaceholders;
+    }
+
     /**
      * 
      * @return \Base\Route\Dynamic\Routes

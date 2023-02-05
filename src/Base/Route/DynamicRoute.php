@@ -9,6 +9,8 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
     
     protected $assembledParams = [];
     
+    protected $serviceManager;
+    
     public function __construct($options = [])
     {
         $this->setOptions($options);
@@ -40,6 +42,16 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
     public function setOptions($options): void
     {
         $this->options = $options;
+    }
+    
+    public function getServiceManager()
+    {
+        return $this->serviceManager;
+    }
+
+    public function setServiceManager($serviceManager): void
+    {
+        $this->serviceManager = $serviceManager;
     }
     
     /**

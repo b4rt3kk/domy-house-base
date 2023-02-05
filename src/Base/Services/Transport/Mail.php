@@ -154,7 +154,7 @@ class Mail
             $recipients .= $to->getEmail() . ';';
         }
         
-        $id = $rowData[$this->getMappedColumnName('id')];
+        $id = $rowData[$this->getMappedColumnName('id')] ?? null;
         
         if (empty($id)) {
             // pobranie adresów email nadawców
