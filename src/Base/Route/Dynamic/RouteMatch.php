@@ -36,7 +36,7 @@ class RouteMatch
             if (!$state->getIsValid()) {
                 continue;
             }
-
+            
             $assembledValues = [];
             
             $rowRoute->setRouteAssembledString($routeString);

@@ -356,11 +356,11 @@ class Route
                     if (empty($routeParts[$i]->getServiceManager())) {
                         $routeParts[$i]->setServiceManager($this->getServiceManager());
                     }
-
+                    
                     foreach ($placeholderValues as $name => $value) {
                         $routePartValue = $routeParts[$i]->getValue($name);
                         if ($value instanceof \Base\Route\Dynamic\PlaceholderValue && $routePartValue !== $value->getValue()) {
-                            continue 2;
+                            continue;
                         }
                     }
                 }
