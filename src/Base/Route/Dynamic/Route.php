@@ -191,58 +191,64 @@ class Route
         // tablica z testowanych route parts
         $testedRouteParts = explode($separator, $testedRouteString);
         
-        // sprawdzanie odbywa się dla każdego route part osobno
-        foreach ($matchedValues as $routeIndex => $values) {
-            /* @var $values \Base\Route\Dynamic\PlaceholderValue[] */
-            
-            if (empty($values) && !empty($mappedRouteParts[$routeIndex])) {
-                // w odnalezionych wartościach dla route brak wartości dla RoutePart o tym indexie
-                // a jednocześnie ten route part wymaga wartości znacznikowych
-                if ($mappedRouteParts[$routeIndex]->hasPlaceholders()) {
-                    $state->setMessage(sprintf("Brak wartości dla part o indexie %s i treści %s", $routeIndex, $mappedRouteParts[$routeIndex]->getString()));
-                    $isValid = false;
-                    // przerwanie dalszego przetwarzania tej części route part
-                    break;
-                }
-            }
-            
-            // pobranie wartości rodziców dla odnalezionych wartości route part i odłożenie ich w osobnej tablicy
-            foreach ($values as $placeholder => $value) {
-                if (empty($value)) {
-                    // w przypadku gdy nie udało się odnaleźć wartości
-                    $state->setMessage(sprintf("Brak wartości dla %s", $placeholder));
-                    $isValid = false;
-                    // przerwanie dalszego przetwarzania tej części route part
-                    break 2;
-                }
-                
-                $mappedRouteParts[$routeIndex] = str_replace($this->getPlaceholderFromName($value->getPlaceholderName()), $value->getValue(), $mappedRouteParts[$routeIndex]);
-                
-                // jeśli wartość ma rodzica to odłożenie wartości tego rodzica do osobnej tablicy
-                // tablica przechowuje rodziców globalnie - niezależnie w którym route part występuje
-                if ($value->hasParentValue()) {
-                    $parentValue = $value->getParentValue();
-                    
-                    if (!array_key_exists($parentValue->getPlaceholderName(), $parents)) {
-                        // klucz mógł być zdefiniowany wcześniej, więc jego przypisanie odbywa się dopiero po sprawdzeniu czy nie istnieje
-                        $parents[$parentValue->getPlaceholderName()] = $parentValue->getValue();
+        if (!$this->isRouteStringValid($testedRouteString, $params)) {
+            $isValid = false;
+        }
+
+        if ($isValid) {
+            // sprawdzanie odbywa się dla każdego route part osobno
+            foreach ($matchedValues as $routeIndex => $values) {
+                /* @var $values \Base\Route\Dynamic\PlaceholderValue[] */
+
+                if (empty($values) && !empty($mappedRouteParts[$routeIndex])) {
+                    // w odnalezionych wartościach dla route brak wartości dla RoutePart o tym indexie
+                    // a jednocześnie ten route part wymaga wartości znacznikowych
+                    if ($mappedRouteParts[$routeIndex]->hasPlaceholders()) {
+                        $state->setMessage(sprintf("Brak wartości dla part o indexie %s i treści %s", $routeIndex, $mappedRouteParts[$routeIndex]->getString()));
+                        $isValid = false;
+                        // przerwanie dalszego przetwarzania tej części route part
+                        break;
                     }
                 }
-            }
-            
-            // porównanie testowanego stringa ze znalezionymi wartościami podanymi w parametrze $matchedValues
-            $testedString = $testedRouteParts[$routeIndex];
-            
-            foreach ($values as $value) {
-                $testedString = str_replace($this->getPlaceholderFromName($value->getPlaceholderName()), $value->getValue(), $testedString);
-            }
-            
-            if ($testedRouteParts[$routeIndex] !== $testedString) {
-                // testowany route part jest różny od tego, dla którego przekazano wartości do przetestowania
-                $isValid = false;
-                // przerwanie dalszego przetwarzania - jeden błędy route part oznacza, że cały route part jest błędny
-                $state->setMessage(sprintf("Testowany route part %s jest różny od odnalezionych wartości %s", $testedRouteParts[$routeIndex], $testedString));
-                break;
+
+                // pobranie wartości rodziców dla odnalezionych wartości route part i odłożenie ich w osobnej tablicy
+                foreach ($values as $placeholder => $value) {
+                    if (empty($value)) {
+                        // w przypadku gdy nie udało się odnaleźć wartości
+                        $state->setMessage(sprintf("Brak wartości dla %s", $placeholder));
+                        $isValid = false;
+                        // przerwanie dalszego przetwarzania tej części route part
+                        break 2;
+                    }
+
+                    $mappedRouteParts[$routeIndex] = str_replace($this->getPlaceholderFromName($value->getPlaceholderName()), $value->getValue(), $mappedRouteParts[$routeIndex]);
+
+                    // jeśli wartość ma rodzica to odłożenie wartości tego rodzica do osobnej tablicy
+                    // tablica przechowuje rodziców globalnie - niezależnie w którym route part występuje
+                    if ($value->hasParentValue()) {
+                        $parentValue = $value->getParentValue();
+
+                        if (!array_key_exists($parentValue->getPlaceholderName(), $parents)) {
+                            // klucz mógł być zdefiniowany wcześniej, więc jego przypisanie odbywa się dopiero po sprawdzeniu czy nie istnieje
+                            $parents[$parentValue->getPlaceholderName()] = $parentValue->getValue();
+                        }
+                    }
+                }
+
+                // porównanie testowanego stringa ze znalezionymi wartościami podanymi w parametrze $matchedValues
+                $testedString = $testedRouteParts[$routeIndex];
+
+                foreach ($values as $value) {
+                    $testedString = str_replace($this->getPlaceholderFromName($value->getPlaceholderName()), $value->getValue(), $testedString);
+                }
+
+                if ($testedRouteParts[$routeIndex] !== $testedString) {
+                    // testowany route part jest różny od tego, dla którego przekazano wartości do przetestowania
+                    $isValid = false;
+                    // przerwanie dalszego przetwarzania - jeden błędy route part oznacza, że cały route part jest błędny
+                    $state->setMessage(sprintf("Testowany route part %s jest różny od odnalezionych wartości %s", $testedRouteParts[$routeIndex], $testedString));
+                    break;
+                }
             }
         }
         
@@ -308,6 +314,84 @@ class Route
         return $state;
     }
     
+    /**
+     * Sprawdzenie poprawności stringa względem Routingu
+     * @param string $testedRouteString
+     * @param array $params
+     * @return boolean
+     */
+    public function isRouteStringValid($testedRouteString, $params = [])
+    {
+        $isValid = true;
+        // separator poszczególnych częsci stringa
+        $separator = $this->getPartsSeparator();
+        // liczba części/elementów (RoutePart) dla tego Route po rozbiciu po separatorze
+        $length = $this->getRoutePartsLength();
+        $stringLength = $this->getStringPartsLength($testedRouteString);
+        // pobranie sprametryzowanych części stringa dla tego Route
+        $routeParts = $this->getRouteParts();
+        // tablica rodziców dla znalezionych wartości
+        $parents = array_key_exists('parents', $params) ? $params['parents'] : [];
+        // poszczególne części testowanego stringa
+        $testedRouteStringParts = explode($separator, $testedRouteString);
+        
+        if ($length !== $stringLength) {
+            // długość części testowanego stringa i stringa dla tego route różnią się
+            $isValid = false;
+        }
+        
+        if ($isValid) {
+            $routeValuesFromTestedString = $this->getRouteValuesFromString($testedRouteString);
+            
+            // sprawdzenie poprawności poszczególnych odnalezionych wartości z wartościami RoutePart
+            for ($i = 0; $i < $length; $i++) {
+                $routePart = clone $routeParts[$i];
+                /* @var $routePart \Base\Route\Dynamic\RoutePart */
+                //$routePart->setServiceManager(null);
+                $routePartValues = $routePart->getValuesFromString($testedRouteStringParts[$i], true);
+                // predefiniowane wartości dla tego route - z wymuszonymi odgórnie wartościami
+                $routePartSpecifiedValues = $routePart->getValues();
+                
+                if (!empty($routePartValues)) {
+                    foreach ($routePartValues as $placeholderValue) {
+                        if ($placeholderValue instanceof PlaceholderValue && $placeholderValue->hasParentValue()) {
+                            $placeholderParentValue = $placeholderValue->getParentValue();
+                            $parents[$placeholderParentValue->getName()] = $placeholderParentValue;
+                        }
+                    }
+                }
+                
+                if (sizeof($routePartValues) !== sizeof($routeValuesFromTestedString[$i])) {
+                    // niezgodna liczba parametrów względem RoutePart i wartości Route dla testowanego stringa
+                    $isValid = false;
+                }
+                
+                // porównanie wartości RoutePart z wartościami odnalezionymi dla testowanego stringa
+                foreach ($routeValuesFromTestedString[$i] as $placeholderName => $routeValueFromTestedString) {
+                    if (!isset($routePartValues[$placeholderName])) {
+                        // testowany placeholder nie istnieje, całość routingu jest nieprawidłowa
+                        $isValid = false;
+                        break;
+                    }
+                    
+                    if ($isValid && !empty($routePartSpecifiedValues) && $routePartSpecifiedValues[$placeholderName] !== $routeValueFromTestedString->getValue()) {
+                        // predefiniowana wartość dla RoutePart jest niezgodna z wartością przekazaną
+                        $isValid = false;
+                        break;
+                    }
+                    
+                    if ($isValid && $routePartValues[$placeholderName]->getValue() !== $routeValueFromTestedString->getValue()) {
+                        // wartości nie są zgodne, całość tej części stringa jest nieprawidłowa
+                        $isValid = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $isValid;
+    }
+    
     public function getRouteAssembledString()
     {
         return $this->routeAssembledString;
@@ -334,7 +418,8 @@ class Route
     }
     
     /**
-     * Pobierz tablicę wartości dla poszczególnych części routeStringa w rozbiciu na ich pozycję w routeStringu 
+     * Pobierz tablicę wartości dla poszczególnych części routeStringa w rozbiciu na ich pozycję w routeStringu.
+     * Sprawdzanie odbywa się bez sprawdzania poprawności względem obecnego route, w rozbiciu na poszczególne partie route (rozdzielone określonym dla route separatorem)
      * @param string $routeString
      * @return \Base\Route\Dynamic\PlaceholderValue[] Wielowymiarowa tablica route values, gdzie jej klucz to index route part, a wartości to znalezione wartości
      */
@@ -574,5 +659,17 @@ class Route
         }
 
         return $return;
+    }
+    
+    /**
+     * Pobierz liczbę części stringa w rozbiciu po separatorze
+     * @param string $routeString
+     * @return integer
+     */
+    protected function getStringPartsLength($routeString)
+    {
+        $separator = $this->getPartsSeparator();
+        
+        return sizeof(explode($separator, $routeString));
     }
 }

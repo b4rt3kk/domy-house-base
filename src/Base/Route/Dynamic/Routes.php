@@ -239,7 +239,7 @@ class Routes
                 // nie odnaleziono prawidłowych wartości
                 continue;
             }
-            
+
             $state = $rowRoute->isRouteValid($routeString, $values, $options);
             
             if ($state->getIsValid()) {

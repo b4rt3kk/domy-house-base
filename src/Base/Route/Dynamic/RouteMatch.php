@@ -29,7 +29,7 @@ class RouteMatch
             if (empty($values)) {
                 continue;
             }
-            
+
             // sprawdzenie poprawności Route względem odnalezionych wartości
             $state = $rowRoute->isRouteValid($routeString, $values, $params);
             
