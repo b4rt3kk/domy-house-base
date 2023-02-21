@@ -1,6 +1,6 @@
 <?php
 
-namespace Base\Services\Image;
+namespace Base;
 
 class Image
 {
@@ -65,68 +65,6 @@ class Image
      * @var integer
      */
     protected $size;
-    
-    // http://www.iana.org/assignments/media-types/media-types.xhtml#image
-    protected $extensionsByMimeType = [
-        'application/cdf',
-        'application/dicom',
-        'application/fractals',
-        'application/postscript',
-        'application/vnd.hp-hpgl',
-        'application/vnd.oasis.opendocument.graphics',
-        'application/x-cdf',
-        'application/x-cmu-raster',
-        'application/x-ima',
-        'application/x-inventor',
-        'application/x-koan',
-        'application/x-portable-anymap',
-        'application/x-world-x-3dmf',
-        'image/bmp',
-        'image/c',
-        'image/cgm',
-        'image/fif',
-        'image/gif',
-        'image/heic',
-        'image/heif',
-        'image/jpeg',
-        'image/jpm',
-        'image/jpx',
-        'image/jp2',
-        'image/naplps',
-        'image/pjpeg',
-        'image/png',
-        'image/svg',
-        'image/svg+xml',
-        'image/tiff',
-        'image/vnd.adobe.photoshop',
-        'image/vnd.djvu',
-        'image/vnd.fpx',
-        'image/vnd.net-fpx',
-        'image/webp',
-        'image/x-cmu-raster',
-        'image/x-cmx',
-        'image/x-coreldraw',
-        'image/x-cpi',
-        'image/x-emf',
-        'image/x-ico',
-        'image/x-icon',
-        'image/x-jg',
-        'image/x-ms-bmp',
-        'image/x-niff',
-        'image/x-pict',
-        'image/x-pcx',
-        'image/x-png',
-        'image/x-portable-anymap',
-        'image/x-portable-bitmap',
-        'image/x-portable-greymap',
-        'image/x-portable-pixmap',
-        'image/x-quicktime',
-        'image/x-rgb',
-        'image/x-tiff',
-        'image/x-unknown',
-        'image/x-windows-bmp',
-        'image/x-xpmi',
-    ];
     
     public function getLocation()
     {
@@ -200,9 +138,10 @@ class Image
      * Ustaw lokalizację dla pliku.
      * Obsługiwane lokalizacje: 
      * - adres URL 
-     * - ścieżka do pliku 
+     * - ścieżka do pliku
+     * 
      * Lokalizacja może zostać ustawiona jedynie w przypadku, gdy wcześniej nie ustanowiono treści pliku.
-     * @param string $location
+     * @param string $location URL lub ścieżka do pliku
      * @return void
      * @throws \Exception
      */
@@ -220,12 +159,18 @@ class Image
         
         $fileInfo = $this->getFileInfoFromLocation($location);
         
-        // odnaleziona nazwa pliku
-        $this->setName($fileInfo['filename']);
-        $this->setExtension($fileInfo['extension']);
-        
         $this->setSource($source);
         $this->setBody($body);
+        
+        // odnaleziona nazwa pliku
+        $this->setName($fileInfo['filename']);
+        $extension = $fileInfo['extension'];
+        
+        if (empty($extension)) {
+            $extension = $this->getExtensionFromMimeType();
+        }
+        
+        $this->setExtension($extension);
         
         $this->location = $location;
     }
@@ -321,9 +266,24 @@ class Image
         return $body;
     }
     
-    protected function getExtensionsByMimeType()
+    /**
+     * Pobierz rozszerzenie pliku na podstawie jego MimeType
+     * @return string
+     */
+    public function getExtensionFromMimeType()
     {
-        return $this->extensionsByMimeType;
+        $mimeType = $this->getMimeType();
+        
+        $mimey = new \Mimey\MimeTypes();
+        $extension = $mimey->getExtension($mimeType);
+        
+        if (!empty($mimeType) && empty($extension)) {
+            $chunks = explode('/', $mimeType);
+            
+            $extension = $chunks[1];
+        }
+        
+        return $extension;
     }
     
     protected function setWidth($width): void
@@ -463,24 +423,10 @@ class Image
     }
     
     /**
-     * Pobierz rozszerzenie pliku na podstawie jego MimeType
-     * @todo Zrobić mapowanie dla $extensionsByMimeType i przenieść na mapowanie na podstawie $extensionsByMimeType
-     * @return string
+     * Pobierz informację o pliku na podstawie jego lokalizacji
+     * @param string $location
+     * @return array
      */
-    protected function getExtensionFromMimeType()
-    {
-        $extension = null;
-        $mimeType = $this->getMimeType();
-        
-        if (!empty($mimeType)) {
-            $chunks = explode('/', $mimeType);
-            
-            $extension = $chunks[1];
-        }
-        
-        return $extension;
-    }
-    
     protected function getFileInfoFromLocation($location)
     {
         $fileLocation = $location;
@@ -495,6 +441,11 @@ class Image
         return $pathInfo;
     }
     
+    /**
+     * Sprawdź plik na podstawie jego treści czy jest faktycznym obrazem
+     * @param string $body
+     * @return boolean
+     */
     protected function isFileImage($body)
     {
         $validator = new \Laminas\Validator\File\IsImage([
