@@ -9,6 +9,8 @@ class RbacManager extends AbstractLogic
 {
     const DEFAULT_ROLE_CODE = 'guest';
     
+    const ANY_PARAM = '*';
+    
     /**
      * @var Rbac
      */
@@ -155,6 +157,7 @@ class RbacManager extends AbstractLogic
         
         $rolesManager = $this->getRolesManager();
         $nameColumn = $rolesManager->getRoleNameColumn();
+        $idCoulmn = $rolesManager->getPrimaryKey();
         $assertionManagers = $this->getAssertionManagers();
         $idUser = null;
         
@@ -171,6 +174,11 @@ class RbacManager extends AbstractLogic
         $userRoles = $rolesManager->getUserRolesData($idUser);
         
         foreach ($userRoles as $rowRole) {
+            if ($rolesManager->isAnyPermissionAllowed($rowRole->{$idCoulmn}, $permission)) {
+                $isGranted = true;
+                break;
+            }
+
             if ($rbac->isGranted($rowRole->{$nameColumn}, $permission)) {
                 if (empty($params)) {
                     $isGranted = true;

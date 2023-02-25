@@ -286,6 +286,19 @@ class Image
         return $extension;
     }
     
+    /**
+     * Pobierz format obrazu, czyli jego iloraz szerokości do wysokości.
+     * https://pl.wikipedia.org/wiki/Format_obrazu
+     * @return float
+     */
+    public function getAspectRatio()
+    {
+        $width = $this->getWidth();
+        $height = $this->getHeight();
+        
+        return round($width / $height, 2);
+    }
+    
     protected function setWidth($width): void
     {
         $this->width = $width;
