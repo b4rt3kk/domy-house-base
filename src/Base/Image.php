@@ -427,10 +427,15 @@ class Image
      */
     protected function getMetaDataFromBody($body)
     {
-        $file = fopen('php://memory', 'w+b');
+        // utworzenie pliku tymczasowego
+        $file = tmpfile();
         fwrite($file, $body);
         
-        $metaData = exif_read_data($file);
+        $fileMetaData = stream_get_meta_data($file);
+        
+        $metaData = exif_read_data($fileMetaData['uri']);
+        
+        fclose($file);
         
         return $metaData;
     }

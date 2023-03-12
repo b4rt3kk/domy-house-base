@@ -568,6 +568,30 @@ class Przelewy24 extends AbstractPayment
     }
     
     /**
+     * Metoda sprawdzająca poprawności autoryzacji
+     * @return \stdClass
+     * @throws Exception
+     */
+    public function testAccess()
+    {
+        $targetUrl = $this->getConfigValue('target_url');
+        
+        if (empty($targetUrl)) {
+            throw new Exception("Nie podano wartości konfiguracyjnej target_url");
+        }
+        
+        $client = $this->getHttpClient();
+        $client->setUri($targetUrl . '/api/v1/testAccess');
+        $client->setMethod(\Laminas\Http\Request::METHOD_GET);
+        
+        $response = $client->send();
+        
+        $body = json_decode($response->getBody());
+        
+        return $body;
+    }
+    
+    /**
      * Odbierz dane transakcji
      * @return \Base\Services\Payments\Przelewy24\Notify
      */
