@@ -52,5 +52,10 @@ abstract class AbstractMigration
         $this->isExecuted = !empty($isExecuted);
     }
     
+    public function getRevertQueries()
+    {
+        
+    }
+    
     abstract public function getQueries();
 }
