@@ -651,6 +651,7 @@ class Przelewy24 extends AbstractPayment
         $adapter->setCurlOption(CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2');
         $adapter->setCurlOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         $adapter->setCurlOption(CURLOPT_USERPWD, "{$user}:{$password}");
+        //$adapter->setCurlOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         
         $client = new \Laminas\Http\Client();
         $client->setAdapter($adapter);
@@ -659,6 +660,29 @@ class Przelewy24 extends AbstractPayment
         ]);
 
         return $client;
+    }
+    
+    public function rawTestAccess()
+    {
+        $user = $this->getConfigValue('merchant_id');
+        $password = $this->getConfigValue('secret_id');
+        
+        $targetUrl = $this->getConfigValue('target_url') . '/api/v1/testAccess';
+        
+        $curl = curl_init($targetUrl);
+        //curl_setopt($curl, CURLOPT_URL, $targetUrl);
+        //curl_setopt($curl, CURLOPT_PUT, true);
+        //curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        //curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_USERPWD, "{$user}:{$password}");
+        //curl_setopt($curl, CURLOPT_HTTPGET, true);
+        //curl_setopt($curl, CURLOPT_HEADER, ['Content-Type: application/json']);
+        //curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2);
+        
+        $resp = curl_exec($curl);
+        
+        diee($resp);
     }
     
     public function rawCurlTransactionVerify()

@@ -44,14 +44,27 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
         $this->options = $options;
     }
     
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
     public function getServiceManager()
     {
-        return $this->serviceManager;
+        $serviceManager = \Base\ServiceManager::getInstance();
+        
+        $return = $this->serviceManager;
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $return = $serviceManager;
+        }
+        
+        return $return;
     }
 
     public function setServiceManager($serviceManager): void
     {
-        $this->serviceManager = $serviceManager;
+        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+            \Base\ServiceManager::setInstance($serviceManager);
+        }
     }
     
     /**

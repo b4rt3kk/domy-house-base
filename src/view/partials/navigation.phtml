@@ -10,7 +10,7 @@ foreach ($navigation as $page) {
         
         echo '<a href="' . $page->getHref() . '" class="btn btn-outline-primary ' . $class . '"' . $page->getAttributesAsString() . '>';
         echo $page->getLabel();
-        echo '</a>&nbsp;';
+        echo '</a>';
     }
 }
 ?>
