@@ -160,7 +160,11 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
         try {
             $startTime = microtime(true);
             
+            $output->writeln(sprintf("Czas rozpoczęcia %s", date('Y-m-d H:i:s')));
+            
             $this->executeAction($input, $output);
+            
+            $output->writeln(sprintf("Czas zakończenia %s", date('Y-m-d H:i:s')));
             
             $this->setCommandMessage($command);
             

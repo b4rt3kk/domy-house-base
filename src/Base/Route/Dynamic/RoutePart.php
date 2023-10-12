@@ -45,12 +45,22 @@ class RoutePart
      */
     public function getServiceManager()
     {
-        return $this->serviceManager;
+        $serviceManager = \Base\ServiceManager::getInstance();
+        
+        $return = $this->serviceManager;
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $return = $serviceManager;
+        }
+        
+        return $return;
     }
 
     public function setServiceManager($serviceManager)
     {
-        $this->serviceManager = $serviceManager;
+        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+            \Base\ServiceManager::setInstance($serviceManager);
+        }
     }
     
     public function getStorageKeyPrefix()
