@@ -3,6 +3,14 @@ namespace Base\Route\Dynamic;
 
 class Placeholder
 {
+    const DB_GET_VALUE_BY_VALUE = 1;
+    const DB_GET_VALUE_BY_PARAM = 2;
+    
+    protected static $callableEvents = [
+        self::DB_GET_VALUE_BY_VALUE,
+        self::DB_GET_VALUE_BY_PARAM,
+    ];
+    
     protected $name;
     
     protected $rawName;
@@ -10,6 +18,84 @@ class Placeholder
     protected $values;
     
     protected $assembledValue;
+    
+    protected $modelName;
+    
+    protected $callables = [];
+    
+    /**
+     * @var \Laminas\ServiceManager\ServiceManager
+     */
+    protected $serviceManager;
+    
+    public function getModelName()
+    {
+        return $this->modelName;
+    }
+
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
+    public function getServiceManager()
+    {
+        $serviceManager = \Base\ServiceManager::getInstance();
+        
+        $return = $this->serviceManager;
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $return = $serviceManager;
+        }
+        
+        return $return;
+    }
+
+    public function setModelName($modelName)
+    {
+        $this->modelName = $modelName;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+            \Base\ServiceManager::setInstance($serviceManager);
+        }
+    }
+    
+    public function getCallables()
+    {
+        return $this->callables;
+    }
+
+    public function setCallables(array $callables)
+    {
+        foreach ($callables as $event => $callable) {
+            $this->addCallable($event, $callable);
+        }
+    }
+
+    public function addCallable($event, $callable)
+    {
+        if (!is_callable($callable)) {
+            throw new \Exception('Event has to be callable');
+        }
+        
+        if (!in_array($event, self::$callableEvents)) {
+            throw new \Exception('There is no callable event by given type');
+        }
+        
+        $this->callables[$event] = $callable;
+    }
+    
+    public function getCallable($event)
+    {
+        $callables = $this->getCallables();
+        
+        if (!in_array($event, self::$callableEvents)) {
+            throw new \Exception('There is no callable event by given type');
+        }
+        
+        return array_key_exists($event, $callables) ? $callables[$event] : null;
+    }
     
     /**
      * Nazwa placeholdera
@@ -65,16 +151,20 @@ class Placeholder
      * @param string $value
      * @return \Base\Route\Dynamic\PlaceholderValue
      */
-    public function getValueByValue($value)
+    public function getValueByValue($value, $data = [])
     {
         $return = null;
         $values = $this->getValues();
         
-        foreach ($values as $rowValue) {
-            if ($rowValue->getValue() === $value) {
-                $return = $rowValue;
-                
-                break;
+        if (empty($values)) {
+            $return = $this->callEvent(self::DB_GET_VALUE_BY_VALUE, array_merge($data, ['value' => $value]));
+        } else {
+            foreach ($values as $rowValue) {
+                if ($rowValue->getValue() === $value) {
+                    $return = $rowValue;
+
+                    break;
+                }
             }
         }
         
@@ -99,15 +189,29 @@ class Placeholder
         $return = null;
         $values = $this->getValues();
         
-        foreach ($values as $value) {
-            if ($value->hasParamWithValue($paramName, $paramValue)) {
-                $return = $value;
-                
-                break;
+        if (empty($values)) {
+            $return = $this->callEvent(self::DB_GET_VALUE_BY_PARAM, ['param_name' => $paramName, 'param_value' => $paramValue]);
+        } else {
+            foreach ($values as $value) {
+                if ($value->hasParamWithValue($paramName, $paramValue)) {
+                    $return = $value;
+
+                    break;
+                }
             }
         }
         
+        
         return $return;
+    }
+    
+    public function callEvent($event, $params = [])
+    {
+        $callable = $this->getCallable($event);
+        
+        if (!empty($callable)) {
+            return call_user_func($callable, $this, $params);
+        }
     }
     
     public function getAssembledValue()
@@ -118,5 +222,29 @@ class Placeholder
     public function setAssembledValue($assembledValue): void
     {
         $this->assembledValue = $assembledValue;
+    }
+    
+    /**
+     * @return \Base\Db\Table\AbstractModel
+     * @throws \Exception
+     */
+    public function getModel()
+    {
+        $modelName = $this->getModelName();
+        
+        if (empty($modelName)) {
+            throw new \Exception("Nazwa modelu nie może być pusta");
+        }
+        
+        $serviceManager = $this->getServiceManager();
+        
+        $model = $serviceManager->get($modelName);
+        /* @var $model \Base\Db\Table\AbstractModel */
+        
+        if (!$model instanceof \Base\Db\Table\AbstractModel) {
+            throw new \Exception(sprintf("Model musi dziedziczyć po %s", \Base\Db\Table\AbstractModel::class));
+        }
+        
+        return $model;
     }
 }
