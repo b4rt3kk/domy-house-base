@@ -204,7 +204,7 @@ class Route
         if (!$this->isRouteStringValid($testedRouteString, $params)) {
             $isValid = false;
         }
-
+        
         if ($isValid) {
             // sprawdzanie odbywa się dla każdego route part osobno
             foreach ($matchedValues as $routeIndex => $values) {
@@ -301,7 +301,7 @@ class Route
                             // Nazwa ParentValue znajduje się w tablicy odnalezionych wcześniej rodziców
                             if ($parentValue->getValue() !== $parents[$parentValue->getPlaceholderName()]) {
                                 $isValid = false;
-
+                                
                                 $state->setMessage(sprintf(
                                     "Odnaleziona wartość rodzica dla %s wskazuje na %s tymczasem przekazano %s #2",
                                     $parentValue->getPlaceholderName(),
