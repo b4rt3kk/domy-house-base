@@ -283,7 +283,7 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
         foreach ($params as $name => $value) {
             $paramValue = $value;
             
-            if (null === $value) {
+            if (null === $value && !empty($row)) {
                 $paramValue = $row->{$name};
             }
             

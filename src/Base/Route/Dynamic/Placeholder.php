@@ -5,10 +5,12 @@ class Placeholder
 {
     const DB_GET_VALUE_BY_VALUE = 1;
     const DB_GET_VALUE_BY_PARAM = 2;
+    const DB_GET_VALUES = 3;
     
     protected static $callableEvents = [
         self::DB_GET_VALUE_BY_VALUE,
         self::DB_GET_VALUE_BY_PARAM,
+        self::DB_GET_VALUES,
     ];
     
     protected $name;
@@ -21,7 +23,15 @@ class Placeholder
     
     protected $modelName;
     
+    protected $valuesPaginationLimit = 100;
+    
     protected $callables = [];
+    
+    protected $storageKeyPrefix = 'placeholder_';
+    
+    protected $modelColumnName = 'url_string';
+    
+    protected $parentPlaceholder;
     
     /**
      * @var \Laminas\ServiceManager\ServiceManager
@@ -97,6 +107,46 @@ class Placeholder
         return array_key_exists($event, $callables) ? $callables[$event] : null;
     }
     
+    public function getValuesPaginationLimit()
+    {
+        return $this->valuesPaginationLimit;
+    }
+
+    public function setValuesPaginationLimit(int $valuesPaginationLimit)
+    {
+        $this->valuesPaginationLimit = $valuesPaginationLimit;
+    }
+    
+    public function getStorageKeyPrefix()
+    {
+        return $this->storageKeyPrefix;
+    }
+
+    public function setStorageKeyPrefix($storageKeyPrefix)
+    {
+        $this->storageKeyPrefix = $storageKeyPrefix;
+    }
+    
+    public function getModelColumnName()
+    {
+        return $this->modelColumnName;
+    }
+
+    public function setModelColumnName($modelColumnName)
+    {
+        $this->modelColumnName = $modelColumnName;
+    }
+    
+    public function getParentPlaceholder()
+    {
+        return $this->parentPlaceholder;
+    }
+
+    public function setParentPlaceholder($parentPlaceholder)
+    {
+        $this->parentPlaceholder = $parentPlaceholder;
+    }
+    
     /**
      * Nazwa placeholdera
      * @return string
@@ -112,7 +162,47 @@ class Placeholder
      */
     public function getValues()
     {
-        return $this->values;
+        $values = $this->values;
+        
+        return $values;
+    }
+    
+    /**
+     * Sprawdź czy placeholder ma przypisaną listę możliwych wartości, które może przyjąć
+     * @return boolean
+     */
+    public function hasValues()
+    {
+        return !empty($this->values);
+    }
+    
+    /**
+     * 
+     * @param string $stringToTest
+     * @param int $offset
+     * @return \Base\Route\Dynamic\PlaceholderValue[]
+     * @throws \Exception
+     */
+    public function getValuesWithOffset($stringToTest, $offset = 0, $options = [])
+    {
+        $options = array_merge([
+            'force_db' => false,
+            'min_similarity' => 0,
+        ], $options);
+        
+        if ($offset < 0) {
+            throw new \Exception("Offset nie może być mniejszy od zera");
+        }
+        
+        $values = $this->getValues();
+        
+        if (empty($values) || $options['force_db']) {
+            $values = $this->getValuesFromDb($stringToTest, $offset, $options);
+        } else if (is_array($values)) {
+            $values = array_slice($values, $offset);
+        }
+        
+        return $values;
     }
 
     public function setName($name): void
@@ -233,7 +323,7 @@ class Placeholder
         $modelName = $this->getModelName();
         
         if (empty($modelName)) {
-            throw new \Exception("Nazwa modelu nie może być pusta");
+            throw new \Exception(sprintf("Nazwa modelu dla placeholdera %s nie może być pusta", $this->getName()));
         }
         
         $serviceManager = $this->getServiceManager();
@@ -246,5 +336,102 @@ class Placeholder
         }
         
         return $model;
+    }
+    
+    /**
+     * Pobierz listę wartości najbardziej zbliżonych do testowanego stringa z bazy danych
+     * @param string $stringToTest
+     * @param integer $offset
+     * @return \Base\Route\Dynamic\PlaceholderValue[]
+     * @throws \Exception
+     */
+    public function getValuesFromDb($stringToTest = null, $offset = 0, $options = [])
+    {
+        $options = array_merge([
+            'min_similarity' => 0,
+        ], $options);
+        
+        $return = [];
+        $model = $this->getModel();
+        $columnName = $this->getModelColumnName();
+        $limit = $this->getValuesPaginationLimit();
+        
+        if (empty($columnName)) {
+            throw new \Exception("Brak nazwy kolumny dla wartości placeholdera");
+        }
+        
+        $where = new \Laminas\Db\Sql\Where();
+        
+        $where->expression('NOT ghost', []);
+        $where->expression("similarity({$columnName}, ?) > ?", [$stringToTest, $options['min_similarity']]);
+        
+        $columns = [
+            'id',
+            'url_string',
+            'name',
+            'similarity' => new \Laminas\Db\Sql\Expression("similarity({$columnName}, ?)", [$stringToTest]),
+        ];
+        
+        $select = $model->select()
+                ->columns($columns)
+                ->where($where)
+                ->order(new \Laminas\Db\Sql\Expression("similarity({$columnName}, ?) DESC", [$stringToTest]));
+                
+        if (!empty($limit)) {
+            $select->limit($limit);
+        }
+        
+        if (!empty($offset)) {
+            $select->offset($offset);
+        }
+        
+        $data = $model->fetchAll($select);
+        
+        if ($data->count() > 0) {
+            foreach ($data as $row) {
+                $value = new PlaceholderValue();
+                $value->setValue($row->url_string);
+                $value->setName($row->name);
+                $value->setParam('id', $row->id);
+                $value->setParam('similarity', $row->similarity);
+                $value->setParam('testedString', $stringToTest);
+                
+                $return[] = $value;
+            }
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Pobierz adapter cache
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter|null
+     */
+    protected function getStorage()
+    {
+        $cache = null;
+        
+        $dynamicRoute = \Base\Route\DynamicRoute::getInstance();
+        /* @todo Do ogarnięcia w inny sposób */
+        $serviceManager = $dynamicRoute->getServiceManager();
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $storageFactory = $serviceManager->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
+            /* @var $storageFactory \Laminas\Cache\Service\StorageAdapterFactory */
+
+            $config = $serviceManager->get('Config')['cache'];
+
+            $cache = $storageFactory->createFromArrayConfiguration($config);
+        }
+        
+        return $cache;
+    }
+    
+    protected function getStorageKeyName()
+    {
+        $prefix = $this->getStorageKeyPrefix();
+        $string = spl_object_hash($this);
+        
+        return $prefix . md5($string);
     }
 }

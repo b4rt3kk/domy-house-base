@@ -257,6 +257,21 @@ abstract class AbstractForm extends \Laminas\Form\Form
         
         return parent::setData($data);
     }
+    
+    public function getRequestData()
+    {
+        $data = [];
+        
+        $serviceManager = $this->getServiceManager();
+        $request = $serviceManager->get('Request');
+        /* @var $request \Laminas\ApiTools\ContentNegotiation\Request */
+        
+        if ($request->isPost()) {
+            $data = array_merge($data, $request->getPost()->toArray());
+        }
+        
+        return $data;
+    }
 
     protected function getUploadFileErrorExplained($errorNo)
     {

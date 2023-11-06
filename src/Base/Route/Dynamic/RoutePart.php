@@ -183,11 +183,30 @@ class RoutePart
      */
     public function getValuesFromString($stringToTest, $forceSimpleMatching = false)
     {
+        //ini_set("display_errors", "1");
         $return = [];
         // czysty string części routingu
         $string = $this->getString();
         $placeholders = $this->getPlaceholdersNamesFromString();
         $storage = $this->getStorage();
+        
+        if ($_SERVER['REMOTE_ADDR'] == '89.66.2.241') {
+            //diee($this->matchValues($stringToTest));
+            //diee($this->matchValues($stringToTest));
+            //diee($this->matchValues($stringToTest));
+            //diee($stringToTest, $string, $this->matchValues($stringToTest));
+            if ($stringToTest == 'dzialki-na-sprzedaz_wolnica') {
+                //$v = $this->matchValues($stringToTest);
+                //var_dump($v);echo '<br/>';
+                //diee($v, $stringToTest);
+                //diee('ok');
+                //diee($string, $placeholders, $stringToTest);
+                //var_dump($this->routeString);
+                //echo '<br/>';
+                //var_dump($stringParts[$i], $placeholderValues);
+                //echo '<br/>';
+            }
+        }
         
         if (sizeof($placeholders) > 1 && !$forceSimpleMatching) {
             $storageKey = $this->getStorageKeyName();
@@ -216,6 +235,10 @@ class RoutePart
             // w przypadku gdy w stringu występuje tylko 1 placeholder nie ma potrzeby na generowanie wszystkich możliwych wariantów
             // lub gdy wymuszono proste matchowanie wartości
             $return = $this->getPlaceholderValueFromString($stringToTest);
+        }
+        
+        if ($_SERVER['REMOTE_ADDR'] == '89.66.2.241') {
+            //diee($this->matchValues($stringToTest), $return);
         }
         
         return $return;
@@ -274,6 +297,92 @@ class RoutePart
         }
 
         $this->getAllRoutePartVariants($variants);
+    }
+    
+    public function matchValues($stringToTest, $options = [])
+    {
+        // tablica odnalezionych wartości dla stringa oraz części routingu
+        $matchedValues = [];
+        
+        $options = array_merge([
+            'string' => $this->getString(),
+        ], $options);
+        
+        $placeholders = $this->getPlaceholdersFromString($options['string']);
+        
+        // czysty string części routingu
+        $string = $options['string'];
+        //var_dump($string);echo '<br/>';
+        //var_dump($stringToTest, $string);echo '<br/>';
+        
+        $routes = Routes::getInstance();
+        
+        //diee($string, $stringToTest);
+        foreach ($placeholders as $placeholderName) {
+            $placeholder = $routes->getPlaceholder(str_replace(['{', '}'], '', $placeholderName));
+            $offset = 0;
+            
+            if (empty($placeholder)) {
+                // nie udało się pobrać placeholdera o wskazanej nazwie 
+                // nie został on skonfigurowany lub skonfigurowano go błędnie
+                continue;
+            }
+            
+            if (!empty($placeholder) && $placeholder instanceof Placeholder) {
+                // jeśli część testowanego stringa pokrywa się z tym, którego używamy do porównania do wycięcie wartości wspólnych
+                $commonSubstring = $this->getLongestMatchingSubstring($string, $stringToTest);
+                $stringForGettingValues = $stringToTest;
+                
+                if (!empty($commonSubstring) && strpos($stringToTest, $commonSubstring) === 0) {
+                    //var_dump($stringToTest, $string, $commonSubstring);echo '<br/>';
+                    $stringForGettingValues = str_replace($commonSubstring, '', $stringForGettingValues);
+                }
+                
+                // iteracja po wszystkich wynikach dla placeholdera
+                while(!empty($values = $placeholder->getValuesWithOffset($stringForGettingValues, $offset, ['force_db' => true, 'min_similarity' => 0.5]))) {
+                    // string do przetestowania po podstawieniu poprawnych wartości
+                    $testedString = $string;
+                    //var_dump($testedString);echo '<br/>';
+                    //diee($values, $stringToTest, $string);
+                    // sprawdzenie stringa
+                    foreach ($values as $value) {
+                        // podmiana parametru $value dla placeholdera mu odpowiadającego
+                        $testedString = str_replace('{' . $placeholder->getName() . '}', $value->getValue(), $testedString);
+                        $value->setPlaceholderName($placeholder->getName());
+                        //var_dump($testedString);echo '<br/>';
+                        if ($testedString === $stringToTest) {
+                            //var_dump($value);echo '<br/>';
+                            $matchedValues['{' . $placeholder->getName() . '}'] = $value;
+                            
+                            if (!empty($placeholder->getParentPlaceholder())) {
+                                $parentPlaceholder = $routes->getPlaceholder($placeholder->getParentPlaceholder());
+                                /* @todo Sprawdziwć na trzeźwo */
+                                //diee($value, $parentPlaceholder);
+                            }
+                            
+                            // przerwanie wszystkich pętli
+                            break 2;
+                        }
+                        
+                        if ($this->hasStringPlaceholders($testedString)) {
+                            // testowany string ciągle posiada placeholdery, które należy uzupełnić
+                            // bierzemy testowany string po podstawieniu wartości do placeholdera oraz z pustymi placeholderami do dalszego przetwarzania
+                            $matched = $this->matchValues($stringToTest, [
+                                'string' => $testedString,
+                            ]);
+                            
+                            if (!empty($matched)) {
+                                $matchedValues = array_merge($matchedValues, $matched);
+                            }
+                        }
+                    }
+                    
+                    $offset += sizeof($values);
+                }
+            }
+        }
+        
+        return $matchedValues;
     }
 
     /**
@@ -405,5 +514,34 @@ class RoutePart
         $string = $this->getString();
         
         return $prefix . md5($string);
+    }
+    
+    /**
+     * Czy w podanym stringu są placeholdery
+     * @param string $string
+     * @return boolean
+     */
+    protected function hasStringPlaceholders($string)
+    {
+        $placeholders = $this->getPlaceholdersFromString($string);
+        
+        return !empty($placeholders);
+    }
+    
+    protected function getLongestMatchingSubstring($str1, $str2)
+    {
+        $len_1 = strlen($str1);
+        $longest = '';
+        for ($i = 0; $i < $len_1; $i++) {
+            for ($j = $len_1 - $i; $j > 0; $j--) {
+                $sub = substr($str1, $i, $j);
+                if (strpos($str2, $sub) !== false && strlen($sub) > strlen($longest)) {
+                    $longest = $sub;
+                    break;
+                }
+            }
+        }
+        
+        return $longest;
     }
 }

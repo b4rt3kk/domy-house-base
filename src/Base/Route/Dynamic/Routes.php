@@ -23,6 +23,31 @@ class Routes
     
     protected $routeStringSeparator = self::SEPARATOR_SLASH;
     
+    protected $serviceManager;
+    
+    /**
+     * @return \Laminas\ServiceManager\ServiceManager
+     */
+    public function getServiceManager()
+    {
+        $serviceManager = \Base\ServiceManager::getInstance();
+        
+        $return = $this->serviceManager;
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $return = $serviceManager;
+        }
+        
+        return $return;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+            \Base\ServiceManager::setInstance($serviceManager);
+        }
+    }
+    
     /**
      * @return \Base\Route\Dynamic\Routes
      */
@@ -219,6 +244,14 @@ class Routes
      */
     public function assembleRoute(array $params = [], array $options = [])
     {
+        $storage = $this->getStorage();
+        
+        $cacheKey = $this->getCacheKey(['params' => $params, 'options' => $options]);
+        
+        if ($storage->hasItem($cacheKey)) {
+            //return $storage->getItem($cacheKey);
+        }
+        
         $return = null;
         $placeholders = $this->getValidPlaceholdersFromArray($params);
         $routes = $this->getRoutesWithGivenPlaceholders($placeholders);
@@ -228,8 +261,22 @@ class Routes
             /* @var $rowRoute Route */
             $routeString = $rowRoute->getRouteStringNormalized();
             
+            if ($_SERVER['REMOTE_ADDR'] == '46.205.211.187') {
+                //diee($params, $options, $route);
+            }
+
             // podmiana znaczników na wartości
             foreach ($params as $placeholder => $value) {
+                if (is_array($value)) {
+                    $strValue = $routeString;
+                    
+                    foreach ($value as $valueKey => $valueValue) {
+                        $strValue = str_replace('{' . $valueKey . '}', $valueValue, $strValue);
+                    }
+                    
+                    $value = $strValue;
+                }
+                
                 $routeString = str_replace('{' . $placeholder . '}', $value, $routeString);
             }
             
@@ -248,6 +295,76 @@ class Routes
                 $return = $rowRoute;
                 break;
             }
+        }
+        
+        $storage->setItem($cacheKey, $return);
+        
+        return $return;
+    }
+    
+    public function assemble($params = [], $options = [])
+    {
+        $return = null;
+        $foundRoute = null;
+        $placeholders = $this->getValidPlaceholdersFromArray($params);
+        $routes = $this->getRoutesWithGivenPlaceholders($placeholders);
+        $values = [];
+        
+        foreach ($placeholders as $placeholderName => $placeholder) {
+            $value = $placeholder->getValueByValue($params[str_replace(['{', '}'], '', $placeholderName)], array_merge($params, $options));
+            
+            if (is_array($value)) {
+                /** @todo Szybki fix - bo tutaj nie powinno być więcej jak jedno value - błąd w bazie */
+                $value = $value[0];
+            }
+            
+            $values[$placeholderName] = $value;
+        }
+        
+        if ($_SERVER['REMOTE_ADDR'] == '46.205.211.187') {
+            //diee($values);
+            //diee($params, $options, $route);
+        }
+
+        //diee($routes);
+        foreach ($routes as $route) {
+            $rowRoute = clone $route;
+            $normalizedString = $rowRoute->getRouteStringNormalized();
+            
+            if (!empty($options['subdomain'])) {
+                // sprawdzenie czy zgadza się subdomena
+                if ($rowRoute->getRouteParam('subdomain') != $options['subdomain']) {
+                    // pominięcie tej route jeśli domena jest inna
+                    continue;
+                }
+            }
+            
+            // podmiana parametrów na odnalezione wartości
+            foreach ($values as $name => $value) {
+                $normalizedString = str_replace($name, $value->getValue(), $normalizedString);
+            }
+            
+            if (strpos($normalizedString, '{') !== false) {
+                // route posiada nieodnalezione wartości placeholderów
+                // pominięcie
+                continue;
+            }
+            
+            $rowRoute->setRouteAssembledParams($params);
+            
+            $foundRoute = $rowRoute;
+            break;
+        }
+        
+        if (!empty($foundRoute)) {
+            $routeString = $foundRoute->getRouteStringNormalized();
+            $assembledParams = $foundRoute->getRouteAssembledParams();
+            
+            foreach ($assembledParams as $paramName => $paramValue) {
+                $routeString = str_replace('{' . $paramName . '}', $paramValue, $routeString);
+            }
+            
+            $return = '/' . trim($routeString, '/');
         }
         
         return $return;
@@ -326,5 +443,36 @@ class Routes
         }
         
         return $return;
+    }
+    
+    /**
+     * Pobierz adapter cache
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
+     */
+    protected function getStorage()
+    {
+        $storageFactory = $this->getServiceManager()->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
+        /* @var $storageFactory \Laminas\Cache\Service\StorageAdapterFactory */
+        
+        $config = $this->getServiceManager()->get('Config')['cache'];
+        
+        $cache = $storageFactory->createFromArrayConfiguration($config);
+        
+        return $cache;
+    }
+    
+    protected function getCachePrefix()
+    {
+        return md5(get_class($this)) . '_';
+    }
+    
+    protected function getCacheKey($data)
+    {
+        $prefix = $this->getCachePrefix();
+        
+        $key  = $prefix;
+        $key .= md5(serialize($data));
+        
+        return $key;
     }
 }

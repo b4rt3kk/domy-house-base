@@ -390,11 +390,26 @@ class Route
                         break;
                     }
                     
+                    if ($isValid) {
+                        if (is_array($routePartValues[$placeholderName])) {
+                            // wartości z part są tablicą - sprawdzenie czy te wartości z całości route się zgadzają
+                            foreach ($routePartValues[$placeholderName] as $routeValue) {
+                                if ($routeValueFromTestedString->getValue() !== $routeValue->getValue()) {
+                                    $isValid = false;
+                                }
+                            }
+                        } else if ($routePartValues[$placeholderName]->getValue() !== $routeValueFromTestedString->getValue()) {
+                            $isValid = false;
+                        }
+                    }
+                    /*
                     if ($isValid && $routePartValues[$placeholderName]->getValue() !== $routeValueFromTestedString->getValue()) {
                         // wartości nie są zgodne, całość tej części stringa jest nieprawidłowa
                         $isValid = false;
                         break;
                     }
+                     * 
+                     */
                 }
             }
         }
@@ -444,6 +459,31 @@ class Route
             //$placeholderValues = $this->getMappedPlaceholders($routeParts[$i], $stringParts[$i]);
             $placeholderValues = $routeParts[$i]->getValuesFromString($stringParts[$i], true);
             
+            //$placeholderValues = $routeParts[$i]->matchValues($stringParts[$i]);
+            //diee($placeholderValues);
+            //diee($placeholderValues, $routeString);
+            if (empty($placeholderValues)) {
+                continue;
+            }
+            
+            if ($_SERVER['REMOTE_ADDR'] == '89.66.2.241') {
+                if ($routeString == 'dzialki-do-sprzedania/lubelskie/dzialki-na-sprzedaz_wolnica') {
+                    // @todo Odkomentować i sprawdzić na trzeźwo
+                    //diee($routeString, $routeParts[$i]->matchValues($stringParts[$i]));
+                }
+            }
+            
+            
+            if ($_SERVER['REMOTE_ADDR'] == '89.66.2.241') {
+                //var_dump($routeParts[$i]->matchValues($stringParts[$i]));
+                if ($stringParts[$i] == 'dzialki-na-sprzedaz_wolnica') {
+                    //diee($routeParts->matchValues($stringToTest));
+                    //diee($placeholderValues);
+                    //var_dump($this->routeString);echo '<br/>';
+                    //var_dump($stringParts[$i], $placeholderValues);echo '<br/>';
+                }
+            }
+            
             if ($routeParts[$i] instanceof RoutePart) {
                 if ($routeParts[$i]->hasSpecifiedValues()) {
                     // w przypadku gdy route part ma określone stałe wartości
@@ -462,6 +502,11 @@ class Route
             }
 
             $values[$i] = $placeholderValues;
+        }
+        
+        // przefiltrowanie wartości, tak by nie zwracały wieloznacznych wyników
+        if (!empty($values)) {
+            $values = $this->filterValues($values);
         }
         
         return $values;
@@ -681,5 +726,62 @@ class Route
         $separator = $this->getPartsSeparator();
         
         return sizeof(explode($separator, $routeString));
+    }
+    
+    protected function filterValues($values)
+    {
+        $return = [];
+        $valuesWithoutIndexing = $this->getValuesWithoutRouteIndexing($values);
+        
+        foreach ($values as $routeIndex => $routeValues) {
+            $return[$routeIndex] = [];
+            
+            foreach ($routeValues as $placeholderName => $placeholderValue) {
+                $filteredPlaceholderValue = $placeholderValue;
+                
+                if (is_array($placeholderValue)) {
+                    foreach ($placeholderValue as $value) {
+                        /* @var $value \Base\Route\Dynamic\PlaceholderValue */
+                        if ($value->hasParentValue()) {
+                            // można określić, która wartość jest prawidłowa tylko w przypadku, gdy istnieje wartość nadrzędna
+                            $parentValue = $value->getParentValue();
+                            $matchedParentValue = $valuesWithoutIndexing['{' . $parentValue->getPlaceholderName() . '}'];
+                            
+                            if ($matchedParentValue instanceof \Base\Route\Dynamic\PlaceholderValue) {
+                                if ($matchedParentValue->getValue() == $parentValue->getValue()) {
+                                    // wartość rodzica jest zgodna z tą odnalezioną w pozostałych częściach route stringa
+                                    // to ją należy uznać za poprawną
+                                    $filteredPlaceholderValue = $value;
+                                    // można przerwać dalsze sprawdzanie dla tego placeholdera
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                $return[$routeIndex][$placeholderName] = $filteredPlaceholderValue;
+            }
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Przefiltreuj wartości i je pobierz bez indexowania, w której cześci route stringa występują
+     * @param array $values
+     * @return array
+     */
+    protected function getValuesWithoutRouteIndexing($values)
+    {
+        $return = [];
+        
+        foreach ($values as $routeIndex => $routeValues) {
+            foreach ($routeValues as $placeholderName => $placeholderValue) {
+                $return[$placeholderName] = $placeholderValue;
+            }
+        }
+        
+        return $return;
     }
 }

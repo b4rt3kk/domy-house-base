@@ -87,8 +87,18 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
             
             $rawRouteString = $route->getRouteStringNormalized();
             $url = '/' . $rawRouteString;
-
+            
             foreach ($assembledParams as $assembledParamName => $assembledParamValue) {
+                if (is_array($assembledParamValue)) {
+                    $strValue = $url;
+
+                    foreach ($assembledParamValue as $valueKey => $valueValue) {
+                        $strValue = str_replace('{' . $valueKey . '}', $valueValue, $strValue);
+                    }
+
+                    $assembledParamValue = $strValue;
+                }
+                
                 $url = str_replace('{' . $assembledParamName . '}', $assembledParamValue, $url);
             }
         }
