@@ -330,12 +330,28 @@ class Routes
         foreach ($routes as $route) {
             $rowRoute = clone $route;
             $normalizedString = $rowRoute->getRouteStringNormalized();
+            $routeValuesFromRouteString = $rowRoute->getRouteValuesFromRouteString();
             
             if (!empty($options['subdomain'])) {
                 // sprawdzenie czy zgadza się subdomena
                 if ($rowRoute->getRouteParam('subdomain') != $options['subdomain']) {
                     // pominięcie tej route jeśli domena jest inna
                     continue;
+                }
+            }
+            
+            if (!empty($routeValuesFromRouteString)) {
+                foreach ($routeValuesFromRouteString as $routeValueName => $routeValue) {
+                    /* @var $routeValue \Base\Route\Dynamic\PlaceholderValue */
+                    if (!isset($values[$routeValueName])) {
+                        // jeśli odnaleziono przypisane z góry wartości dla route stringa, a nie ma ich w znalezionych wartościach to pomijamy to route
+                        continue 2;
+                    }
+                    
+                    if ($routeValue->getValue() !== $values[$routeValueName]->getValue()) {
+                        // nie zgadza się wartość odnaleziona z wartością na stałe przypisaną do route
+                        continue 2;
+                    }
                 }
             }
             

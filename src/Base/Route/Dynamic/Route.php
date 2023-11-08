@@ -607,6 +607,35 @@ class Route
         
         return array_keys($foundRouteStrings);
     }
+    
+    /**
+     * Pobierz tablicę wartości, dla placeholderów, dla których przypisano już określoną wartość 
+     * @return array
+     */
+    public function getRouteValuesFromRouteString()
+    {
+        $return = [];
+        
+        $routeString = $this->getRouteString();
+        $placeholders = $this->getPlaceholdersFromString($routeString);
+        $routes = $this->getRoutes();
+        
+        if (!empty($placeholders)) {
+            foreach ($placeholders as $placeholder) {
+                // placeholder ma przypisaną stałą wartość
+                if (strpos($placeholder, '=') !== false) {
+                    $chunks = explode('=', trim($placeholder, '{}'));
+                    
+                    $placeholderObject = $routes->getPlaceholder($chunks[0]);
+                    $placeholderValue = $placeholderObject->getValueByValue($chunks[1]);
+                    
+                    $return[$placeholderObject->getRawName()] = $placeholderValue;
+                }
+            }
+        }
+        
+        return $return;
+    }
 
     protected function setRouteParts($routeParts): void
     {

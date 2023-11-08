@@ -13,7 +13,7 @@ class RouteMatch
     public function match($routeString, $params = [])
     {
         ini_set("display_errors", "1");
-        if ($_SERVER['REMOTE_ADDR'] == '46.205.211.187') {
+        if ($_SERVER['REMOTE_ADDR'] == '46.205.210.215') {
             //diee($routeString);
         }
         $return = null;
@@ -56,8 +56,9 @@ class RouteMatch
             $state = $rowRoute->isRouteValid($routeString, $values, $params);
             
             if (!$state->getIsValid()) {
-                if ($_SERVER['REMOTE_ADDR'] == '46.205.211.187') {
+                if ($_SERVER['REMOTE_ADDR'] == '46.205.210.215') {
                     //var_dump("MESSAGE", $state->getMessage());
+                    //var_dump("ROUTE STRING", $routeString);
                     //echo '<pre>';
                     //var_dump($values);
                     //echo '</pre>';
