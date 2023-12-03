@@ -47,6 +47,8 @@ if ($paginator instanceof \Base\Paginator) {
 echo <<<"JS"
     $('#{$paginatorId}').find('select[name="items_per_page"]').on("change", function() {
         let itemsPerPage = $(this).val();
+        $(this).prop('disabled', true);
+        $(this).closest('nav').find('.paginator-loader').show();
     
         $.ajax({
             url: '{$ajaxUrl}',
