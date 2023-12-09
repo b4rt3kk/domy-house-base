@@ -12,7 +12,6 @@ class Nip extends \Laminas\Validator\AbstractValidator
         self::INVALID_NIP => "Numer NIP jest nieprawidłowy",
         self::INVALID_NIP_LENGTH => "Numer NIP musi składać się dokładnie z 10 cyfr",
         self::INVALID_NIP_CHARACTERS => "Numer NIP może zawierać jedynie cyfry",
-        
     ];
 
     public function isValid($value)
@@ -21,7 +20,7 @@ class Nip extends \Laminas\Validator\AbstractValidator
         $isValid = true;
         
         // sprawdzenie czy NIP zawiera jedynie cyfry
-        if (!preg_match("#[0-9]+#", $value)) {
+        if (!preg_match("#^[0-9]+$#", $value)) {
             $this->error(self::INVALID_NIP_CHARACTERS);
             $isValid = false;
         }
