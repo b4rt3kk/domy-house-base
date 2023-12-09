@@ -65,9 +65,9 @@ foreach ($headers as $header) {
     if (!empty($headersMapping[$header]['sortable'])) {
         echo '<a href="#"> '; 
         
-        if ($sort[$header] === 'ASC') {
+        if (array_key_exists($header, $sort) && $sort[$header] === 'ASC') {
             echo '<i class="fa fa-sort-up"></i> ';
-        } else if ($sort[$header] === 'DESC') {
+        } else if (array_key_exists($header, $sort) && $sort[$header] === 'DESC') {
             echo '<i class="fa fa-sort-down"></i> ';
         } else {
             echo '<i class="fa fa-sort"></i> ';
