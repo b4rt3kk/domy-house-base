@@ -42,6 +42,8 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
      * @var \Base\Logger\Logger
      */
     protected $logger;
+    
+    protected $memoryLimit = '5G';
 
     /**
      * @return \Laminas\ServiceManager\ServiceManager
@@ -112,6 +114,16 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     {
         return $this->isTestMode;
     }
+    
+    public function getMemoryLimit()
+    {
+        return $this->memoryLimit;
+    }
+
+    public function setMemoryLimit($memoryLimit)
+    {
+        $this->memoryLimit = $memoryLimit;
+    }
 
     /**
      * W trybie testowym ignorowany jest status wykonywanej akcji (uruchomienie następuje dla każdego statusu)
@@ -137,6 +149,11 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     {
         $isDebug = $this->getIsDebug();
         $isTestMode = $this->getIsTestMode();
+        $memoryLimit = $this->getMemoryLimit();
+        
+        // ustawienie limitu pamięci
+        ini_set("memory_limit", $memoryLimit);
+        
         // zalogowanie jako domyślny użytkownik wirtualny
         $this->loginAsVirtualUser();
         

@@ -455,9 +455,12 @@ abstract class AbstractModel
         
         $tableGateway = $this->getTableGateway();
         $platform = $tableGateway->getAdapter()->getPlatform();
+        // pobranie kolumn z definicji tabeli
+        $tableColumns = $this->getTableColumns();
         // pobranie kolumn na podstawie pierwszego wiersza z przekazanej tablicy
-        $columns = array_keys($data[0]);
-
+        // i skonfrontowanie tego z kolumnami definicji tabeli
+        $columns = array_intersect(array_keys($tableColumns), array_keys($data[0]));
+        
         $serviceManager = $this->getServiceManager();
         
         if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
@@ -480,6 +483,9 @@ abstract class AbstractModel
                 
                 foreach ($columns as $column) {
                     switch (true) {
+                        case $tableColumns[$column]->getDataType() === 'boolean':
+                            $queryValues .= ($row[$column] === true ? "true" : "false") . ", ";
+                            break;
                         case empty($row[$column]) && $row[$column] !== 0 && $row[$column] !== '0':
                             $queryValues .= "NULL, ";
                             break;

@@ -28,6 +28,35 @@ abstract class AbstractLogic implements LogicInterface
         }
     }
     
+    public function unserializeFormArray($data)
+    {
+        $return = [];
+        
+        foreach ($data as $row) {
+            $name = $row['name'];
+            $value = $row['value'];
+            $isArray = false;
+            
+            if (strpos($name, '[]')) {
+                $name = str_replace(['[]'], '', $name);
+                
+                if (!is_array($return[$name])) {
+                    $return[$name] = [];
+                }
+                
+                $isArray = true;
+            }
+            
+            if ($isArray === true) {
+                $return[$name][] = $value; 
+            } else {
+                $return[$name] = $value;
+            }
+        }
+        
+        return $return;
+    }
+    
     public function unserializeJqueryArray($data)
     {
         $return = [];

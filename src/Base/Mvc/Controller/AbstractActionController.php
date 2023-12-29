@@ -52,7 +52,9 @@ abstract class AbstractActionController extends \Laminas\Mvc\Controller\Abstract
      */
     public function getServiceManager()
     {
-        return $this->serviceManager;
+        $return = $this->serviceManager;
+        
+        return $return;
     }
 
     public function setServiceManager(\Laminas\ServiceManager\ServiceManager $serviceManager)
