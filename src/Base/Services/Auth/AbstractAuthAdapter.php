@@ -80,13 +80,60 @@ abstract class AbstractAuthAdapter implements AdapterInterface
              * 
              */
     ];
+    
+    protected $options = [];
 
     /**
-     * @return ServiceManager
+     * @return \Laminas\ServiceManager\ServiceManager
      */
     public function getServiceManager()
     {
-        return $this->serviceManager;
+        $serviceManager = \Base\ServiceManager::getInstance();
+        
+        $return = $this->serviceManager;
+        
+        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
+            $return = $serviceManager;
+        }
+        
+        return $return;
+    }
+
+    public function setServiceManager($serviceManager)
+    {
+        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+            \Base\ServiceManager::setInstance($serviceManager);
+        }
+    }
+    
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    public function setOptions($options)
+    {
+        if (is_array($options) && !empty($options)) {
+            foreach ($options as $name => $value) {
+                $this->setOption($name, $value);
+            }
+        }
+    }
+    
+    public function setOption($name, $value)
+    {
+        $this->options[$name] = $value;
+        
+        $methodName = 'set';
+        $chunks = explode('_', $name);
+        
+        foreach ($chunks as $chunk) {
+            $methodName .= ucfirst($chunk);
+        }
+        
+        if (method_exists($this, $methodName)) {
+            $this->{$methodName}($value);
+        }
     }
 
     public function getLogin()
@@ -97,11 +144,6 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     public function getPassword()
     {
         return $this->password;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
 
     public function setLogin($login)
@@ -328,12 +370,38 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     
     public function getPropertiesValues()
     {
+        $return = [];
+        $reflectionClass = new \ReflectionClass($this);
+        $properties = $reflectionClass->getProperties();
         
+        if (!empty($properties)) {
+            foreach ($properties as $property) {
+                /* @var $property \ReflectionProperty */
+                $name = $property->getName();
+                $methodName = 'get' . ucfirst($name);
+                
+                if (method_exists($this,$methodName)) {
+                    $value = $this->{$methodName}();
+                    
+                    $return[$name] = $value;
+                }
+            }
+        }
+        
+        return $return;
     }
     
     public function setPropertiesValues(array $data)
     {
-        
+        if (!empty($data)) {
+            foreach ($data as $key => $value) {
+                $methodName = 'set' . ucfirst($key);
+                
+                if (method_exists($this, $methodName)) {
+                    $this->{$methodName}($value);
+                }
+            }
+        }
     }
     
     /**

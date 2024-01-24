@@ -47,7 +47,7 @@ class AuthManager extends AbstractLogic
         $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
         /* @var $authenticationService \Laminas\Authentication\AuthenticationService */
         $adapter = $authenticationService->getAdapter();
-        /* @var $adapter \Base\Services\Auth\AuthAdapter */
+        /* @var $adapter \Base\Services\Auth\AbstractAuthAdapter */
         
         if ($authenticationService->getIdentity() !== null) {
             throw new \Exception('You are already logged');
@@ -55,6 +55,13 @@ class AuthManager extends AbstractLogic
         
         $adapter->setLogin($data[$adapter->getLoginColumnName()]);
         $adapter->setPassword($data[$adapter->getPasswordColumnName()]);
+        
+        if ($_SERVER['REMOTE_ADDR'] == '46.205.208.252') {
+            $oAuth = new OAuth\Google\AuthAdapter();
+            $oAuth->setPropertiesValues($adapter->getPropertiesValues());
+            
+            //diee($oAuth);
+        }
         
         $result = $authenticationService->authenticate();
         
