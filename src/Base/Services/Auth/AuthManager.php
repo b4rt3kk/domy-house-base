@@ -11,6 +11,43 @@ class AuthManager extends AbstractLogic
     
     const DEFAULT_VIRTUAL_USER = 'System';
     
+    const OUATH_GOOGLE = 'google';
+    
+    public static $OAuthAdapters = [
+        self::OUATH_GOOGLE => \Base\Services\Auth\OAuth\Google\AuthAdapter::class,
+    ];
+    
+    /**
+     * @param string $name
+     * @return \Base\Services\Auth\OAuth\AbstractOAuth
+     * @throws \Exception
+     */
+    public function getOAuthAdapter($name)
+    {
+        $serviceManager = $this->getServiceManager();
+        
+        $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
+        /* @var $authenticationService \Laminas\Authentication\AuthenticationService */
+        $defaultAdapter = $authenticationService->getAdapter();
+        /* @var $defaultAdapter \Base\Services\Auth\AbstractAuthAdapter */
+        
+        if (!in_array($name, array_keys(self::$OAuthAdapters))) {
+            throw new \Exception(sprintf('Adapter o nazwie %s nie jest obsługiwany'));
+        }
+        
+        $className = self::$OAuthAdapters[$name];
+        
+        if (!class_exists($className)) {
+            throw new \Exception(sprintf('Klasa o nazwie %s nie istnieje', $className));
+        }
+        
+        $adapter = new $className();
+        /* @var $adapter \Base\Services\Auth\OAuth\AbstractOAuth */
+        $adapter->setPropertiesValues($defaultAdapter->getPropertiesValues());
+        
+        return $adapter;
+    }
+    
     /**
      * Pobierz route dla przekierowania po zalogowaniu
      * @return \Laminas\Router\Http\RouteMatch|null

@@ -27,4 +27,6 @@ abstract class AbstractOAuth extends \Base\Services\Auth\AbstractAuthAdapter
     {
         $this->uidColumnName = $uidColumnName;
     }
+    
+    abstract public function getOAuthUrl();
 }
