@@ -82,6 +82,8 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     ];
     
     protected $options = [];
+    
+    protected $storageContainerName;
 
     /**
      * @return \Laminas\ServiceManager\ServiceManager
@@ -234,6 +236,16 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     public function setFailedLoginsLimit($failedLoginsLimit)
     {
         $this->failedLoginsLimit = $failedLoginsLimit;
+    }
+    
+    public function getStorageContainerName()
+    {
+        return $this->storageContainerName;
+    }
+
+    public function setStorageContainerName($storageContainerName)
+    {
+        $this->storageContainerName = $storageContainerName;
     }
 
     /**
@@ -450,5 +462,18 @@ abstract class AbstractAuthAdapter implements AdapterInterface
         $row = $model->fetchRow($select);
         
         return $row;
+    }
+    
+    /**
+     * Pobierz obiekt sesji przechowujący dane adaptera
+     * @return \Laminas\Session\Container
+     */
+    protected function getStorageContainer()
+    {
+        $containerName = $this->getStorageContainerName();
+
+        $container = new \Laminas\Session\Container($containerName);
+
+        return $container;
     }
 }
