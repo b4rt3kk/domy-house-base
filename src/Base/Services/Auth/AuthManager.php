@@ -73,7 +73,7 @@ class AuthManager extends AbstractLogic
         $container->redirectRoute = null;
     }
     
-    public function login($data)
+    public function login($data = [])
     {
         $serviceManager = $this->getServiceManager();
         
@@ -90,12 +90,18 @@ class AuthManager extends AbstractLogic
             throw new \Exception('You are already logged');
         }
         
-        $adapter->setLogin($data[$adapter->getLoginColumnName()]);
-        $adapter->setPassword($data[$adapter->getPasswordColumnName()]);
+        if (array_key_exists($adapter->getLoginColumnName(), $data)) {
+            $adapter->setLogin($data[$adapter->getLoginColumnName()]);
+        }
+        
+        if (array_key_exists($adapter->getPasswordColumnName(), $data)) {
+            $adapter->setPassword($data[$adapter->getPasswordColumnName()]);
+        }
         
         if ($_SERVER['REMOTE_ADDR'] == '46.205.208.252') {
-            $oAuth = new OAuth\Google\AuthAdapter();
-            $oAuth->setPropertiesValues($adapter->getPropertiesValues());
+            //diee($authenticationService);
+            //$oAuth = new OAuth\Google\AuthAdapter();
+            //$oAuth->setPropertiesValues($adapter->getPropertiesValues());
             
             //diee($oAuth);
         }

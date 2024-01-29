@@ -240,7 +240,13 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     
     public function getStorageContainerName()
     {
-        return $this->storageContainerName;
+        $containerName =  $this->storageContainerName;
+        
+        if (empty($containerName)) {
+            $containerName = str_replace(['\\'], ['_'], get_class($this));
+        }
+        
+        return $containerName;
     }
 
     public function setStorageContainerName($storageContainerName)
@@ -475,5 +481,16 @@ abstract class AbstractAuthAdapter implements AdapterInterface
         $container = new \Laminas\Session\Container($containerName);
 
         return $container;
+    }
+    
+    /**
+     * Wyczyść zapisane w sesji dane dla tego kontenera
+     */
+    protected function clearStorageCondainerData()
+    {
+        $container = $this->getStorageContainer();
+        $name = $container->getName();
+        
+        $container->getManager()->getStorage()->clear($name);
     }
 }

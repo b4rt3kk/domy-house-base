@@ -93,6 +93,22 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
         $code = $this->getCode();
         
         $client = $this->getClient();
+        $storageContainer = $this->getStorageContainer();
+        
+        if (!empty($code)) {
+            //$client->fetchAccessTokenWithAuthCode($code);
+            
+            // pobranie tokena i zapisanie w sesji
+            //$token = $client->getAccessToken($client);
+            //$storageContainer->token = $token;
+        }
+        
+        if (isset($storageContainer->token)) {
+            $token = $storageContainer->token;
+            
+            // ustanowienie tokena zapisanego w sesji
+            $client->setAccessToken($token);
+        }
         
         if (!empty($code)) {
             $client->fetchAccessTokenWithAuthCode($code);
@@ -100,12 +116,43 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
             $token = $client->getAccessToken($client);
             $service = $this->getService($client);
             
+            $storageContainer->token = $token;
+            
             $userInfo = $service->userinfo->get();
             
-            diee($token, $userInfo);
+            if (empty($userInfo->email)) {
+                throw new \Exception("Nie udało się pobrać adresu email");
+            }
+            
+            if (empty($userInfo->id)) {
+                throw new \Exception("Nie udało się pobrać id");
+            }
+            
+            $rowUser = $this->getUserByLoginRow($userInfo->email);
+            
+            $model = $this->getModel();
+            $table = $model->getEntity();
+
+            if (!empty($rowUser)) {
+                $this->setUserRow($rowUser);
+                
+                // użytkownik o tym adresie email już istnieje
+                $data = [
+                    $this->getProviderColumnName() => $this->getProviderId(),
+                    $this->getUidColumnName() => $userInfo->id,
+                ];
+                
+                $model->update($data, ['id' => $rowUser->id]);
+                
+                $result = new \Laminas\Authentication\Result(\Laminas\Authentication\Result::SUCCESS, $rowUser, ['Authenticated successfully']);
+                $this->callEvent(self::EVENT_LOGIN_SUCCESS);
+
+                return $result;
+            } else {
+                // użytkownik nie istnieje
+                // rejestracja nowego użytkownika
+            }
         }
-        
-        diee('auth');
     }
     
     public function register()

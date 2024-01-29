@@ -8,6 +8,8 @@ abstract class AbstractOAuth extends \Base\Services\Auth\AbstractAuthAdapter
     
     protected $uidColumnName = 'oauth_uid';
     
+    protected $providerId;
+    
     public function getProviderColumnName()
     {
         return $this->providerColumnName;
@@ -28,5 +30,15 @@ abstract class AbstractOAuth extends \Base\Services\Auth\AbstractAuthAdapter
         $this->uidColumnName = $uidColumnName;
     }
     
+    public function getProviderId()
+    {
+        return $this->providerId;
+    }
+
+    public function setProviderId($providerId)
+    {
+        $this->providerId = $providerId;
+    }
+
     abstract public function getOAuthUrl();
 }
