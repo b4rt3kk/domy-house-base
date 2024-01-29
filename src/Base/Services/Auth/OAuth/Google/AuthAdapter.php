@@ -155,6 +155,14 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
         diee('register');
     }
     
+    public function logout()
+    {
+        $client = $this->getClient();
+        $client->revokeToken();
+        
+        $this->clearStorageCondainerData();
+    }
+    
     public function getOAuthUrl()
     {
         $gClient = $this->getClient();

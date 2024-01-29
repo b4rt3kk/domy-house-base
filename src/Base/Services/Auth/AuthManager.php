@@ -119,13 +119,14 @@ class AuthManager extends AbstractLogic
         $authenticationService = $serviceManager->get(\Laminas\Authentication\AuthenticationService::class);
         /* @var $authenticationService \Laminas\Authentication\AuthenticationService */
         $adapter = $authenticationService->getAdapter();
-        /* @var $adapter \Base\Services\Auth\AuthAdapter */
+        /* @var $adapter \Base\Services\Auth\AbstractAuthAdapter */
         
         if ($authenticationService->getIdentity() === null) {
             throw new \Exception('You are not logged in');
         }
         
         $authenticationService->clearIdentity();
+        
         $adapter->callEvent(AuthAdapter::EVENT_LOGOUT);
     }
     

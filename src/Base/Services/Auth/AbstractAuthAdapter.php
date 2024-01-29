@@ -41,6 +41,8 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     
     protected $isVirtualColumnName = 'is_virtual';
     
+    protected $lastAdapterColumnName = 'last_login_adapter';
+    
     protected $cryptClass = \Laminas\Crypt\Password\Bcrypt::class;
     
     protected $callables = [];
@@ -253,6 +255,16 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     {
         $this->storageContainerName = $storageContainerName;
     }
+    
+    public function getLastAdapterColumnName()
+    {
+        return $this->lastAdapterColumnName;
+    }
+
+    public function setLastAdapterColumnName($lastAdapterColumnName)
+    {
+        $this->lastAdapterColumnName = $lastAdapterColumnName;
+    }
 
     /**
      * @return \Base\Db\Table\AbstractEntity
@@ -431,6 +443,8 @@ abstract class AbstractAuthAdapter implements AdapterInterface
      * Przeprowadź rejestrację użytkownika
      */
     abstract public function register();
+    
+    abstract public function logout();
     
     protected function getUserByLoginRow($login)
     {

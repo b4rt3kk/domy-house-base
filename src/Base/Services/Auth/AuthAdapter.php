@@ -119,4 +119,9 @@ class AuthAdapter extends AbstractAuthAdapter
             throw $e;
         }
     }
+    
+    public function logout()
+    {
+        //diee('logout2');
+    }
 }
