@@ -96,11 +96,11 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
         $storageContainer = $this->getStorageContainer();
         
         if (!empty($code)) {
-            //$client->fetchAccessTokenWithAuthCode($code);
+            $client->fetchAccessTokenWithAuthCode($code);
             
             // pobranie tokena i zapisanie w sesji
-            //$token = $client->getAccessToken($client);
-            //$storageContainer->token = $token;
+            $token = $client->getAccessToken($client);
+            $storageContainer->token = $token;
         }
         
         if (isset($storageContainer->token)) {
@@ -110,40 +110,35 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
             $client->setAccessToken($token);
         }
         
-        if (!empty($code)) {
-            $client->fetchAccessTokenWithAuthCode($code);
-            
-            $token = $client->getAccessToken($client);
+        if ($client->getAccessToken()) {
             $service = $this->getService($client);
             
-            $storageContainer->token = $token;
-            
             $userInfo = $service->userinfo->get();
-            
+
             if (empty($userInfo->email)) {
                 throw new \Exception("Nie udało się pobrać adresu email");
             }
-            
+
             if (empty($userInfo->id)) {
                 throw new \Exception("Nie udało się pobrać id");
             }
-            
+
             $rowUser = $this->getUserByLoginRow($userInfo->email);
-            
+
             $model = $this->getModel();
             $table = $model->getEntity();
 
             if (!empty($rowUser)) {
                 $this->setUserRow($rowUser);
-                
+
                 // użytkownik o tym adresie email już istnieje
                 $data = [
                     $this->getProviderColumnName() => $this->getProviderId(),
                     $this->getUidColumnName() => $userInfo->id,
                 ];
-                
+
                 $model->update($data, ['id' => $rowUser->id]);
-                
+
                 $result = new \Laminas\Authentication\Result(\Laminas\Authentication\Result::SUCCESS, $rowUser, ['Authenticated successfully']);
                 $this->callEvent(self::EVENT_LOGIN_SUCCESS);
 
