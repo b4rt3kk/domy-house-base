@@ -12,6 +12,8 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
     
     protected $GOauthRedirectUri;
     
+    protected $uid;
+    
     protected $code;
     
     protected $scope;
@@ -87,6 +89,16 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
     {
         $this->token = $token;
     }
+    
+    public function getUid()
+    {
+        return $this->uid;
+    }
+
+    public function setUid($uid)
+    {
+        $this->uid = $uid;
+    }
 
     public function authenticate()
     {
@@ -145,14 +157,70 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
                 return $result;
             } else {
                 // użytkownik nie istnieje
+                // przypisanie pobranych danych
+                $this->setLogin($userInfo->email);
+                $this->setUid($userInfo->id);
                 // rejestracja nowego użytkownika
+                return $this->register();
             }
         }
     }
     
     public function register()
     {
-        diee('register');
+        $loginColumn = $this->getLoginColumnName();
+        
+        $login = $this->getLogin();
+        
+        if (empty($login)) {
+            throw new \Exception('Login cannot be empty');
+        }
+        
+        $rowUser = $this->getUserByLoginRow($login);
+        
+        if (!empty($rowUser)) {
+            throw new \Exception('User already exists');
+        }
+        
+        $remoteAddress = new \Laminas\Http\PhpEnvironment\RemoteAddress();
+        
+        $model = $this->getModel();
+        $table = $model->getEntity();
+        
+        $data = array_merge($this->getAdditionalData(), [
+            $loginColumn => $login,
+            $this->getProviderColumnName() => $this->getProviderId(),
+            $this->getUidColumnName() => $this->getUid(),
+            'register_ip_address' => $remoteAddress->getIpAddress(),
+        ]);
+        
+        $table->exchangeArray($data);
+        
+        $adapter = $this->getServiceManager()->get('main');
+        /* @var $adapter \Laminas\Db\Adapter\Adapter */
+
+        $adapter->getDriver()->getConnection()->beginTransaction();
+        
+        try {
+            $id = $model->createRow($table);
+
+            $row = $this->getUserByIdRow($id);
+
+            $this->setUserRow($row);
+
+            $this->callEvent(self::EVENT_REGISTER_SUCCESS);
+            
+            $adapter->getDriver()->getConnection()->commit();
+            
+            $result = new \Laminas\Authentication\Result(\Laminas\Authentication\Result::SUCCESS, $row, ['Authenticated successfully']);
+            
+            $this->callEvent(self::EVENT_LOGIN_SUCCESS);
+
+            return $result;
+        } catch (\Exception $e) {
+            $adapter->getDriver()->getConnection()->rollback();
+            throw $e;
+        }
     }
     
     public function logout()
