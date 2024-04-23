@@ -98,14 +98,6 @@ class AuthManager extends AbstractLogic
             $adapter->setPassword($data[$adapter->getPasswordColumnName()]);
         }
         
-        if ($_SERVER['REMOTE_ADDR'] == '46.205.208.252') {
-            //diee($authenticationService);
-            //$oAuth = new OAuth\Google\AuthAdapter();
-            //$oAuth->setPropertiesValues($adapter->getPropertiesValues());
-            
-            //diee($oAuth);
-        }
-        
         $result = $authenticationService->authenticate();
         
         if ($result->getCode() !== \Laminas\Authentication\Result::SUCCESS) {

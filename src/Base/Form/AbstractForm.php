@@ -313,7 +313,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     
     protected function cancel($value = 'Cancel', $options = [])
     {
-        $options['name'] = 'cancel_form';
+        $name = array_key_exists('name', $options) ? $options['name'] : 'cancel_form';
         
         if (!empty($options['attributes']['class'])) {
             $options['attributes']['class'] = 'btn form-button-cancel ' . $options['attributes']['class'];
@@ -323,7 +323,15 @@ abstract class AbstractForm extends \Laminas\Form\Form
         
         $options['attributes']['data-cancel-url'] = $this->getCancelUrl();
         
-        $this->submit($value, $options);
+        $config = array_merge_recursive($options, [
+            'type' => \Laminas\Form\Element\Button::class,
+            'name' => $name,
+            'options' => [
+                'label' => $value,
+            ],
+        ]);
+        
+        $this->add($config);
     }
     
     protected function actionUrlButton($value, $options = [])

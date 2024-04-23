@@ -22,6 +22,8 @@ if ($form instanceof \Base\Form\AbstractForm) {
 
     echo $this->form()->openTag($form);
 
+    echo '<table class="table">';
+
     foreach ($elements as $element) {
         if (in_array(get_class($element), $buttonTypes)) {
             $buttons[] = $element;
@@ -34,26 +36,34 @@ if ($form instanceof \Base\Form\AbstractForm) {
             continue;
         }
 
-        echo '<div class="mb-3 ' . ($rowLabelClass ?? '') . '">';
+        echo '<tr>';
 
+        echo '<td class="' . ($rowLabelClass ?? '') . '">';
         echo $this->formLabel($element);
+        echo '</td>';
 
+        echo '<td>';
         echo $this->formElement($element);
         echo $this->formElementErrors($element, ['id' => 'form-input-errors']);
+        echo '</td>';
 
-        echo '</div>';
+        echo '</tr>';
     }
 
     if (!empty($buttons)) {
-        echo '<div class="mb-3">';
+        echo '<tr>';
+        echo '<td colspan="2">';
 
         foreach ($buttons as $button) {
             echo $this->formElement($button);
             echo '&nbsp;';
         }
 
-        echo '</div>';
+        echo '</td>';
+        echo '</tr>';
     }
+
+    echo '</table>';
 
     echo $this->form()->closeTag();
 
