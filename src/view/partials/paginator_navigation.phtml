@@ -9,58 +9,45 @@ $loadTime = $paginator->getPageLoadTimeMs();
 $perPageOptions = $paginator->getPerPageOptions();
 $perPage = $paginator->getItemsPerPage();
 ?>
-<nav aria-label="Page navigation example">
-    <ul class="pagination">
-        <li class="page-item <?php echo $currentPage <= 1 ? 'disabled' : null; ?>">
-            <a class="page-link" href="<?php echo $this->url(null, [], ['query' => ['page' => $currentPage - 1]], true); ?>" aria-label="Previous">
+<nav class="navbar bg-body-tertiary mb-3">
+    <div class="container-fluid flex-column flex-lg-row w-100">
+        <!-- numer strony -->
+        <div class="d-flex justify-content-lg-start justify-content-center flex-grow-1">
+            <a class="btn btn-outline-primary mr-1 <?php echo $currentPage <= 1 ? 'disabled' : null; ?>" href="<?php echo $this->url(null, [], ['query' => ['page' => $currentPage - 1]], true); ?>" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
                 <span class="sr-only">Previous</span>
             </a>
-        </li>
-        
-        <?php for ($i = $firstPage; $i <= $lastPage; $i++) : ?>
-        <li class="page-item <?php echo ($currentPage == $i ? 'active' : null) ?>">
-            <a class="page-link" href="<?php echo $this->url(null, [], ['query' => ['page' => $i]], true); ?>"><?php echo $i; ?></a>
-        </li>
-        <?php endfor; ?>
-        
-        <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : null; ?>">
-            <a class="page-link" href="<?php echo $this->url(null, [], ['query' => ['page' => $currentPage + 1]], true); ?>" aria-label="Next">
+            
+            <?php for ($i = $firstPage; $i <= $lastPage; $i++) : ?>
+                <a class="btn mr-1 <?php echo ($currentPage == $i ? 'btn-primary' : 'btn-outline-primary') ?>" href="<?php echo $this->url(null, [], ['query' => ['page' => $i]], true); ?>"><?php echo $i; ?></a>
+            <?php endfor; ?>
+            
+            <a class="btn btn-outline-primary <?php echo $currentPage >= $totalPages ? 'disabled' : null; ?>" href="<?php echo $this->url(null, [], ['query' => ['page' => $currentPage + 1]], true); ?>" aria-label="Next">
                 <span class="sr-only">Next</span>
                 <span aria-hidden="true">&raquo;</span>
             </a>
-        </li>
+        </div>
         
-        <li class="page-item disabled">
-            <span class="page-link">Strona <strong><?php echo $currentPage; ?></strong>  z <strong><?php echo $totalPages; ?></strong></span>
-        </li>
-        
-        <li class="page-item disabled">
-            <span class="page-link">Wyników na stronę </span>
-        </li>
-        
-        <li class="page-item">
-            <select name="items_per_page" class="form-control">
+        <div class="d-flex justify-content-center flex-grow-1">
+            <span class="navbar-text">Strona <strong><?php echo $currentPage; ?></strong>  z <strong><?php echo $totalPages; ?></strong></span>
+        </div>
+      
+        <div class="d-flex justify-content-center flex-grow-1 form-floating">
+                <select id="items_per_page" name="items_per_page" class="form-control text-right">
                 <?php foreach ($perPageOptions as $option) : ?>
                     <option value="<?php echo $option; ?>" <?php echo ($perPage == $option ? 'selected' : null); ?>><?php echo $option; ?></option>
                 <?php endforeach; ?>
-            </select>
-        </li>
+                </select>
+                <label class="" for="items_per_page">Wyników na stronę</label>
+        </div>
         
-        <li class="page-item disabled">
-            <span class="page-link">Wyników <strong><i class="fas fa-hashtag"></i><?php echo $totalResults; ?></strong></span>
-        </li>
+        <div class="d-flex justify-content-center flex-grow-1">
+            <span class="navbar-text">Wyników <strong><i class="fas fa-hashtag"></i><?php echo $totalResults; ?></strong></span>
+        </div>
         
-        <li class="page-item disabled">
-            <span class="page-link"><strong><i class="far fa-clock"></i></strong> <?php echo number_format($loadTime, 4); ?> s</span>
-        </li>
-        
-        <li class="page-item disabled pl-2 hidden paginator-loader">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </li>
-        
-    </ul>
+        <div class="d-flex justify-content-center justify-content-lg-end flex-grow-1">
+            <span class="navbar-text"><strong><i class="far fa-clock"></i></strong> <?php echo number_format($loadTime, 4); ?> s</span>
+        </div>
+    </div>
 </nav>
 
