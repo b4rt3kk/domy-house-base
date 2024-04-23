@@ -294,7 +294,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     {
         $name = array_key_exists('name', $options) ? $options['name'] : 'submit_form';
         $attributes = [
-            'class' => 'btn btn-primary',
+            'class' => 'btn btn-primary w-100 mb-2',
             'value' => $value,
         ];
         
@@ -316,9 +316,9 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $name = array_key_exists('name', $options) ? $options['name'] : 'cancel_form';
         
         if (!empty($options['attributes']['class'])) {
-            $options['attributes']['class'] = 'btn form-button-cancel ' . $options['attributes']['class'];
+            $options['attributes']['class'] = 'btn form-button-cancel w-100 ' . $options['attributes']['class'];
         } else {
-            $options['attributes']['class'] = 'btn btn-secondary form-button-cancel';
+            $options['attributes']['class'] = 'btn btn-secondary form-button-cancel w-100';
         }
         
         $options['attributes']['data-cancel-url'] = $this->getCancelUrl();
@@ -355,7 +355,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     {
         $options['name'] = 'clear_form';
         $options['attributes'] = [
-            'class' => 'btn btn-secondary',
+            'class' => 'btn btn-secondary w-100',
         ];
 
         $this->submit($value, $options);

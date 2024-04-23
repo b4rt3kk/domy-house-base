@@ -45,11 +45,10 @@ if ($form instanceof \Base\Form\AbstractForm) {
     }
 
     if (!empty($buttons)) {
-        echo '<div class="mb-3">';
+        echo '<div class="p-3 bg-body-tertiary">';
 
         foreach ($buttons as $button) {
             echo $this->formElement($button);
-            echo '&nbsp;';
         }
 
         echo '</div>';
