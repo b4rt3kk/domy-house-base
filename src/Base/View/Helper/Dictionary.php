@@ -20,10 +20,15 @@ class Dictionary extends AbstractHelper
         $this->serviceManager = $serviceManager;
     }
     
-    public function __invoke(\Base\Db\Table\AbstractEntity $entity, $columnName)
+    public function __invoke(\Base\Db\Table\AbstractEntity $entity, $columnName, $prototype = null)
     {
         $value = $entity->{$columnName};
         $dictionaries = $entity->getDictionaries();
+        
+        if (empty($dictionaries) && $prototype instanceof \Base\Db\Table\AbstractEntity) {
+            $dictionaries = $prototype->getDictionaries();
+        }
+        
         $dictionaryValues = [];
         
         if (array_key_exists($columnName, $dictionaries)) {
@@ -60,7 +65,7 @@ class Dictionary extends AbstractHelper
             
             $dictionaryValues = $dictionary->getDictionary();
         }
-        
+
         return $dictionaryValues[$value] ?? $value;
     }
 }

@@ -86,4 +86,15 @@ abstract class AbstractEntity
     {
         return $this->getData();
     }
+    
+    /**
+     * Wyczyść zbędne dane przy konwersji na Rowset
+     */
+    public function clearRedundantData()
+    {
+        $this->setHeadersMapping([]);
+        $this->setRowActions([]);
+        $this->setDictionaries([]);
+        $this->setActionsPartial(null);
+    }
 }

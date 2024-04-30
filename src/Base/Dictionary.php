@@ -23,6 +23,8 @@ class Dictionary extends Logic\AbstractLogic
     
     protected $namedDictionaryCallable;
     
+    protected $useCache = true;
+    
     public function init()
     {
         $this->reset();
@@ -39,6 +41,11 @@ class Dictionary extends Logic\AbstractLogic
         $this->setSeparator(self::DEFAULT_SEPARATOR);
     }
     
+    /**
+     * Callable do pobierania danych ze słownika podstawowego, 
+     * czyli takiego, którego wpisy wyszukiwane są na podstawie nazwy, a nie modelu
+     * @return function
+     */
     public function getNamedDictionaryCallable()
     {
         return $this->namedDictionaryCallable;
@@ -118,27 +125,55 @@ class Dictionary extends Logic\AbstractLogic
     {
         $this->languageCode = $languageCode;
     }
+    
+    public function getUseCache()
+    {
+        return $this->useCache;
+    }
+
+    public function setUseCache($useCache): void
+    {
+        $this->useCache = $useCache;
+    }
+    
+    public function clearCache()
+    {
+        $storage = $this->getStorage();
+        
+        try {
+            switch (get_class($storage)) {
+                case \Laminas\Cache\Storage\Adapter\Filesystem::class:
+                    $options = $storage->getOptions();
+                    /* @var $options \Laminas\Cache\Storage\Adapter\FilesystemOptions */
+
+                    $storage->flush();
+                    break;
+            }
+        } catch (\Exception $e) {
+            // tymczasowo pominięcie błędów czyszczenia cache
+        }
+    }
         
     public function getDictionary()
     {
         $name = $this->getDictionaryName();
+        $cacheKey = $this->getDictionaryCacheKey();
         $return = [];
         
-        if (!empty($name)) {
+        $storage = $this->getStorage();
+        
+        if ($this->getUseCache() && $storage->hasItem($cacheKey)) {
+            $return = unserialize($storage->getItem($cacheKey));
+        } else if (!empty($name)) {
             // jeśli określono parametr name to pobieranie wartości słownikowych na podstawie wstrzykniętego callable
             $return = $this->getNamedDictionary();
         } else {
             $model = $this->getModel();
             $idKey = $this->getIdKey();
             $nameFields = $this->getNameFields();
-            $where = $this->getWhere();
             $separator = $this->getSeparator();
 
-            $select = $model->select();
-
-            if (!empty($where)) {
-                $select->where($where);
-            }
+            $select = $this->getSelect();
 
             $data = $model->fetchAll($select);
 
@@ -151,6 +186,10 @@ class Dictionary extends Logic\AbstractLogic
 
                 $return[$row->{$idKey}] = trim($name, $separator);
             }
+        }
+        
+        if ($this->getUseCache() && !$storage->hasItem($cacheKey)) {
+            $storage->addItem($cacheKey, serialize($return));
         }
         
         return $return;
@@ -180,6 +219,24 @@ class Dictionary extends Logic\AbstractLogic
     }
     
     /**
+     * Pobierz select dla tego słownika
+     * @return \Laminas\Db\Sql\Select
+     */
+    protected function getSelect()
+    {
+        $model = $this->getModel();
+        $where = $this->getWhere();
+        
+        $select = $model->select();
+
+        if (!empty($where)) {
+            $select->where($where);
+        }
+        
+        return $select;
+    }
+    
+    /**
      * Pobierz customowy słownik dla określonego name
      * @return array
      */
@@ -199,5 +256,40 @@ class Dictionary extends Logic\AbstractLogic
         }
         
         return $return;
+    }
+    
+    /**
+     * Pobierz klucz cache dla tego słownika.
+     * Klucz generowany jest na podstawie parametrów konfiguracyjnych lub dla named dictionary na podstawie jego nazwy
+     * @return string
+     */
+    protected function getDictionaryCacheKey()
+    {
+        $cacheKey = $this->getDictionaryName();
+        
+        if (empty($cacheKey)) {
+            $select = $this->getSelect();
+            // w przypadku gdy jest to słownik oparty o model 
+            // klucz cache generowany jest na podstawie select stringa
+            $cacheKey = $select->getSqlString();
+        }
+        
+        return md5($cacheKey);
+    }
+    
+    /**
+     * Pobierz adapter cache
+     * @return \Laminas\Cache\Storage\Adapter\AbstractAdapter
+     */
+    protected function getStorage()
+    {
+        $storageFactory = $this->getServiceManager()->get(\Laminas\Cache\Service\StorageAdapterFactoryInterface::class);
+        /* @var $storageFactory \Laminas\Cache\Service\StorageAdapterFactory */
+        
+        $config = $this->getServiceManager()->get('Config')['cache'];
+        
+        $cache = $storageFactory->createFromArrayConfiguration($config);
+        
+        return $cache;
     }
 }

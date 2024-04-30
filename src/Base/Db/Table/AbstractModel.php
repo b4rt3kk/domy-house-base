@@ -555,6 +555,10 @@ abstract class AbstractModel
         foreach ($resultSet as $row) {
             $prototype = clone $return->getArrayObjectPrototype();
             
+            if (method_exists($prototype, 'clearRedundantData')) {
+                //$prototype->clearRedundantData();
+            }
+            
             if (!empty($row)) {
                 $prototype->exchangeArray($row->toArray());
                 $iterator->add($prototype);
