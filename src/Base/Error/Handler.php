@@ -26,7 +26,7 @@ class Handler
         }
     }
     
-    public function handle(int $errorNumber, string $errorString, string $errorFile, int $errorLine, array $errorContext) 
+    public function handle(int $errorNumber, string $errorString, string $errorFile, int $errorLine, array $errorContext = []) 
     {
         $drivers = $this->getLogDrivers();
         

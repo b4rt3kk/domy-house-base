@@ -266,7 +266,7 @@ class Route
             // sprawdzenie parametrów dodatkowych względem parametrów route
             foreach ($parents as $name => $value) {
                 if (array_key_exists($name, $routeParams) && $routeParams[$name] !== $value) {
-                    $state->setMessage(sprintf("Niezgodna wartość parametru route % z przekazanym %s", $routeParams[$name], $value));
+                    $state->setMessage(sprintf("Niezgodna wartość parametru route %s z przekazanym %s", $routeParams[$name], $value));
                     
                     $isValid = false;
                     break;

@@ -60,3 +60,11 @@ function dumpp() {
      * 
      */
 }
+
+function fatalHandler() 
+{
+    $backtrace = debug_backtrace(false);
+    $error = error_get_last();
+    
+    diee($error, $backtrace);
+}
