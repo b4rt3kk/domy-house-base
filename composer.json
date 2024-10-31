@@ -19,11 +19,5 @@
             "Base": "src/"
         },
         "files": ["src/debug/functions.php"]
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "master",
-            "dev-develop": "master"
-        }
     }
 }
