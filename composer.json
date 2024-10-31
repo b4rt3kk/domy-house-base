@@ -1,5 +1,5 @@
 {
-    "name": "bw/domy-house-base",
+    "name": "bwwiechnik/domy-house-base",
     "description": "Base methods for Laminas framework",
     "type": "library",
     "license": "MIT",
