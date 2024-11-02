@@ -173,7 +173,8 @@ class Dictionary extends Logic\AbstractLogic
             $nameFields = $this->getNameFields();
             $separator = $this->getSeparator();
 
-            $select = $this->getSelect();
+            $select = $this->getSelect()
+                    ->columns(array_merge([$idKey], $nameFields));
 
             $data = $model->fetchAll($select);
 

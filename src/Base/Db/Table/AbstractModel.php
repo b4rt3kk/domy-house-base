@@ -336,7 +336,14 @@ abstract class AbstractModel
         $storage = $this->getStorage();
         
         if ($where instanceof \Laminas\Db\Sql\Combine) {
-            return $this->getSelectData($where);
+            $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
+            $data = $connection->execute($where->getSqlString($this->getTableGateway()->getAdapter()->getPlatform()));
+            
+            $prototype = $this->getTableGateway()->getResultSetPrototype();
+            /* @var $prototype \Laminas\Db\ResultSet\ResultSet */
+            $prototype->initialize($data);
+            
+            return $prototype;
         } else if (!$where instanceof \Laminas\Db\Sql\Select) {
             $select = $this->select();
             
@@ -365,12 +372,12 @@ abstract class AbstractModel
             // w przypadku gdy używane jest cache
             if (empty($item) && !$isError) {
                 // cache nie jest jeszcze uzupełniony
-                $data = $this->prepareResultSetForCaching($this->getSelectData($select));
+                $data = $this->prepareResultSetForCaching($tableGateway->selectWith($select));
                 
                 $storage->setItem($cacheKey, $data);
             } else if ($isError) {
                 // w przypadku błędu pobranie z bazy
-                $data = $this->getSelectData($select);
+                $data = $tableGateway->selectWith($select);
             } else {
                 // dane istnieją w cache, pobranie ich do zwrócenia
                 $data = $storage->getItem($cacheKey);
@@ -378,7 +385,7 @@ abstract class AbstractModel
         } else {
             // cache nie jest używane
             // pobranie danych bezpośrednio z bazy danych
-            $data = $this->getSelectData($select);
+            $data = $tableGateway->selectWith($select);
             /* @var $data \Laminas\Db\ResultSet\ResultSet */
         }
         
@@ -561,22 +568,5 @@ abstract class AbstractModel
         $return->initialize($iterator);
         
         return $return;
-    }
-    
-    /**
-     * Pobierz dane z pomocą select-a
-     * @param \Laminas\Db\Sql\Select $select
-     * @return \Laminas\Db\ResultSet\ResultSet
-     */
-    protected function getSelectData(\Laminas\Db\Sql\Select $select)
-    {
-        $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
-        $data = $connection->execute($select->getSqlString($this->getTableGateway()->getAdapter()->getPlatform()));
-
-        $prototype = $this->getTableGateway()->getResultSetPrototype();
-        /* @var $prototype \Laminas\Db\ResultSet\ResultSet */
-        $prototype->initialize($data);
-
-        return $prototype;
     }
 }
