@@ -319,10 +319,12 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         
         $model = $this->getModel();
         $select = clone $this->getSelect();
+        
+        $select->from($model->getTableGateway()->getTable());
         $select->reset(\Laminas\Db\Sql\Select::ORDER);
-
+        
         $select->columns(['count' => new \Laminas\Db\Sql\Expression("COUNT(1)")]);
-
+        
         $row = $model->fetchRow($select);
 
         return $row->count;
