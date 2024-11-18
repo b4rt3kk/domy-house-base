@@ -127,13 +127,19 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             'bytes' => ' B',
             'kbytes' => ' KB',
             'mbytes' => ' MB',
+            'gbytes' => ' GB',
+            'tbytes' => ' TB',
         ];
-        
+
         $return = $bytes;
-        $kbytes = $bytes / 1000;
-        $mbytes = $kbytes / 1000;
-        
+        $kbytes = $bytes / 1024;
+        $mbytes = $kbytes / 1024;
+        $gbytes = $mbytes / 1024;
+
         switch (true) {
+            case $gbytes > 1:
+                $return = number_format($gbytes, 2) . $suffix['gbytes'];
+                break;
             case $mbytes > 1:
                 $return = number_format($mbytes, 2) . $suffix['mbytes'];
                 break;
@@ -143,10 +149,10 @@ class Format extends \Laminas\View\Helper\AbstractHelper
             default:
                 $return = $bytes . $suffix['bytes'];
         }
-        
+
         return $return;
     }
-    
+
     protected function getTimeLeftFormatted($seconds)
     {
         $hours = floor($seconds / (60 * 60));
