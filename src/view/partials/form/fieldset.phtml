@@ -1,0 +1,29 @@
+<?php
+/* @var $fieldset \Base\Form\AbstractForm */
+
+if (!$fieldset->getIsInitialized()) {
+    $fieldset->init();
+}
+
+$id = $fieldset->getAttribute('id') ?? ('fieldset-' . str_replace(['\\'], ['_'], get_class($fieldset)));
+$elements = $fieldset->getElements();
+
+if (!empty($elements)) {
+    echo '<div class="card form-fieldset" id="' . $id . '">';
+    
+    echo '<div class="card-header">';
+    echo $fieldset->getLabel();
+    echo '</div>';
+    
+    echo '<div class="card-body">';
+    
+    foreach ($elements as $element) {
+        /* @var $element \Laminas\Form\Element */
+        
+        echo $this->partial('base/form/element', ['element' => $element]);
+    }
+    
+    echo '</div>';
+    
+    echo '</div>';
+}

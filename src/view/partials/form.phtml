@@ -6,6 +6,8 @@ if ($form instanceof \Base\Form\AbstractForm) {
     }
 
     $elements = $form->getElements();
+    $fieldsets = $form->getFieldsets();
+    
     $buttons = [];
 
     $buttonTypes = [
@@ -42,6 +44,13 @@ if ($form instanceof \Base\Form\AbstractForm) {
         echo $this->formElementErrors($element, ['id' => 'form-input-errors']);
 
         echo '</div>';
+    }
+    
+    if (!empty($fieldsets)) {
+        foreach ($fieldsets as $fieldset) {
+            /* @var $fieldset \Base\Form\AbstractForm */
+            echo $this->partial('base/form/fieldset', ['fieldset' => $fieldset]);
+        }
     }
 
     if (!empty($buttons)) {

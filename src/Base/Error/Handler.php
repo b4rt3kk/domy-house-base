@@ -31,7 +31,7 @@ class Handler
         $drivers = $this->getLogDrivers();
         
         foreach ($drivers as $driver) {
-            $message  = intl_error_name($errorNumber) . "\r\n";
+            $message  = \intl_error_name($errorNumber) . "\r\n";
             $message .= "File: " . $errorFile . " [line: " . $errorLine . "]" . "\r\n";
             $message .= "Message: " . $errorString . "\r\n";
 

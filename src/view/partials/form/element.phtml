@@ -1,0 +1,11 @@
+<?php
+/* @var $element \Laminas\Form\Element */
+
+echo '<div class="mb-3">';
+
+echo $this->formLabel($element);
+
+echo $this->formElement($element);
+echo $this->formElementErrors($element, ['id' => 'form-input-errors']);
+
+echo '</div>';
