@@ -6,6 +6,8 @@ use \Laminas\Log\Writer\Stream;
 
 class Migrations
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const DEFAULT_PREFIX = 'Migration';
     
     const DEFAULT_SUFFIX = '.php';
@@ -13,8 +15,6 @@ class Migrations
     protected $migrationsDir;
     
     protected $migrationsModel;
-    
-    protected $serviceManager;
     
     protected $prefix = self::DEFAULT_PREFIX;
     
@@ -73,19 +73,6 @@ class Migrations
     public function setSuffix($suffix)
     {
         $this->suffix = $suffix;
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
     
     /**

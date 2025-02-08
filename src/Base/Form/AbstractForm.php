@@ -3,6 +3,8 @@ namespace Base\Form;
 
 abstract class AbstractForm extends \Laminas\Form\Form
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const UPLOAD_ERR_OK = 0;
     const UPLOAD_ERR_INI_SIZE = 1;
     const UPLOAD_ERR_FORM_SIZE = 2;
@@ -22,8 +24,6 @@ abstract class AbstractForm extends \Laminas\Form\Form
         self::UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
         self::UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload.',
     ];
-    
-    protected $serviceManager;
     
     protected $isInitialized = false;
     
@@ -165,19 +165,6 @@ abstract class AbstractForm extends \Laminas\Form\Form
                 'required' => $isRequired,
             ]);
         }
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
     
     public function getPhpFileUploadErrors()

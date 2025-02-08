@@ -3,6 +3,8 @@ namespace Base\Route\Dynamic;
 
 class RoutePart
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     /**
      * Oryginalna wartość stringa bez obróbki
      * @var string
@@ -27,8 +29,6 @@ class RoutePart
      */
     protected $index;
     
-    protected $serviceManager;
-    
     protected $storageKeyPrefix;
     
     public function __construct($rawString)
@@ -37,29 +37,6 @@ class RoutePart
             $this->setRawString($rawString);
             // string pozbawiony wartości parametrów, dostosowany do wyszukiwania
             $this->setString($this->normalizeStringAndAssignValues($rawString));
-        }
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
         }
     }
     

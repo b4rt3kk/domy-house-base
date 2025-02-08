@@ -5,20 +5,7 @@ use Laminas\View\Helper\AbstractHelper;
 
 class Dictionary extends AbstractHelper
 {
-    protected $serviceManager;
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
+    use \Base\Traits\ServiceManagerTrait;
     
     public function __invoke(\Base\Db\Table\AbstractEntity $entity, $columnName, $prototype = null)
     {

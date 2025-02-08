@@ -7,13 +7,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class Command extends \Symfony\Component\Console\Command\Command implements CommandInterface
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const STATUS_WAITING = 1;
     const STATUS_EXECUTING = 2;
     const STATUS_ERROR = 3;
     
     const MESSAGE_SUCCESS = 'Operacja przebiegła pomyślnie';
-    
-    protected $serviceManager;
     
     protected $actionsTableClassName;
     
@@ -45,19 +45,6 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
     
     protected $memoryLimit = '5G';
 
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
-    
     public function getLogger(): \Base\Logger\Logger
     {
         return $this->logger;

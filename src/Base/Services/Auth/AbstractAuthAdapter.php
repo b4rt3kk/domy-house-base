@@ -9,6 +9,8 @@ use Laminas\ServiceManager\ServiceManager;
 
 abstract class AbstractAuthAdapter implements AdapterInterface
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const EVENT_LOGIN_SUCCESS = 1;
     const EVENT_LOGIN_FAILED = 2;
     const EVENT_REGISTER_SUCCESS = 3;
@@ -26,8 +28,6 @@ abstract class AbstractAuthAdapter implements AdapterInterface
         self::EVENT_IDENTITY_FOUND,
         self::EVENT_IDENTITY_NOT_FOUND,
     ];
-    
-    protected $serviceManager;
     
     protected $login;
     
@@ -87,29 +87,6 @@ abstract class AbstractAuthAdapter implements AdapterInterface
     
     protected $storageContainerName;
 
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
-        }
-    }
-    
     public function getOptions()
     {
         return $this->options;

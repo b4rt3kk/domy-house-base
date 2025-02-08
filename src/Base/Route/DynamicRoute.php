@@ -3,13 +3,13 @@ namespace Base\Route;
 
 class DynamicRoute implements \Laminas\Router\Http\RouteInterface
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     protected static $instance;
     
     protected $options = [];
     
     protected $assembledParams = [];
-    
-    protected $serviceManager;
     
     public function __construct($options = [])
     {
@@ -42,29 +42,6 @@ class DynamicRoute implements \Laminas\Router\Http\RouteInterface
     public function setOptions($options): void
     {
         $this->options = $options;
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
-    public function setServiceManager($serviceManager): void
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
-        }
     }
     
     /**

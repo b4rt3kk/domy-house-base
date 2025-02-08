@@ -37,15 +37,15 @@ use Laminas\Mail\Transport\TransportInterface;
 */
 class Mail
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const SENT_MESSAGE_OK = 'Wiadomość została wysłana';
     
     /**
      * @var TransportInterface
      */
     protected $transport;
-    
-    protected $serviceManager;
-    
+
     protected $mailSentModelName;
     
     protected $columnsMapping = [
@@ -76,20 +76,7 @@ class Mail
     {
         $this->transport = $transport;
     }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
 
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
-    
     public function getMailSentModelName()
     {
         return $this->mailSentModelName;

@@ -5,6 +5,8 @@ use Laminas\Db\TableGateway\TableGatewayInterface;
 
 abstract class AbstractModel
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     protected $data;
     
     protected $tableGateway;
@@ -23,19 +25,6 @@ abstract class AbstractModel
     {
         $this->setTableGateway($tableGateway);
         $this->setServiceManager($serviceManager);
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
     
     public function getCreatorColumnName()

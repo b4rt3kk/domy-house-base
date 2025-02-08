@@ -3,20 +3,7 @@ namespace Base\View\Helper;
 
 class ServiceManager extends \Laminas\View\Helper\AbstractHelper
 {
-    protected $serviceManager;
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
+    use \Base\Traits\ServiceManagerTrait;
     
     public function get($name)
     {

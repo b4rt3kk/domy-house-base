@@ -3,6 +3,8 @@ namespace Base\Route\Dynamic;
 
 class Routes
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const SEPARATOR_SLASH = '/';
     
     /**
@@ -22,31 +24,6 @@ class Routes
     protected $data = [];
     
     protected $routeStringSeparator = self::SEPARATOR_SLASH;
-    
-    protected $serviceManager;
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
-        }
-    }
     
     /**
      * @return \Base\Route\Dynamic\Routes

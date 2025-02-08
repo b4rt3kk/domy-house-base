@@ -3,6 +3,8 @@ namespace Base\Route\Dynamic;
 
 class Route
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     /**
      * Czysty route string bez podstawionych wartości
      * @var string
@@ -22,35 +24,10 @@ class Route
     
     protected $routeAssembledParams = [];
     
-    protected $serviceManager;
-    
     public function __construct($routeString, $routeParams = [])
     {
         $this->setRouteString($routeString);
         $this->setRouteParams($routeParams);
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
-        }
     }
     
     public function getRouteString()

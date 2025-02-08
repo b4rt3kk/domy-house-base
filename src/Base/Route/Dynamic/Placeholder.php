@@ -3,6 +3,8 @@ namespace Base\Route\Dynamic;
 
 class Placeholder
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const DB_GET_VALUE_BY_VALUE = 1;
     const DB_GET_VALUE_BY_PARAM = 2;
     const DB_GET_VALUES = 3;
@@ -33,42 +35,14 @@ class Placeholder
     
     protected $parentPlaceholder;
     
-    /**
-     * @var \Laminas\ServiceManager\ServiceManager
-     */
-    protected $serviceManager;
-    
     public function getModelName()
     {
         return $this->modelName;
     }
 
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $serviceManager = \Base\ServiceManager::getInstance();
-        
-        $return = $this->serviceManager;
-        
-        if ($serviceManager instanceof \Laminas\ServiceManager\ServiceManager) {
-            $return = $serviceManager;
-        }
-        
-        return $return;
-    }
-
     public function setModelName($modelName)
     {
         $this->modelName = $modelName;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
-            \Base\ServiceManager::setInstance($serviceManager);
-        }
     }
     
     public function getCallables()

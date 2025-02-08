@@ -3,9 +3,9 @@ namespace Base\Navigation\Page;
 
 class Mvc extends \Laminas\Navigation\Page\Mvc
 {
-    protected $row;
+    use \Base\Traits\ServiceManagerTrait;
     
-    protected $serviceManager;
+    protected $row;
     
     protected $where = [];
     
@@ -202,19 +202,6 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     public function setWhere($where)
     {
         $this->where = $where;
-    }
-    
-    /**
-     * @return \Base\View\Helper\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
     
     public function getClass()

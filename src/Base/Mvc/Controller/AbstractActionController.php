@@ -3,7 +3,7 @@ namespace Base\Mvc\Controller;
 
 abstract class AbstractActionController extends \Laminas\Mvc\Controller\AbstractActionController
 {
-    protected $serviceManager;
+    use \Base\Traits\ServiceManagerTrait;
     
     public function __construct($serviceManager)
     {
@@ -45,20 +45,5 @@ abstract class AbstractActionController extends \Laminas\Mvc\Controller\Abstract
         }
 
         return parent::onDispatch($e);
-    }
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        $return = $this->serviceManager;
-        
-        return $return;
-    }
-
-    public function setServiceManager(\Laminas\ServiceManager\ServiceManager $serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
     }
 }

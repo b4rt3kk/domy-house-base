@@ -4,6 +4,8 @@ namespace Base\Services\Payments;
 
 abstract class AbstractPayment extends AbstractInput
 {
+    use \Base\Traits\ServiceManagerTrait;
+    
     const STATUS_PAYMENT_NEW = 1;
     const STATUS_PAYMENT_SUCCESS = 2;
     const STATUS_PAYMENT_WAITING = 3;
@@ -13,9 +15,7 @@ abstract class AbstractPayment extends AbstractInput
     
     const EVENT_UPDATE_PAYMENT = 'update_payment';
     const EVENT_IS_PAYMENT_VALID = 'is_payment_valid';
-    
-    protected $serviceManager;
-    
+
     protected $paymentModelName;
     /**
      * Dowolny kod identyfikujący metodę płatności
@@ -69,19 +69,6 @@ abstract class AbstractPayment extends AbstractInput
     protected $isSandbox = false;
     
     protected $isDebug = false;
-    
-    /**
-     * @return \Laminas\ServiceManager\ServiceManager
-     */
-    public function getServiceManager()
-    {
-        return $this->serviceManager;
-    }
-
-    public function setServiceManager($serviceManager)
-    {
-        $this->serviceManager = $serviceManager;
-    }
     
     public function addEvent($name, $event)
     {
