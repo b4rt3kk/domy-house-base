@@ -20,7 +20,7 @@ if (!empty($elements)) {
     foreach ($elements as $element) {
         /* @var $element \Laminas\Form\Element */
         
-        echo $this->partial('base/form/element', ['element' => $element]);
+        echo $this->partial('base/form/element', ['element' => $element, 'fieldset' => $fieldset]);
     }
     
     echo '</div>';
