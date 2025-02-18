@@ -26,10 +26,10 @@ class AbstractCommandFactory implements AbstractFactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $logic = new $requestedName();
+        $command = new $requestedName();
         /* @var $logic \Base\Command\Command */
-        $logic->setServiceManager($container);
-
-        return $logic;
+        $command->setServiceManager($container);
+        
+        return $command;
     }
 }

@@ -33,7 +33,9 @@ trait ServiceManagerTrait
      */
     public function setServiceManager($serviceManager) : void
     {
-        if (!$this->getServiceManager() instanceof \Laminas\ServiceManager\ServiceManager) {
+        $instance = \Base\ServiceManager::getInstance();
+        
+        if (!$instance instanceof \Laminas\ServiceManager\ServiceManager) {
             \Base\ServiceManager::setInstance($serviceManager);
         }
     }

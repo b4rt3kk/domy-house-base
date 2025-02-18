@@ -4,7 +4,11 @@
 
 echo '<div class="form-element-container mb-3">';
 
-echo $this->formLabel($element);
+$label = $element->getLabel();
+
+if (!empty($label)) {
+    echo $this->formLabel($element);
+}
 
 echo $this->formElement($element);
 echo $this->formElementErrors($element, ['id' => 'form-input-errors']);
