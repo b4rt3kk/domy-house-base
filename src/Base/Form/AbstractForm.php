@@ -259,6 +259,15 @@ abstract class AbstractForm extends \Laminas\Form\Form
         
         return $data;
     }
+    
+    /**
+     * Pobierz domyślne id formularza, które generowane jest na podstawie nazwy klasy formularza
+     * @return string
+     */
+    public function getFormId()
+    {
+        return str_replace(['\\'], ['_'], get_class($this));
+    }
 
     protected function getUploadFileErrorExplained($errorNo)
     {
@@ -370,5 +379,43 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $url = $plugin($name, $params, $options, $reuseMatchedParams);
         
         return $url;
+    }
+    
+    /**
+     * Pobierz wartości słownikowe dla wskazanych parametrów
+     * @param array $params
+     * @return array
+     */
+    protected function getDictionaryData($params = [])
+    {
+        $dictionary = $this->getServiceManager()->get(\Base\Dictionary::class);
+        /* @var $dictionary \Base\Dictionary */
+        $dictionary->init();
+        
+        if (!empty($params['name'])) {
+            $dictionary->setDictionaryName($params['name']);
+        }
+
+        if (!empty($params['id'])) {
+            $dictionary->setIdKey($params['id']);
+        }
+
+        if (!empty($params['modelName'])) {
+            $dictionary->setModelName($params['modelName']);
+        }
+
+        if (!empty($params['nameFields'])) {
+            $dictionary->setNameFields($params['nameFields']);
+        }
+
+        if (!empty($params['where'])) {
+            $dictionary->setWhere($params['where']);
+        }
+
+        if (!empty($params['separator'])) {
+            $dictionary->setSeparator($params['separator']);
+        }
+        
+        return $dictionary->getDictionary();
     }
 }

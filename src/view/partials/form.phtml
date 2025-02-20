@@ -4,6 +4,14 @@ if ($form instanceof \Base\Form\AbstractForm) {
     if (!$form->getIsInitialized()) {
         $form->init();
     }
+    
+    $formId = $form->getAttribute('id');
+    
+    if (empty($formId)) {
+        // domyślny id formularza - wygenerowany na podstawie nazwy klasy
+        $formId = $form->getFormId();
+        $form->setAttribute('id', $formId);
+    }
 
     $elements = $form->getElements();
     $fieldsets = $form->getFieldsets();
@@ -25,9 +33,18 @@ if ($form instanceof \Base\Form\AbstractForm) {
     echo $this->form()->openTag($form);
 
     foreach ($elements as $element) {
+        /* @var $element \Laminas\Form\Element */
         if (in_array(get_class($element), $buttonTypes)) {
             $buttons[] = $element;
             continue;
+        }
+        
+        $elementId = $element->getAttribute('id');
+        
+        if (empty($elementId)) {
+            // w przypadku gdy nie przypisano bezpośrednio id elementu z prefixem w postaci id formularza
+            $elementId = $element->getName();
+            $element->setAttribute('id', $formId . '_' . $elementId);
         }
         
         if (in_array(get_class($element), $specialElements)) {
