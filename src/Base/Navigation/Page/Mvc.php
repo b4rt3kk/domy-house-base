@@ -100,6 +100,11 @@ class Mvc extends \Laminas\Navigation\Page\Mvc
     {
         $this->attributes = $attributes;
     }
+    
+    public function setAttribute($name, $value)
+    {
+        $this->attributes[$name] = $value;
+    }
 
     public function getId()
     {

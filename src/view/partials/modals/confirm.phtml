@@ -1,0 +1,36 @@
+<!-- Modal -->
+<?php
+$cancel = [
+    'label' => $buttons['cancel']['label'] ?? 'Anuluj',
+];
+
+$confirm = [
+    'label' => $buttons['confirm']['label'] ?? 'Tak',
+];
+?>
+<div class="modal fade" id="<?php echo $id; ?>" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel"><?php echo $this->translate($title); ?></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?php echo $this->translate('Zamknij'); ?>"></button>
+            </div>
+            <div class="modal-body">
+                <?php echo $this->translate($description); ?>
+                
+                <?php if (!empty($small_description)) : ?>
+                <hr />
+                <p>
+                    <small class="text-secondary">
+                        <?php echo $this->translate($small_description); ?>
+                    </small>
+                </p>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $this->translate($cancel['label']); ?></button>
+                <a href="<?php echo $href; ?>" class="btn btn-danger" id="confirmButton"><?php echo $this->translate($confirm['label']); ?></a>
+            </div>
+        </div>
+    </div>
+</div>

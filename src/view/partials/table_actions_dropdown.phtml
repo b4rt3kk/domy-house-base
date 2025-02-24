@@ -11,8 +11,26 @@
             'row' => $row,
             'serviceManager' => $this->serviceManager(),
         ]));
+        
+        if (!empty($action['confirmModal'])) {
+        // dodanie partiala z confirm (potwierdzeniem)
+        // wygenerowanie unikatowego id elementu
+        $id = uniqid("action_");
 
-        if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
+        $this->layout()->modals = array_merge($this->layout()->modals, [
+            ['partial' => 'base/modal/confirm', 'params' => array_merge([
+                'id' => $id,
+                'page' => $page,
+                'href' => $page->getHref(),
+            ], $action['confirmModal'])],
+        ]);
+        
+        $page->setAttribute('data-bs-toggle', 'modal');
+        $page->setAttribute('data-bs-target', '#' . $id);
+        $page->setUrl('#');
+    }
+
+    if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
             $showedPages[] = $page->getHref();
 
             echo '<li>';
