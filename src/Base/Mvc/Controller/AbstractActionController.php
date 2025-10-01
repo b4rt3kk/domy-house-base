@@ -18,13 +18,19 @@ abstract class AbstractActionController extends \Laminas\Mvc\Controller\Abstract
         $controller = $e->getTarget();
         $routeName = $e->getRouteMatch()->getMatchedRouteName();
         $actionName = $e->getRouteMatch()->getParam('action', null);
-        
+        $previousActionName = $e->getRouteMatch()->getParam('previousAction', null);
+        $forwarded = $e->getRouteMatch()->getParam('__forwarded', false);
+
+        if ($forwarded) {
+            $actionName = $previousActionName;
+        }
+
         $authManager = $serviceManager->get(\Base\Services\Auth\AuthManager::class);
         /* @var $authManager \Base\Services\Auth\AuthManager */
         
         // sprawdzenie czy użytkownik ma dostęp do zasobu
         $result = $authManager->filterAccess($routeName, $actionName);
-        
+
         switch ($result) {
             case \Base\Services\Auth\AuthManager::ACCESS_DENIED:
                 if ($routeName !== 'auth' || $actionName !== 'notauthorized') {
