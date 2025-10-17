@@ -73,4 +73,32 @@ abstract class AbstractLogic implements LogicInterface
         
         return $return;
     }
+
+    /**
+     * Calculates the total size of all files within the specified directory.
+     *
+     * @param string $path The path to the directory whose total size needs to be calculated.
+     *                      The path should point to a valid directory.
+     * @return int The size of all files in the directory, in bytes. Returns 0 if the path is not a directory.
+     */
+    public function getDirectorySize($path)
+    {
+        $size = 0;
+
+        if (!is_dir($path)) {
+            return 0; // lub możesz rzucić wyjątek
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $size += $file->getSize();
+            }
+        }
+
+        return $size; // <-- wynik w bajtach
+    }
 }
