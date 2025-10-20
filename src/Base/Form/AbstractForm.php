@@ -351,7 +351,7 @@ abstract class AbstractForm extends \Laminas\Form\Form
     {
         $options['name'] = 'clear_form';
         $options['attributes'] = [
-            'class' => 'btn btn-secondary w-100',
+            'class' => 'btn btn-secondary w-100 p-3',
         ];
 
         $this->submit($value, $options);

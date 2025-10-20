@@ -447,7 +447,7 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
      * @return \Base\Db\Table\AbstractModel
      * @throws \Exception
      */
-    protected function getModel()
+    protected function getModel($modelName = null)
     {
         $modelName = $this->getModelName();
         

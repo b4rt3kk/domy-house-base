@@ -101,4 +101,69 @@ abstract class AbstractLogic implements LogicInterface
 
         return $size; // <-- wynik w bajtach
     }
+
+    /**
+     * Pobierz wiersz z modelu o wskazanym id
+     *
+     * @param string $modelName
+     * @param int $id
+     * @return \Base\Db\Table\AbstractEntity
+     */
+    protected function getRow(string $modelName, $id)
+    {
+        if (empty($id)) {
+            throw new \Exception("Id nie może być puste");
+        }
+
+        $model = $this->getModel($modelName);
+        $primaryKey = $model->getPrimaryKey();
+
+        $select = $model->select()
+            ->where([$primaryKey => $id]);
+
+        $row = $model->fetchRow($select);
+
+        return $row;
+    }
+
+    /**
+     * Utwórz wiersz i zwróć jego id
+     *
+     * @param string $modelName
+     * @param array|\Base\Form\AbstractForm $data
+     * @return int
+     */
+    protected function createRow(string $modelName, $data) : int
+    {
+        if ($data instanceof \Base\Form\AbstractForm) {
+            $data = $data->getData();
+        }
+
+        $model = $this->getModel($modelName);
+
+        $entity = $model->getEntity();
+        $entity->exchangeArray($data);
+
+        $id = $model->createRow($entity);
+
+        return $id;
+    }
+
+    /**
+     * Pobierz obiekt modelu
+     *
+     * @param string $modelName
+     * @return \Base\Db\Table\AbstractModel
+     * @throws \Exception
+     */
+    protected function getModel($modelName)
+    {
+        $model = $this->getServiceManager()->get($modelName);
+
+        if (!$model instanceof \Base\Db\Table\AbstractModel) {
+            throw new \Exception(sprintf($this->translate("Obiekt modelu musi dziedziczyć po %s"), \Base\Db\Table\AbstractModel::class));
+        }
+
+        return $model;
+    }
 }

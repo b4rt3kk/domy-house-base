@@ -168,7 +168,7 @@ class Dictionary extends Logic\AbstractLogic
             // jeśli określono parametr name to pobieranie wartości słownikowych na podstawie wstrzykniętego callable
             $return = $this->getNamedDictionary();
         } else {
-            $model = $this->getModel();
+            $model = $this->getDictionaryModel();
             $idKey = $this->getIdKey();
             $nameFields = $this->getNameFields();
             $separator = $this->getSeparator();
@@ -199,7 +199,7 @@ class Dictionary extends Logic\AbstractLogic
     /**
      * @return \Base\Db\Table\AbstractModel
      */
-    protected function getModel()
+    protected function getDictionaryModel()
     {
         $modelName = $this->getModelName();
         
@@ -225,7 +225,7 @@ class Dictionary extends Logic\AbstractLogic
      */
     protected function getSelect()
     {
-        $model = $this->getModel();
+        $model = $this->getDictionaryModel();
         $where = $this->getWhere();
         
         $select = $model->select();
