@@ -17,6 +17,8 @@ class Format extends \Laminas\View\Helper\AbstractHelper
     const FORMAT_PHONE_NUMBER = 'phone_number';
     const FORMAT_HIDDEN_EMAIL = 'hidden_email';
     const FORMAT_HIDDEN_PHONE_NUMBER = 'hidden_phone_number';
+    const FORMAT_DATE_INTL = 'format_date_intl';
+    const FORMAT_DATE_TIME_INTL = 'format_date_time_intl';
     
     public function format($format, $value, $params = [])
     {
@@ -113,6 +115,26 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                 $return .= '@';
                 $return .= $chunks[1];
                 
+                break;
+            case self::FORMAT_DATE_INTL:
+                $date = new \DateTime($value);
+                $locale = \Locale::getDefault();
+
+                $formatter = new \IntlDateFormatter($locale, \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+
+                $return = $formatter->format($date);
+                break;
+            case self::FORMAT_DATE_TIME_INTL:
+                $date = new \DateTime($value);
+                $locale = \Locale::getDefault();
+
+                $formatter = new \IntlDateFormatter($locale, \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+
+                $datePart = $formatter->format($date); // "18 kwietnia 2025"
+                $timePart = $date->format('H:i');
+                $separator = ', ';
+
+                $return = $datePart . $separator . $timePart;
                 break;
             default:
                 $return = $value;
