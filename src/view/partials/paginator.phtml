@@ -4,17 +4,20 @@ if ($paginator instanceof \Base\Paginator) {
     if (!$paginator->getIsInitialized()) {
         $paginator->init();
     }
-    
-    $ajaxUrl = $paginator->getAjaxUrl();
+
+    $viewConfig = $paginator->getViewConfig();
+
+    $ajaxUrl = $viewConfig->getAjaxUrl() ?? $this->url('ajax', ['action' => 'paginator']);
     $storageContainerName = $paginator->getStorageContainerName();
     $paginatorId = $paginator->getPaginatorId();
-    $tableActionsPartial = $paginator->getTableActionsPartial();
+    $tableActionsPartial = $viewConfig->getTableActionsPartial();
+    $listPartial = $viewConfig->getListPartial();
     
     $form = $paginator->getFilterForm();
-    
-    if ($form instanceof \Base\Form\AbstractForm) {
-        echo '<div class="mb-4">';
-        echo $this->partial('base/paginator_filter', ['form' => $form, 'paginator' => $paginator]);
+
+    if ($form instanceof \Base\Form\AbstractForm && $viewConfig->getShowFilter()) {
+        echo '<div class="paginator-filter mb-4">';
+        echo $this->partial($viewConfig->getFilterPartial(), ['form' => $form, 'paginator' => $paginator]);
         echo '</div>';
     }
 
@@ -24,23 +27,30 @@ if ($paginator instanceof \Base\Paginator) {
         $data = $paginator->getData();
 
         echo '<div id="' . $paginatorId . '">';
-        
-        echo $this->partial('base/paginator_navigation', ['paginator' => $paginator]);
 
-        echo $this->partial('base/table', [
+        if ($viewConfig->getShowTopNavigation()) {
+            echo $this->partial($viewConfig->getTopNavigationPartial(), ['paginator' => $paginator]);
+        }
+
+        echo $this->partial($listPartial, [
+            'paginator' => $paginator,
             'data' => $data,
             'headers' => $paginator->getHeaders(),
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
-            'responsive' => $paginator->getIsResponsive(),
+            'responsive' => $viewConfig->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
             'ajax_url' => $ajaxUrl,
             'ajax_params' => json_encode(['paginatorId' => $paginatorId]),
             'sort' => $paginator->getSortingData(),
         ]);
+
+        if ($viewConfig->getShowBottomNavigation()) {
+            echo $this->partial($viewConfig->getBottomNavigationPartial(), ['paginator' => $paginator]);
+        }
         
         echo '</div>';
     } else {
-        echo $paginator->getNoResultsText();
+        echo $this->translate($viewConfig->getNoResultsText());
     }
     
     $this->inlineScript()->captureStart();

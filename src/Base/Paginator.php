@@ -43,12 +43,34 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     protected $defaultSorting = [];
     
     protected $tableActionsPartial;
+
+    protected Config\Paginator\ViewConfig $viewConfig;
+
+    public function __construct()
+    {
+        // pusty obiekt konfiguracji widoku
+        $viewConfig = new Config\Paginator\ViewConfig();
+        $viewConfig->setListPartial('base/table');
+        $viewConfig->setShowBottomNavigation(false);
+
+        $this->setViewConfig($viewConfig);
+    }
     
     public function init()
     {
         $this->initSelect();
         
         $this->setIsInitialized(true);
+    }
+
+    public function getViewConfig(): Config\Paginator\ViewConfig
+    {
+        return $this->viewConfig;
+    }
+
+    public function setViewConfig(Config\Paginator\ViewConfig $viewConfig): void
+    {
+        $this->viewConfig = $viewConfig;
     }
     
     public function getFilterFormName()
