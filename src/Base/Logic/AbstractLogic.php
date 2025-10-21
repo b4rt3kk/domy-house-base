@@ -150,6 +150,100 @@ abstract class AbstractLogic implements LogicInterface
     }
 
     /**
+     * Zaktualizuj wiersz o podanym id (kluczu głównym)
+     *
+     * @param string $modelName
+     * @param int $id
+     * @param array|\Base\Form\AbstractForm $data
+     */
+    protected function updateRow(string $modelName, int $id, $data)
+    {
+        if (empty($id)) {
+            throw new \Exception("Id nie może być puste");
+        }
+
+        if ($data instanceof \Base\Form\AbstractForm) {
+            $data = $data->getData();
+        }
+
+        $row = $this->getRow($modelName, $id);
+
+        if (empty($row)) {
+            throw new \Exception(sprintf($this->translate("Wiersz o id %s nie istnieje"), $id));
+        }
+
+        $model = $this->getModel($modelName);
+        $primaryKey = $model->getPrimaryKey();
+        $tableColumns = $model->getTableColumns();
+        $columns = array_keys($model->getTableColumns());
+
+        $authenticationService = $this->getServiceManager()->get(\Laminas\Authentication\AuthenticationService::class);
+        $idUser = $authenticationService->getIdentity()->id;
+
+        // poprawka w przypadku wartości typu boolean
+        // fix dla laminas
+        foreach ($tableColumns as $columnName => $columnDefinition) {
+            /* @var $columnDefinition \Laminas\Db\Metadata\Object\ColumnObject */
+            if ($columnDefinition->getDataType() === 'boolean') {
+                if (array_key_exists($columnName, $data)) {
+                    $data[$columnName] = !empty($data[$columnName]) ? '1' : '0';
+                }
+            }
+
+        }
+
+        if (in_array('changed_by', $columns)) {
+            $data['changed_by'] = $idUser;
+        }
+
+        if (in_array('changed_at', $columns)) {
+            $data['changed_at'] = new \Laminas\Db\Sql\Expression("NOW()");
+        }
+
+        $model->update($data, [$primaryKey => $id]);
+    }
+
+    /**
+     * Usuń wiersz o podanym id (kluczu głównym)
+     *
+     * @param string $modelName
+     * @param int $id
+     */
+    protected function removeRow(string $modelName, int $id)
+    {
+        if (empty($id)) {
+            throw new \Exception("Id nie może być puste");
+        }
+
+        $row = $this->getRow($modelName, $id);
+
+        if (empty($row)) {
+            throw new \Exception(sprintf($this->translate("Wiersz o id %s nie istnieje"), $id));
+        }
+
+        $model = $this->getModel($modelName);
+        $primaryKey = $model->getPrimaryKey();
+        $columns = array_keys($model->getTableColumns());
+
+        $authenticationService = $this->getServiceManager()->get(\Laminas\Authentication\AuthenticationService::class);
+        $idUser = $authenticationService->getIdentity()->id;
+
+        $data = [
+            'ghost' => '1',
+        ];
+
+        if (in_array('removed_by', $columns)) {
+            $data['removed_by'] = $idUser;
+        }
+
+        if (in_array('removed_at', $columns)) {
+            $data['removed_at'] = new \Laminas\Db\Sql\Expression("NOW()");
+        }
+
+        $model->update($data, [$primaryKey => $id]);
+    }
+
+    /**
      * Pobierz obiekt modelu
      *
      * @param string $modelName
