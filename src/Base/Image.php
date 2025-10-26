@@ -65,7 +65,23 @@ class Image
      * @var integer
      */
     protected $size;
-    
+
+    /**
+     * W przypadku zmiany wielkości obrazu jego nowa skala w stosunku do oryginału
+     * @var float
+     */
+    protected $scale;
+
+    public function getScale()
+    {
+        return $this->scale;
+    }
+
+    public function setScale($scale): void
+    {
+        $this->scale = $scale;
+    }
+
     public function getLocation()
     {
         return $this->location;
@@ -297,6 +313,69 @@ class Image
         $height = $this->getHeight();
         
         return round($width / $height, 2);
+    }
+
+    /**
+     * Metoda przekonwertuje wielkość obrazu i zwróci jego treść
+     * @param array $params
+     * @return string
+     */
+    public function resizeImage($params = [])
+    {
+        $width = $params['target_width'] ?? null;
+        $height = $params['target_height'] ?? null;
+        $scale = !empty($params['target_scale']) ? floatval($params['target_scale']) : null;
+
+        $currentWidth = $this->getWidth();
+        $currentHeight = $this->getHeight();
+        $mimeType = $this->getMimeType();
+
+        // automatyczne skalowanie wymiarów
+        if (!empty($scale)) {
+            $width = $currentWidth * $scale;
+            $height = $currentHeight * $scale;
+        }
+
+        // określono szerokość, ale nie określono wysokości - automatyczne skalowanie
+        if (!empty($width) && empty($height)) {
+            $scale =  $width / $currentWidth;
+            $height = round($currentHeight * $scale);
+        }
+
+        // określono wysokość, ale nie określono szerkości - automatyczne skalowanie
+        if (!empty($height) && empty($width)) {
+            $scale = $height / $currentHeight;
+            $width = round($currentWidth * $scale);
+        }
+
+        $this->setScale($scale);
+
+        $image = \imagecreatefromstring($this->getBody());
+        $destination = \imagecreatetruecolor((int) $width, (int) $height);
+        /* @var $destination \GdImage */
+        \imagecopyresampled($destination, $image, 0, 0, 0, 0, $width, $height, $currentWidth, $currentHeight);
+
+        ob_start();
+
+        switch ($mimeType) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                \imagejpeg($destination);
+                break;
+            case 'image/webp':
+                \imagewebp($destination);
+                break;
+            case 'image/png':
+            default:
+                // domyślnie, jeśli nie udało się określić obsługiwanego mime type, kompilacja do png
+                \imagepng($destination);
+        }
+
+        $imageResized = ob_get_clean();
+
+        $this->setBody($imageResized);
+
+        return $imageResized;
     }
     
     protected function setWidth($width): void
