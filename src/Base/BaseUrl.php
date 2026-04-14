@@ -64,13 +64,19 @@ class BaseUrl extends \Base\Logic\AbstractLogic
     {
         $config = $this->getServiceManager()->get('ApplicationConfig');
         $hostName = $config['host_name'];
-        
+
         if (empty($hostName)) {
             // nie skonfigurowano nazwy hosta, należy go określić na podstawie url
             // niestety w ten sposób nie zostanie wycięta subdomena
             $hostName = $this->getHostName();
         }
-        
+
+        // host_name nie powinien zawierać prefiksu www. — usuwamy go jeśli ktoś go dodał,
+        // żeby uniknąć podwójnego www (np. www.www.test.domy.house lub ogrod.www.test.domy.house)
+        if (substr($hostName, 0, 4) === 'www.') {
+            $hostName = substr($hostName, 4);
+        }
+
         return $hostName;
     }
     
@@ -81,9 +87,9 @@ class BaseUrl extends \Base\Logic\AbstractLogic
     public function getBaseUrl()
     {
         $host = $this->getScheme();
-        
+
         if ($this->hasWwwPrefix()) {
-            // sprawdzenie czy należy dodać prefix www
+            // sprawdzenie czy należy dodać prefix www
             $host .= 'www.';
         }
         
@@ -96,13 +102,16 @@ class BaseUrl extends \Base\Logic\AbstractLogic
     {
         $return = false;
         $hostName = $this->getHostName();
-        
+        $baseHostName = $this->getBaseHostName();
+
         $chunks = explode('.', $hostName);
-        
-        if ($chunks[0] === 'www') {
+
+        // Dodaj www. tylko jeśli aktualny URL ma prefiks www. ORAZ
+        // bazowa nazwa hosta nie zawiera już prefiksu www.
+        if ($chunks[0] === 'www' && substr($baseHostName, 0, 4) !== 'www.') {
             $return = true;
         }
-        
+
         return $return;
     }
     
@@ -120,14 +129,12 @@ class BaseUrl extends \Base\Logic\AbstractLogic
         $subdomain = $this->subdomain;
         
         if (empty($subdomain)) {
-            $config = $this->getServiceManager()->get('ApplicationConfig');
-            
             $hostName = $this->getHostName();
-            $baseHostName = $config['host_name'];
-            
+            $baseHostName = $this->getBaseHostName();
+
             if (!empty($baseHostName)) {
                 // określono bazową nazwę hosta w konfiguracji
-                // nazwa subomeny jest różnicą pomiędzy pobraną nazwą hosta, a nazwą hosta podaną w konfiguracji
+                // nazwa subdomeny jest różnicą pomiędzy pobraną nazwą hosta, a nazwą hosta podaną w konfiguracji
                 $subdomain = trim(str_replace([$baseHostName, 'www.'], '', $hostName), '.');
             } else {
                 $chunks = explode('.', ltrim($hostName, 'www.'));
