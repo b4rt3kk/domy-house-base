@@ -74,7 +74,7 @@ abstract class RbacRolesManager extends AbstractLogic
             }
         }
         
-        $resultSet->initialize($foundPermissions);
+        $resultSet->initialize(new \ArrayIterator($foundPermissions));
         
         return $resultSet;
     }
