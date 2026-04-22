@@ -133,10 +133,21 @@ class AngularAssetManager extends AbstractHelper
 
                 $appendedFiles[] = $scriptPath;
 
-                $helper->appendScript(
-                    'import "'.$rootLocation.'";',
-                    'module'
-                );
+                // wyodrębnienie rozszerzenia pliku
+                $extension = pathinfo($scriptPath, PATHINFO_EXTENSION);
+
+                // na podstawie rozszerzenia, określenie czy należy dołączyć plik JS czy CSS (pozostałe pomijamy)
+                switch (strtolower($extension)) {
+                    case 'js':
+                        $helper->appendScript(
+                            'import "'.$rootLocation.'";',
+                            'module'
+                        );
+                        break;
+                    case 'css':
+                        $helper->appendFile($rootLocation);
+                        break;
+                }
             }
         }
     }
@@ -151,13 +162,32 @@ class AngularAssetManager extends AbstractHelper
 
         $helper = $this->getHeadScriptHelper();
         $filesPatterns = $this->getFilesPatterns();
+        $appendedFiles = [];
 
         foreach ($filesPatterns as $script) {
             $scriptPath = $http . ltrim($script, DIRECTORY_SEPARATOR);
-            $helper->appendScript(
-                'import "'.$scriptPath.'";',
-                'module'
-            );
+            if (in_array($scriptPath, $appendedFiles)) {
+                // pominięcie dodanych już plików
+                continue;
+            }
+
+            // pobranie rozszerzenia pliku
+            $extension = pathinfo($scriptPath, PATHINFO_EXTENSION);
+
+            // sprawdzenie rozszerzenia pliku i odpowiednia obsługa
+            switch (strtolower($extension)) {
+                case 'js':
+                    $helper->appendScript(
+                        'import "'.$scriptPath.'";',
+                        'module'
+                    );
+                    break;
+                case 'css':
+                    $helper->appendFile($scriptPath);
+                    break;
+            }
+
+            $appendedFiles[] = $scriptPath;
         }
     }
 
