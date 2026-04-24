@@ -147,7 +147,7 @@ class AngularAssetManager extends AbstractHelper
                         );
                         break;
                     case self::EXTENSION_CSS:
-                        $helperHeadLink->appendFile($rootLocation);
+                        $helperHeadLink->appendStylesheet($rootLocation);
                         break;
                 }
 
@@ -190,7 +190,7 @@ class AngularAssetManager extends AbstractHelper
                     );
                     break;
                 case self::EXTENSION_CSS:
-                    $helperHeadLink->appendFile($scriptPath);
+                    $helperHeadLink->appendStylesheet($scriptPath);
                     break;
             }
 
