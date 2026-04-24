@@ -2,10 +2,14 @@
 
 namespace Base\View\Helper;
 
+use Laminas\View\Helper\HeadLink;
 use Laminas\View\Helper\HeadScript;
 
 class AngularAssetManager extends AbstractHelper
 {
+    const EXTENSION_JS = 'js';
+    const EXTENSION_CSS = 'css';
+
     use \Base\Traits\ServiceManagerTrait;
 
     /**
@@ -100,6 +104,7 @@ class AngularAssetManager extends AbstractHelper
         }
 
         $helper = $this->getHeadScriptHelper();
+        $helperHeadLink = $this->getHeadLinkHelper();
         $filesPatterns = $this->getFilesPatterns();
         $appendedFiles = [];
 
@@ -131,23 +136,22 @@ class AngularAssetManager extends AbstractHelper
                 $rootFolder = 'public';
                 $rootLocation = substr($scriptPath, strpos($scriptPath, $rootFolder) + strlen($rootFolder));
 
-                $appendedFiles[] = $scriptPath;
-
-                // wyodrębnienie rozszerzenia pliku
+                // pobranie rozszerzenia pliku
                 $extension = pathinfo($scriptPath, PATHINFO_EXTENSION);
 
-                // na podstawie rozszerzenia, określenie czy należy dołączyć plik JS czy CSS (pozostałe pomijamy)
                 switch (strtolower($extension)) {
-                    case 'js':
+                    case self::EXTENSION_JS:
                         $helper->appendScript(
                             'import "'.$rootLocation.'";',
                             'module'
                         );
                         break;
-                    case 'css':
-                        $helper->appendFile($rootLocation);
+                    case self::EXTENSION_CSS:
+                        $helperHeadLink->appendFile($rootLocation);
                         break;
                 }
+
+                $appendedFiles[] = $scriptPath;
             }
         }
     }
@@ -161,11 +165,14 @@ class AngularAssetManager extends AbstractHelper
         }
 
         $helper = $this->getHeadScriptHelper();
+        $helperHeadLink = $this->getHeadLinkHelper();
         $filesPatterns = $this->getFilesPatterns();
+        // lista dołączonych plików
         $appendedFiles = [];
 
         foreach ($filesPatterns as $script) {
             $scriptPath = $http . ltrim($script, DIRECTORY_SEPARATOR);
+
             if (in_array($scriptPath, $appendedFiles)) {
                 // pominięcie dodanych już plików
                 continue;
@@ -176,14 +183,14 @@ class AngularAssetManager extends AbstractHelper
 
             // sprawdzenie rozszerzenia pliku i odpowiednia obsługa
             switch (strtolower($extension)) {
-                case 'js':
+                case self::EXTENSION_JS:
                     $helper->appendScript(
                         'import "'.$scriptPath.'";',
                         'module'
                     );
                     break;
-                case 'css':
-                    $helper->appendFile($scriptPath);
+                case self::EXTENSION_CSS:
+                    $helperHeadLink->appendFile($scriptPath);
                     break;
             }
 
@@ -194,6 +201,11 @@ class AngularAssetManager extends AbstractHelper
     protected function getHeadScriptHelper(): HeadScript
     {
         return $this->getServiceManager()->get('ViewHelperManager')->get('headScript');
+    }
+
+    protected function getHeadLinkHelper(): HeadLink
+    {
+        return $this->getServiceManager()->get('ViewHelperManager')->get('headLink');
     }
 
     /**
