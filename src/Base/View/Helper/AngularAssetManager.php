@@ -7,9 +7,6 @@ use Laminas\View\Helper\HeadScript;
 
 class AngularAssetManager extends AbstractHelper
 {
-    const EXTENSION_JS = 'js';
-    const EXTENSION_CSS = 'css';
-
     use \Base\Traits\ServiceManagerTrait;
 
     /**
@@ -104,7 +101,6 @@ class AngularAssetManager extends AbstractHelper
         }
 
         $helper = $this->getHeadScriptHelper();
-        $helperHeadLink = $this->getHeadLinkHelper();
         $filesPatterns = $this->getFilesPatterns();
         $appendedFiles = [];
 
@@ -136,22 +132,23 @@ class AngularAssetManager extends AbstractHelper
                 $rootFolder = 'public';
                 $rootLocation = substr($scriptPath, strpos($scriptPath, $rootFolder) + strlen($rootFolder));
 
-                // pobranie rozszerzenia pliku
+                $appendedFiles[] = $scriptPath;
+
+                // wyodrębnienie rozszerzenia pliku
                 $extension = pathinfo($scriptPath, PATHINFO_EXTENSION);
 
+                // na podstawie rozszerzenia, określenie czy należy dołączyć plik JS czy CSS (pozostałe pomijamy)
                 switch (strtolower($extension)) {
-                    case self::EXTENSION_JS:
+                    case 'js':
                         $helper->appendScript(
                             'import "'.$rootLocation.'";',
                             'module'
                         );
                         break;
-                    case self::EXTENSION_CSS:
-                        $helperHeadLink->appendStylesheet($rootLocation);
+                    case 'css':
+                        $this->getHeadLinkHelper()->appendStylesheet($rootLocation);
                         break;
                 }
-
-                $appendedFiles[] = $scriptPath;
             }
         }
     }
@@ -165,14 +162,11 @@ class AngularAssetManager extends AbstractHelper
         }
 
         $helper = $this->getHeadScriptHelper();
-        $helperHeadLink = $this->getHeadLinkHelper();
         $filesPatterns = $this->getFilesPatterns();
-        // lista dołączonych plików
         $appendedFiles = [];
 
         foreach ($filesPatterns as $script) {
             $scriptPath = $http . ltrim($script, DIRECTORY_SEPARATOR);
-
             if (in_array($scriptPath, $appendedFiles)) {
                 // pominięcie dodanych już plików
                 continue;
@@ -183,14 +177,14 @@ class AngularAssetManager extends AbstractHelper
 
             // sprawdzenie rozszerzenia pliku i odpowiednia obsługa
             switch (strtolower($extension)) {
-                case self::EXTENSION_JS:
+                case 'js':
                     $helper->appendScript(
                         'import "'.$scriptPath.'";',
                         'module'
                     );
                     break;
-                case self::EXTENSION_CSS:
-                    $helperHeadLink->appendStylesheet($scriptPath);
+                case 'css':
+                    $this->getHeadLinkHelper()->appendStylesheet($scriptPath);
                     break;
             }
 
