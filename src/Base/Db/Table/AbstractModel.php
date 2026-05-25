@@ -202,6 +202,7 @@ abstract class AbstractModel
         }
 
         $insertData = array_intersect_key($data, $columns);
+        unset($insertData[$this->getPrimaryKey()]);
         
         $tableGateway->insert($insertData);
         
