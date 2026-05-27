@@ -102,7 +102,7 @@ abstract class RbacRolesManager extends AbstractLogic
         $permissionNameColumn = $this->getPermissionNameColumn();
 
         foreach ($data as $row) {
-            $permissionName = preg_quote($row->{$permissionNameColumn});
+            $permissionName = isset($row->{$permissionNameColumn}) && preg_quote($row->{$permissionNameColumn});
 
             // pominięcie pustych wpisów
             if (empty($permissionName)) {
