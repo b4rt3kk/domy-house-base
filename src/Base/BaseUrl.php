@@ -62,9 +62,9 @@ class BaseUrl extends \Base\Logic\AbstractLogic
      */
     public function getBaseHostName()
     {
-        // host_name is part of the merged application configuration loaded
-        // from config/autoload, not the bootstrap-only ApplicationConfig.
-        $config = $this->getServiceManager()->get('Config');
+        // Starsze aplikacje nie zawsze definiują host_name w konfiguracji
+        // startowej. W takim przypadku użyj hosta bieżącego żądania.
+        $config = $this->getServiceManager()->get('ApplicationConfig');
         $hostName = $config['host_name'] ?? null;
 
         if (empty($hostName)) {
