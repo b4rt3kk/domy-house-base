@@ -7,6 +7,20 @@ abstract class AbstractMigration
     protected $fileName;
     
     protected $name;
+
+    /**
+     * Krótki tytuł widoczny w rejestrze migracji i logach wdrożenia.
+     *
+     * @var string
+     */
+    protected $title = '';
+
+    /**
+     * Opis celu, zakresu i istotnych skutków migracji.
+     *
+     * @var string
+     */
+    protected $description = '';
     
     protected $index;
     
@@ -20,6 +34,16 @@ abstract class AbstractMigration
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    public function getTitle()
+    {
+        return $this->title ?: $this->name;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
     }
     
     public function getFileName()
@@ -54,7 +78,7 @@ abstract class AbstractMigration
     
     public function getRevertQueries()
     {
-        
+        return [];
     }
     
     abstract public function getQueries();
