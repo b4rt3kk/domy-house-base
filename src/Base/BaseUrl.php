@@ -64,7 +64,7 @@ class BaseUrl extends \Base\Logic\AbstractLogic
     {
         // Starsze aplikacje nie zawsze definiują host_name w konfiguracji
         // startowej. W takim przypadku użyj hosta bieżącego żądania.
-        $config = $this->getServiceManager()->get('ApplicationConfig');
+        $config = $this->getServiceManager()->get('Config');
         $hostName = $config['host_name'] ?? null;
 
         if (empty($hostName)) {
