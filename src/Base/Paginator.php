@@ -16,6 +16,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     protected $pagesRange = 5;
     
     protected $select;
+
+    protected $countSelect;
     
     protected $isInitialized = false;
     
@@ -161,6 +163,16 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
     public function setSelect($select)
     {
         $this->select = $select;
+    }
+
+    public function getCountSelect()
+    {
+        return $this->countSelect;
+    }
+
+    public function setCountSelect($countSelect)
+    {
+        $this->countSelect = $countSelect;
     }
     
     public function getPagesRange()
@@ -340,10 +352,11 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         }
         
         $model = $this->getModel();
-        $select = clone $this->getSelect();
-        
+        $select = clone ($this->getCountSelect() ?? $this->getSelect());
+
         $select->reset(\Laminas\Db\Sql\Select::ORDER);
-        
+        $select->reset(\Laminas\Db\Sql\Select::LIMIT);
+        $select->reset(\Laminas\Db\Sql\Select::OFFSET);
         $select->columns(['count' => new \Laminas\Db\Sql\Expression("COUNT(1)")]);
         
         $row = $model->fetchRow($select);
