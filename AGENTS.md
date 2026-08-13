@@ -1,9 +1,16 @@
 # Repository instructions
 
+## Routed agent documentation
+
+- When a task requires investigating a coherent application area that is not covered by an existing routed agent document, create a focused `docs/agent/<area>.md` after understanding that area and add a concise routing entry to the main `AGENTS.md` under a relevant “Read only when relevant” section. Record durable architecture, contracts, workflows, constraints, validation, and recurring pitfalls; omit transient incident details and facts already obvious from the code.
+- Before modifying an area covered by a routed agent document, read that document. When the change alters the area's behavior, contracts, structure, workflow, constraints, validation, or durable operating knowledge, update the routed document in the same change and keep its link in `AGENTS.md` accurate.
+
 ## MCP and model efficiency
 
 - At the start of a task, check whether an available MCP server can perform the requested external operation directly. Prefer that MCP server when it can perform the exact operation safely; otherwise use the appropriate local or supported method.
 - For local repository Git operations, use the Local Workspace MCP: use `get_branch_state` for compact branch/worktree state and `publish_commit` for publishing an exact approved HEAD to `origin`. GitHub MCP must not receive or access local filesystem paths; use it only for GitHub API operations such as issues, pull requests, branch/commit verification, and Actions.
+- Prefer purpose-built MCP methods that return compact structured results. Request only fields needed for the next decision, and do not repeat the same state check through both MCP and shell unless independent verification is materially required.
+- For an approved commit-and-publish flow, call `get_branch_state` once before committing, create the commit locally, then call `publish_commit` with the exact full HEAD SHA. A successful `publish_commit` result with matching local/remote SHA and divergence `0/0` is the final publication verification; do not follow it with another fetch, GitHub commit lookup, or branch check unless the result is inconsistent or the user explicitly requests independent verification.
 - For direct database operations, use the applicable available database MCP server first. Use another supported method only when MCP is unavailable or cannot perform the exact operation.
 - For long-running database copy, dump, restore, or comparison operations, start the job and wait for its completion without continuous status polling. Do not make the first status check before about ten minutes unless an error, timeout, cancellation, or a user request requires it.
 - Before executing a simple, mostly mechanical MCP task (for example a Git push, GitHub deployment, database backup, restore, or comparison) on a high-cost model, suggest `gpt-5.6-luna` with low reasoning effort, if available, and wait for the user's explicit decision to switch or continue on the current model.
