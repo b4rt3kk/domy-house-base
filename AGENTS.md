@@ -3,6 +3,7 @@
 ## MCP and model efficiency
 
 - At the start of a task, check whether an available MCP server can perform the requested external operation directly. Prefer that MCP server when it can perform the exact operation safely; otherwise use the appropriate local or supported method.
+- For local repository Git operations, use the Local Workspace MCP: use `get_branch_state` for compact branch/worktree state and `publish_commit` for publishing an exact approved HEAD to `origin`. GitHub MCP must not receive or access local filesystem paths; use it only for GitHub API operations such as issues, pull requests, branch/commit verification, and Actions.
 - For direct database operations, use the applicable available database MCP server first. Use another supported method only when MCP is unavailable or cannot perform the exact operation.
 - For long-running database copy, dump, restore, or comparison operations, start the job and wait for its completion without continuous status polling. Do not make the first status check before about ten minutes unless an error, timeout, cancellation, or a user request requires it.
 - Before executing a simple, mostly mechanical MCP task (for example a Git push, GitHub deployment, database backup, restore, or comparison) on a high-cost model, suggest `gpt-5.6-luna` with low reasoning effort, if available, and wait for the user's explicit decision to switch or continue on the current model.
