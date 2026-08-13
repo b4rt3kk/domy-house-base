@@ -1,5 +1,13 @@
 # Repository instructions
 
+## MCP and model efficiency
+
+- At the start of a task, check whether an available MCP server can perform the requested external operation directly. Prefer that MCP server when it can perform the exact operation safely; otherwise use the appropriate local or supported method.
+- For direct database operations, use the applicable available database MCP server first. Use another supported method only when MCP is unavailable or cannot perform the exact operation.
+- For long-running database copy, dump, restore, or comparison operations, start the job and wait for its completion without continuous status polling. Do not make the first status check before about ten minutes unless an error, timeout, cancellation, or a user request requires it.
+- Before executing a simple, mostly mechanical MCP task (for example a Git push, GitHub deployment, database backup, restore, or comparison), suggest switching from a high-cost model to a lower-cost model. Do not delay the requested task when the user declines or when changing models is not available.
+- Before beginning a complex task on a low-cost model, suggest switching to a higher-capability model. Do not delay the requested task when the user declines or when changing models is not available.
+
 ## Source of truth
 
 - Git remote `origin` is the sole source of truth for code and branches. Publish code changes only to `origin` by default, using the applicable available MCP server first; use another supported method only when MCP is unavailable or cannot perform the exact operation.
@@ -10,7 +18,8 @@
 
 ## Task branch workflow
 
-- This repository uses only `master` as its base and integration branch; do not create or expect `develop` or `release/*` branches. Unless the user explicitly names a different base, start every new task from local `master` at exactly the same commit as `origin/master`.
+- Never run `git clone` or `git worktree add` merely to start, continue, or isolate a task. Work in the user-selected existing repository; creating another checkout or worktree requires explicit user approval.
+- This repository uses only `master` as its base and integration branch; do not create or expect `develop` or `release/*` branches. Unless the user explicitly names a different base, start every new task by switching the current existing checkout to local `master` and aligning it with `origin/master`.
 - Before switching branches, inspect the current branch and worktree. If there are staged, unstaged, or untracked changes, do not commit, push, stash, discard, or carry them onto another branch automatically. Summarize their purpose and scope from `git status`, a diff summary, and only the focused diff needed to explain them. Then present a numbered prompt: (1) finish them on the current branch, with separate commit/push approval; (2) stash them, including untracked files, under a descriptive label; (3) continue the new task on the current branch as an explicit exception; or (4) provide another instruction as free text. Wait for the user's choice.
 - After the worktree is resolved, run `git fetch origin`, verify that `origin/master` exists, switch to local `master`, and update it only by fast-forward (`git pull --ff-only origin master`). If `master` is ahead or divergent, stop and ask the user how to establish the base; never merge, rebase, reset, or force-update it by assumption. Confirm local `master` and `origin/master` have the same SHA before branching.
 - Use the repository's issue-branch convention for issue work. Without an issue, create `task/<short-kebab-case-description>` from `master`; if that name exists, append the lowest available numeric suffix. Never use `master/...`, because it conflicts with the existing `master` ref.
