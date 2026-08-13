@@ -11,7 +11,8 @@
 ## Source of truth
 
 - Git remote `origin` is the sole source of truth for code and branches. Publish code changes only to `origin` by default, using the applicable available MCP server first; use another supported method only when MCP is unavailable or cannot perform the exact operation.
-- The `gitea` remote is a backup code repository. Do not fetch, compare, push, or synchronize code with it unless the user explicitly requests that exact Gitea action. Gitea remains the authoritative issue tracker: read, create, and update issues there, using the available Gitea MCP server first, and only with the required user approval.
+- The `gitea` remote is a backup code repository. Do not fetch, compare, push, synchronize code, or create/update issues there unless the user explicitly requests that exact Gitea action. Use Gitea only for its wiki when relevant.
+- When issue work is needed, use GitHub as the issue tracker and the available GitHub MCP server to read, create, update, and verify issues. Creating or updating an issue still requires the user's explicit approval.
 - Before editing, inspect the current branch, worktree, relevant implementation, and focused tests. Preserve unrelated changes.
 - Do not commit, push, merge, deploy, create/update issues, or modify issue state without explicit approval for the exact repository, remote, branch, commit, and external action.
 - Run focused validation and `git diff --check` after changes.
