@@ -25,6 +25,10 @@
 - Do not commit, push, merge, deploy, create/update issues, or modify issue state without explicit approval for the exact repository, remote, branch, commit, and external action.
 - Run focused validation and `git diff --check` after changes.
 
+## Read only when relevant
+
+- Symfony Console command lifecycle or scheduled command compatibility: `docs/agent/commands.md`.
+
 ## Task branch workflow
 
 - Never run `git clone` or `git worktree add` merely to start, continue, or isolate a task. Work in the user-selected existing repository; creating another checkout or worktree requires explicit user approval.

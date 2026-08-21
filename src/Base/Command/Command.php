@@ -132,7 +132,7 @@ abstract class Command extends \Symfony\Component\Console\Command\Command implem
      * @return int 0 if everything went fine, or an exit code
      * @throws \Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $isDebug = $this->getIsDebug();
         $isTestMode = $this->getIsTestMode();
