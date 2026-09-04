@@ -469,6 +469,11 @@ class Image
      */
     protected function getMimeTypeFromBody($body)
     {
+        $imageInfo = @getimagesizefromstring($body);
+        if (is_array($imageInfo) && !empty($imageInfo['mime'])) {
+            return $imageInfo['mime'];
+        }
+
         $file = fopen('php://memory', 'w+b');
         fwrite($file, $body);
 
@@ -567,6 +572,17 @@ class Image
         
         // sprawdzenie poprawności
         $isValid = $validator->isValid($fileMetaData['uri']);
+
+        // Laminas' file validator can reject a valid generated WebP when the
+        // temporary stream has no filename extension. GD's parser still
+        // verifies that the complete body contains decodable image dimensions.
+        if (!$isValid && $this->getMimeType() === 'image/webp') {
+            $dimensions = @getimagesizefromstring($body);
+            $isValid = is_array($dimensions)
+                && !empty($dimensions[0])
+                && !empty($dimensions[1])
+                && ($dimensions['mime'] ?? null) === 'image/webp';
+        }
         
         fclose($file);
         
