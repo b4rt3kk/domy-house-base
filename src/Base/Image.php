@@ -506,17 +506,27 @@ class Image
      */
     protected function getMetaDataFromBody($body)
     {
+        // PHP's EXIF reader supports JPEG/TIFF data, but emits a warning for
+        // valid WebP and PNG images. Metadata is optional for image resizing,
+        // so unsupported formats must not make setBody() fail.
+        if (
+            !function_exists('exif_read_data')
+            || !in_array($this->getMimeType(), ['image/jpeg', 'image/tiff'], true)
+        ) {
+            return [];
+        }
+
         // utworzenie pliku tymczasowego
         $file = tmpfile();
         fwrite($file, $body);
         
         $fileMetaData = stream_get_meta_data($file);
         
-        $metaData = exif_read_data($fileMetaData['uri']);
+        $metaData = @exif_read_data($fileMetaData['uri']);
         
         fclose($file);
         
-        return $metaData;
+        return is_array($metaData) ? $metaData : [];
     }
     
     /**
