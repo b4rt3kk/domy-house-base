@@ -325,6 +325,14 @@ class Image
         $width = $params['target_width'] ?? null;
         $height = $params['target_height'] ?? null;
         $scale = !empty($params['target_scale']) ? floatval($params['target_scale']) : null;
+        $quality = $params['quality'] ?? null;
+
+        if ($quality !== null) {
+            if (!is_numeric($quality) || (int) $quality < 0 || (int) $quality > 100) {
+                throw new \InvalidArgumentException('Jakość obrazu musi być liczbą całkowitą od 0 do 100');
+            }
+            $quality = (int) $quality;
+        }
 
         $currentWidth = $this->getWidth();
         $currentHeight = $this->getHeight();
@@ -351,8 +359,24 @@ class Image
         $this->setScale($scale);
 
         $image = \imagecreatefromstring($this->getBody());
+        if ($image === false) {
+            throw new \RuntimeException('Nie udało się odczytać obrazu do skalowania');
+        }
+
         $destination = \imagecreatetruecolor((int) $width, (int) $height);
+        if ($destination === false) {
+            \imagedestroy($image);
+            throw new \RuntimeException('Nie udało się utworzyć obrazu wynikowego');
+        }
         /* @var $destination \GdImage */
+
+        if (in_array($mimeType, ['image/png', 'image/webp'], true)) {
+            \imagealphablending($destination, false);
+            \imagesavealpha($destination, true);
+            $transparent = \imagecolorallocatealpha($destination, 0, 0, 0, 127);
+            \imagefilledrectangle($destination, 0, 0, (int) $width, (int) $height, $transparent);
+        }
+
         \imagecopyresampled($destination, $image, 0, 0, 0, 0, $width, $height, $currentWidth, $currentHeight);
 
         ob_start();
@@ -360,18 +384,24 @@ class Image
         switch ($mimeType) {
             case 'image/jpeg':
             case 'image/jpg':
-                \imagejpeg($destination);
+                $encoded = \imagejpeg($destination, null, $quality ?? -1);
                 break;
             case 'image/webp':
-                \imagewebp($destination);
+                $encoded = \imagewebp($destination, null, $quality ?? -1);
                 break;
             case 'image/png':
             default:
                 // domyślnie, jeśli nie udało się określić obsługiwanego mime type, kompilacja do png
-                \imagepng($destination);
+                $encoded = \imagepng($destination);
         }
 
         $imageResized = ob_get_clean();
+        \imagedestroy($destination);
+        \imagedestroy($image);
+
+        if (!$encoded || $imageResized === false || $imageResized === '') {
+            throw new \RuntimeException('Nie udało się zakodować obrazu wynikowego');
+        }
 
         $this->setBody($imageResized);
 
