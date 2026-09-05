@@ -6,3 +6,4 @@
 - Laminas' file validator can reject a valid generated WebP stored in an extensionless temporary stream. For WebP only, fall back to `getimagesizefromstring()` and require non-zero dimensions plus the exact `image/webp` MIME type.
 - GD resizing preserves the source MIME type. Runtime images that consume this library must compile GD with the codecs they serve, especially JPEG and WebP.
 - Validate WebP changes with a generated WebP body passed through `setBody()` and `resizeImage()`, asserting both the resulting MIME type and dimensions.
+- `resizeImage()` accepts an optional integer `quality` from 0 to 100 for JPEG and WebP encoders. Keep the encoder default when it is omitted, reject values outside that range, and preserve transparency for PNG/WebP output.
