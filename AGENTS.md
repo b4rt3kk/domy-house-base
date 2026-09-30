@@ -29,7 +29,7 @@
 ## Read only when relevant
 
 - Symfony Console command lifecycle or scheduled command compatibility: `docs/agent/commands.md`.
-- Image body parsing, EXIF metadata, GD resizing, or WebP support: `docs/agent/images.md`.
+- Image body parsing, extensionless upload files, EXIF metadata, GD resizing, or WebP support: `docs/agent/images.md`.
 
 ## Task branch workflow
 

@@ -7,3 +7,5 @@
 - GD resizing preserves the source MIME type. Runtime images that consume this library must compile GD with the codecs they serve, especially JPEG and WebP.
 - Validate WebP changes with a generated WebP body passed through `setBody()` and `resizeImage()`, asserting both the resulting MIME type and dimensions.
 - `resizeImage()` accepts an optional integer `quality` from 0 to 100 for JPEG and WebP encoders. Keep the encoder default when it is omitted, reject values outside that range, and preserve transparency for PNG/WebP output.
+
+- Upload temporary filenames commonly have no extension. `setLocation()` must tolerate a missing `pathinfo()['extension']` and derive the extension from the detected image MIME. An undefined-key warning is converted to HTTP 500 by the API error handler even for a valid image. Regression check: `php tests/image-upload.php <consumer-vendor-autoload.php>` uses generated WebP, PNG and JPEG files with and without extensions and converts unsuppressed PHP warnings to exceptions.

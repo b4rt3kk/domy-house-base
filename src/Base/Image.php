@@ -180,7 +180,7 @@ class Image
         
         // odnaleziona nazwa pliku
         $this->setName($fileInfo['filename']);
-        $extension = $fileInfo['extension'];
+        $extension = $fileInfo['extension'] ?? '';
         
         if (empty($extension)) {
             $extension = $this->getExtensionFromMimeType();
