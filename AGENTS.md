@@ -39,3 +39,7 @@
 - After the worktree is resolved, run `git fetch origin`, verify that `origin/master` exists, switch to local `master`, and update it only by fast-forward (`git pull --ff-only origin master`). If `master` is ahead or divergent, stop and ask the user how to establish the base; never merge, rebase, reset, or force-update it by assumption. Confirm local `master` and `origin/master` have the same SHA before branching.
 - Use the repository's issue-branch convention for issue work. Without an issue, create `task/<short-kebab-case-description>` from `master`; if that name exists, append the lowest available numeric suffix. Never use `master/...`, because it conflicts with the existing `master` ref.
 - After the user accepts the implementation, the work must be integrated into `master` through the GitHub workflow. If the acceptance does not explicitly authorize the exact push, pull request, and merge, request that approval first. Never commit directly to `master`, and do not deploy automatically.
+
+## Formularze i walidacja
+
+- Przed zmianą dowolnego formularza, jego walidacji, kontraktu błędów API lub komunikatów przeczytaj `docs/agent/form-validation.md`. Zachowaj zgodność reguł Angular/API oraz trwałe podsumowanie i wszystkie błędy przy polach; sam toast nie wystarcza.
