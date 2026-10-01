@@ -17,6 +17,10 @@ class Nip extends \Laminas\Validator\AbstractValidator
     public function isValid($value)
     {
         $this->setValue($value);
+        if (!is_string($value)) {
+            $this->error(self::INVALID_NIP_CHARACTERS);
+            return false;
+        }
         $isValid = true;
         
         // sprawdzenie czy NIP zawiera jedynie cyfry
@@ -31,7 +35,7 @@ class Nip extends \Laminas\Validator\AbstractValidator
             $isValid = false;
         }
         
-        if (!$this->isControlSumValid($value)) {
+        if ($isValid && !$this->isControlSumValid($value)) {
             $this->error(self::INVALID_NIP);
             $isValid = false;
         }

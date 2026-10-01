@@ -31,6 +31,10 @@ class Pesel extends \Laminas\Validator\AbstractValidator
     public function isValid($value)
     {
         $this->setValue($value);
+        if (!is_string($value)) {
+            $this->error(self::INVALID_PESEL_CHARACTERS);
+            return false;
+        }
         $isValid = true;
         
         // sprawdzenie czy pesel zawiera jedynie cyfry
@@ -45,7 +49,7 @@ class Pesel extends \Laminas\Validator\AbstractValidator
             $isValid = false;
         }
         
-        if (!$this->isControlSumValid($value)) {
+        if ($isValid && !$this->isControlSumValid($value)) {
             $this->error(self::INVALID_PESEL);
             $isValid = false;
         }
@@ -70,10 +74,10 @@ class Pesel extends \Laminas\Validator\AbstractValidator
         }
         
         // obliczana jest wartość M (modulo) operacji S (suma iloczynów) modulo 10
-        $modulo = bcmod($sum, 10);
+        $modulo = $sum % 10;
         
         // od liczby dziesięć odejmowana jest liczba M (modulo)
-        $testNumber = 10 - $modulo;
+        $testNumber = (10 - $modulo) % 10;
         
         if ($testNumber != $controlNumber) {
             $isValid = false;
