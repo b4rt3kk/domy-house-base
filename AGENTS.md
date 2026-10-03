@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Typ oferty Usługa/Produkt, wybór przed dodawaniem, dozwolone subkategorie, lokalizacja i cennik zależny od typu: `docs/agent/offer-types.md`.
+
 - Symfony Console command lifecycle or scheduled command compatibility: `docs/agent/commands.md`.
 - Image body parsing, extensionless upload files, EXIF metadata, GD resizing, or WebP support: `docs/agent/images.md`.
 
