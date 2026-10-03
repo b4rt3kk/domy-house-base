@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Model dictionaries, filtered labels, dictionary cache keys or SQL92 quoting warnings: `docs/agent/dictionaries.md`.
+
 - Typ oferty Usługa/Produkt, wybór przed dodawaniem, dozwolone subkategorie, lokalizacja i cennik zależny od typu: `docs/agent/offer-types.md`.
 
 - Symfony Console command lifecycle or scheduled command compatibility: `docs/agent/commands.md`.

@@ -272,7 +272,8 @@ class Dictionary extends Logic\AbstractLogic
             $select = $this->getSelect();
             // w przypadku gdy jest to słownik oparty o model 
             // klucz cache generowany jest na podstawie select stringa
-            $cacheKey = $select->getSqlString();
+            $platform = $this->getDictionaryModel()->getTableGateway()->getAdapter()->getPlatform();
+            $cacheKey = $select->getSqlString($platform);
         }
         
         return md5($cacheKey);
