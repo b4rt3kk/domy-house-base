@@ -46,4 +46,4 @@
 
 ## Formularze i walidacja
 
-- Przed zmianą dowolnego formularza, jego walidacji, kontraktu błędów API lub komunikatów przeczytaj `docs/agent/form-validation.md`. Zachowaj zgodność reguł Angular/API oraz trwałe podsumowanie i wszystkie błędy przy polach; sam toast nie wystarcza.
+- Przed zmianą dowolnego formularza, jego walidacji, kontraktu błędów API lub komunikatów przeczytaj `docs/agent/form-validation.md`. Zachowaj zgodność reguł Angular/API oraz wszystkie błędy przy polach bez dublowania nad formularzem oraz pojedyncze komunikaty ogólne; sam toast nie wystarcza.
