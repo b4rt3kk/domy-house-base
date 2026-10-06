@@ -30,7 +30,18 @@ class Url extends AbstractValidator
     {
         $this->setValue($value);
 
+        if (!is_string($value)) {
+            $this->error(self::INVALID_URL);
+            return false;
+        }
         $valueToCheck = trim($value);
+        // Only navigable HTTP(S) links; never allow script/data/FTP schemes or credentials.
+        if (preg_match('/[\x00-\x20\x7f<>"\\\\]/', $valueToCheck)
+            || (preg_match('/^[a-z][a-z0-9+.-]*:/i', $valueToCheck)
+                && !preg_match('#^https?://#i', $valueToCheck))) {
+            $this->error(self::INVALID_URL);
+            return false;
+        }
 
         // Usuwamy prefiks "www." tylko dla walidacji,
         // ale nie modyfikujemy oryginalnego $value
@@ -49,7 +60,8 @@ class Url extends AbstractValidator
 
         // Dodatkowa walidacja hosta
         $host = parse_url($strippedValue, PHP_URL_HOST);
-        if (!$host) {
+        if (!$host || !in_array(strtolower((string) parse_url($strippedValue, PHP_URL_SCHEME)), ['http', 'https'], true)
+            || parse_url($strippedValue, PHP_URL_USER) !== null || parse_url($strippedValue, PHP_URL_PASS) !== null) {
             $this->error(self::INVALID_URL);
             return false;
         }

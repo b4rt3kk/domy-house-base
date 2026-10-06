@@ -18,7 +18,7 @@
 
 ## Reguły ofert
 
-- Tytuł i opis są wymagane, minimum 10 znaków w dodawaniu i edycji. Maksimum pochodzi z `offer_name_max_length` i `offer_description_max_length`, z domyślnymi wartościami 255 i 1000. Limit atrybutu domyślnie wynosi 500.
+- Tytuł i opis są wymagane, minimum 10 znaków w dodawaniu i edycji. Maksimum pochodzi z `offer_name_max_length` i `offer_description_max_length`, z domyślnymi wartościami 255 i 2000. Limit atrybutu domyślnie wynosi 500.
 - Dodawanie wymaga pojedynczej kategorii i subkategorii oraz niepustych list dodatnich identyfikatorów województw i miejscowości. Wyłączona zależna kontrolka nie oznacza zwolnienia z wymagania.
 - Atrybuty waliduj z definicji kategorii, także podczas edycji. Formularz edycji pobiera bieżące definicje i dołącza pola, które nie mają jeszcze zapisanej wartości. Nie opieraj formularza tylko na istniejących wartościach.
 - Zdjęcia mają wspólny limit liczby `offer_max_images` (domyślnie 10); metadane nowego obrazu wymagają MIME `image/*`, rozmiaru większego niż zero i nie większego niż 20 MB i nazwy do 255 znaków bez znaków specjalnych innych niż spacja, kropka, myślnik i podkreślenie. Przygotowywanie plików blokuje wysłanie; błędy są wyłącznie przy przycisku wyboru.

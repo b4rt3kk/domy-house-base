@@ -39,15 +39,15 @@ class Format extends \Laminas\View\Helper\AbstractHelper
                 break;
             case self::FORMAT_TRUNCATE:
                 if (!empty($value)) {
-                    $return = '<span class="d-inline-block text-truncate" data-bs-html="true" style="max-width: 150px;" data-bs-toggle="tooltip" title="' . htmlspecialchars($value) . '">' . $value . '</span>';
+                    $return = '<span class="d-inline-block text-truncate" data-bs-html="false" style="max-width: 150px;" data-bs-toggle="tooltip" title="' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false) . '">' . htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false) . '</span>';
                 }
                 break;
             case self::FORMAT_TEXT_TRUNCATE:
                 if (!empty($value)) {
                     if (mb_strlen($value, 'UTF-8') > 200) {
-                        $return = mb_strcut($value, 0, 200, 'UTF-8') . '...';
+                        $return = htmlspecialchars(mb_substr(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 0, 200, 'UTF-8'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '...';
                     } else {
-                        $return = $value;
+                        $return = htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
                     }
                     
                 }
