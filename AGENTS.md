@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Nawigacja paginatora, górny/dolny pasek, mobilny wybór strony i rozmiaru strony: `docs/agent/paginator-navigation.md`.
+
 - Podgląd `base/show`, mobilne etykiety/wartości i rozdzielenie podglądów od tabel wyników: `docs/agent/record-details.md`.
 
 - Model dictionaries, filtered labels, dictionary cache keys or SQL92 quoting warnings: `docs/agent/dictionaries.md`.
