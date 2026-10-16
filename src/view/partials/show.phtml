@@ -43,7 +43,7 @@ foreach ($rowDictionaries as $key => $rowDictionary) {
     $dictionaries[$key] = $dictionary->getDictionary();
 }
 
-echo '<table class="table table-hover">';
+echo '<table class="table table-hover record-details">';
 
 echo '<colgroup>';
 echo '<col class="col-md-2">';
@@ -56,7 +56,7 @@ foreach ($headers as $header) {
     $class = null;
     
     echo '<tr>';
-    echo '<td class="fw-bold text-end max-width-50">';
+    echo '<td class="fw-bold text-end max-width-50 record-details-label">';
     
     // nazwa nagłówka wiersza
     echo !empty($headersMapping[$header]['title']) ? $headersMapping[$header]['title'] : $header;
@@ -67,7 +67,7 @@ foreach ($headers as $header) {
         $class = $headersMapping[$header]['class'];
     }
 
-    echo '<td class="' . $class . ' text-break">';
+    echo '<td class="' . $class . ' text-break record-details-value">';
     
     // wartość wiersza
     $value = $row->{$header};
