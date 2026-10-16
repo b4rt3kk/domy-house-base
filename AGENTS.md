@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Podgląd `base/show`, mobilne etykiety/wartości i rozdzielenie podglądów od tabel wyników: `docs/agent/record-details.md`.
+
 - Model dictionaries, filtered labels, dictionary cache keys or SQL92 quoting warnings: `docs/agent/dictionaries.md`.
 
 - Typ oferty Usługa/Produkt, wybór przed dodawaniem, dozwolone subkategorie, lokalizacja i cennik zależny od typu: `docs/agent/offer-types.md`.
