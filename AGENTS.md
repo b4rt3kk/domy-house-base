@@ -30,7 +30,7 @@
 
 - Aktualizacja Bootstrap/jQuery admina, współdzielone partiale `base/*`, sortowanie AJAX i zależności JS: `docs/agent/admin-view-dependencies.md`. Base nie dostarcza bibliotek przeglądarkowych; sortowanie używa natywnego JSON.parse i bezpiecznych literałów JS, z izolacją wielu tabel. Zachowaj odbiorców spoza admina.
 
-- Nawigacja paginatora, górny/dolny pasek, mobilny wybór strony i rozmiaru strony: `docs/agent/paginator-navigation.md`.
+- Nawigacja paginatora, górny/dolny pasek, mobilny wybór strony i rozmiaru strony, pojedynczy rząd czterech skrótów: `docs/agent/paginator-navigation.md`.
 
 - Podgląd `base/show`, mobilne etykiety/wartości i rozdzielenie podglądów od tabel wyników: `docs/agent/record-details.md`.
 
