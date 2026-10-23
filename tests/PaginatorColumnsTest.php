@@ -60,10 +60,12 @@ final class PaginatorColumnsTest extends TestCase
         $paginator = $this->paginator();
         $container = new Container(\Base\Paginator::getColumnPreferencesStorageName('columns_test'));
         $container->selection = [];
-        self::assertSame([], $paginator->getVisibleHeaders());
+        self::assertSame(['name'], $paginator->getVisibleHeaders());
         $paginator->setFilterData(['name' => 'Dom']);
         $paginator->clearFilterData();
-        self::assertSame([], $paginator->getVisibleHeaders());
+        self::assertSame(['name'], $paginator->getVisibleHeaders());
+        $container->selection = ['secret', 'outside'];
+        self::assertSame(['name'], $paginator->getVisibleHeaders());
         $container->selection = null;
         self::assertSame(['name'], $paginator->getVisibleHeaders());
         $paginator->getViewConfig()->setListPartial('custom/cards');

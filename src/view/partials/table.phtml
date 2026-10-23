@@ -63,7 +63,7 @@ echo '<tr>';
 echo '<th class="fw-bold">#</th>';
 
 foreach ($headers as $header) {
-    echo '<th class="fw-bold ' . (!empty($headersMapping[$header]['sortable']) ? 'sortable' : null) . '" data-column_name="' . $header . '">';
+    echo '<th class="fw-bold text-nowrap ' . (!empty($headersMapping[$header]['sortable']) ? 'sortable' : null) . '" data-column_name="' . $header . '">';
     
     if (!empty($headersMapping[$header]['sortable'])) {
         echo '<a href="#"> '; 
@@ -115,6 +115,13 @@ foreach ($data as $row) {
             $class = $headersMapping[$header]['class'];
         }
         
+        if (in_array($headersMapping[$header]['format'] ?? null, [
+            \Base\View\Helper\Format::FORMAT_DATE, \Base\View\Helper\Format::FORMAT_DATE_TIME,
+            \Base\View\Helper\Format::FORMAT_DATE_INTL, \Base\View\Helper\Format::FORMAT_DATE_TIME_INTL,
+            \Base\View\Helper\Format::FORMAT_TIME_LEFT,
+        ], true)) {
+            $class = trim(($class ?? '') . ' text-nowrap');
+        }
         echo '<td class="' . $class . '">';
         echo !empty($headersMapping[$header]['escape']) ? $this->escapeHtml((string) $value) : $value;
         echo '</td>';
