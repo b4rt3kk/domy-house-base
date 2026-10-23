@@ -458,6 +458,8 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
             }
         }
         
+        if ($form) $form->setPaginatorFilter();
+
         return $form;
     }
     

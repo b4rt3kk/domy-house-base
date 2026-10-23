@@ -151,6 +151,49 @@ abstract class AbstractForm extends \Laminas\Form\Form
         $this->setIsInitialized(true);
     }
     
+    /** Search criteria may be omitted; this mode is enabled only by a paginator. */
+    protected $paginatorFilter = false;
+
+    public function setPaginatorFilter(bool $enabled = true): void
+    {
+        $this->paginatorFilter = $enabled;
+    }
+
+    public function getInputFilter(): \Laminas\InputFilter\InputFilterInterface
+    {
+        $filter = parent::getInputFilter();
+        if ($this->paginatorFilter) {
+            $this->makeSearchCriteriaOptional($this, $filter);
+        }
+        return $filter;
+    }
+
+    private function makeSearchCriteriaOptional(
+        \Laminas\Form\FieldsetInterface $fieldset,
+        \Laminas\InputFilter\InputFilterInterface $filter
+    ): void {
+        foreach ($fieldset->getElements() as $name => $element) {
+            // Technical/security elements retain their original validation contract.
+            if (in_array($element->getAttribute('type'), ['hidden', 'submit', 'button', 'reset', 'file', 'password'], true)
+                || $element instanceof \Laminas\Form\Element\Csrf) continue;
+            $element->removeAttribute('required');
+            $element->removeAttribute('aria-required');
+            if ($filter->has($name)) {
+                $input = $filter->get($name);
+                if ($input instanceof \Laminas\InputFilter\InputInterface) {
+                    $input->setRequired(false);
+                    $input->setAllowEmpty(true);
+                    $input->setContinueIfEmpty(false);
+                }
+            }
+        }
+        foreach ($fieldset->getFieldsets() as $name => $child) {
+            if ($filter->has($name) && $filter->get($name) instanceof \Laminas\InputFilter\InputFilterInterface) {
+                $this->makeSearchCriteriaOptional($child, $filter->get($name));
+            }
+        }
+    }
+
     public function initInputFilter()
     {
         $inputFilter = $this->getInputFilter();
