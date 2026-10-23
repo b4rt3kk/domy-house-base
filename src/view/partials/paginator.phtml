@@ -79,8 +79,12 @@ echo <<<"JS"
         const field = $(this).closest('[data-column-controls]');
         const selected = field.find('select').val() || [];
         const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
+        if (!selected.length) {
+            field.find('[role="alert"]').text('Wybierz conajmniej jedną kolumnę').prop('hidden', false);
+            return;
+        }
         controls.prop('disabled', true);
-        field.find('[role="alert"]').prop('hidden', true);
+        field.find('[role="alert"]').text('Nie udało się zapisać kolumn. Spróbuj ponownie.').prop('hidden', true);
         $.ajax({
             url: {$ajaxUrlJs}, type: 'POST',
             data: {paginatorId: {$paginatorIdJs}, visibleColumns: JSON.stringify(selected), columnsToken: field.attr('data-columns-token')},
@@ -92,6 +96,7 @@ echo <<<"JS"
         });
     });
     selectors.on('change', function() {
+        $(root).find('[data-column-controls] [role="alert"]').prop('hidden', true);
         const selected = $(this).val() || [];
         selectors.not(this).each(function() {
             if ($.fn.selectpicker && $(this).data('selectpicker')) $(this).selectpicker('val', selected);
@@ -102,7 +107,7 @@ echo <<<"JS"
         const field = $(this).closest('[data-column-controls]');
         const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
         controls.prop('disabled', true);
-        field.find('[role="alert"]').prop('hidden', true);
+        field.find('[role="alert"]').text('Nie udało się zapisać kolumn. Spróbuj ponownie.').prop('hidden', true);
         $.ajax({url: {$ajaxUrlJs}, type: 'POST', data: {paginatorId: {$paginatorIdJs}, visibleColumns: 'null', columnsToken: field.attr('data-columns-token')},
             success: function() { window.location.reload(); },
             error: function() { controls.prop('disabled', false); field.find('[role="alert"]').prop('hidden', false); }

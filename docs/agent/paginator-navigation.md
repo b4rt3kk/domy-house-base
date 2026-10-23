@@ -30,4 +30,6 @@ puste wyniki, jedną i wiele stron. Skróty muszą zostać w jednym rzędzie tak
 przy 320 px, a kontrolki mieć równe wysokości i wyrównane etykiety.
 Przed wdrożeniem opublikuj Base i odśwież lock MVC zgodnie z AGENTS.md.
 
-Wspólne tabele mają pod nawigacją wybór wyświetlanych kolumn z przyciskami Zastosuj/Domyślne. Kontrakt modelu, sesji i bezpieczeństwa: `paginator-columns.md`. Kontrolki kolumn są poza mobilną siatką strony/rozmiaru, a górny i dolny pasek synchronizują wybór.
+Wspólne tabele mają pod nawigacją zwinięte `details` „Zaawansowane”: wybór kolumn oraz dolny pasek Zastosuj/Wyczyść. Nawigacja ma `data-floating-label="off"`, także gdy jest zagnieżdżona w formularzu nadrzędnym. Kontrakt modelu, sesji i bezpieczeństwa: `paginator-columns.md`. Kontrolki kolumn są poza mobilną siatką strony/rozmiaru, a górny i dolny pasek synchronizują wybór.
+
+Nagłówki `base/table` oraz wartości z formatami daty, daty/czasu (także intl) i czasu pozostałego mają `text-nowrap`. Szerokie tabele przewijają się poziomo; nie rozdzielaj ikony sortowania od tytułu.

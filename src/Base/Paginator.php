@@ -125,11 +125,14 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         $columns = $this->getColumnOptions();
         $preferences = new \Laminas\Session\Container(self::getColumnPreferencesStorageName($this->getPaginatorId()));
         $selection = $preferences->selection;
+        $defaults = array_keys(array_filter($columns, static fn ($column) => $column['defaultVisible']));
+        // Recover old empty/stale preferences without exposing excluded columns.
+        $fallback = $defaults ?: array_slice(array_keys($columns), 0, 1);
         if (!is_array($selection)) {
-            return array_keys(array_filter($columns, static fn ($column) => $column['defaultVisible']));
+            return $fallback;
         }
         // Preserve configured order; never render arbitrary fields from a request/session.
-        return array_values(array_filter(array_keys($columns), static fn ($name) => in_array($name, $selection, true)));
+        return array_values(array_filter(array_keys($columns), static fn ($name) => in_array($name, $selection, true))) ?: $fallback;
     }
 
     public function getCurrentPage()
