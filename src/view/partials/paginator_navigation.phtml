@@ -8,6 +8,8 @@ $totalResults = $paginator->getTotalResults();
 $loadTime = $paginator->getPageLoadTimeMs();
 $perPageOptions = $paginator->getPerPageOptions();
 $perPage = $paginator->getItemsPerPage();
+$columnOptions = $paginator->getColumnOptions();
+$visibleHeaders = $columnOptions ? $paginator->getVisibleHeaders() : [];
 $navigationId = uniqid('paginator-navigation-');
 ?>
 <nav class="navbar bg-body-tertiary mb-3 base-paginator-navigation" aria-label="Nawigacja stron wyników">
@@ -71,5 +73,18 @@ $navigationId = uniqid('paginator-navigation-');
             <span class="navbar-text"><strong><i class="far fa-clock"></i></strong> <?php echo number_format($loadTime, 4); ?> s</span>
         </div>
     </div>
+    <?php if ($columnOptions): ?>
+    <div class="container-fluid base-paginator-columns" data-column-controls data-columns-token="<?= $this->escapeHtmlAttr($paginator->getColumnSelectionToken()) ?>">
+        <label for="<?= $navigationId ?>-columns">Wyświetlane kolumny</label>
+        <select id="<?= $navigationId ?>-columns" class="selectpicker-select-filter" multiple data-paginator-columns data-actions-box="true" data-selected-text-format="count > 2" title="Brak wybranych kolumn">
+            <?php foreach ($columnOptions as $name => $column): ?>
+                <option value="<?= $this->escapeHtmlAttr($name) ?>" <?= in_array($name, $visibleHeaders, true) ? 'selected' : '' ?>><?= $this->escapeHtml(strip_tags($column['label'])) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <button type="button" class="btn btn-outline-primary" data-columns-apply>Zastosuj</button>
+        <button type="button" class="btn btn-outline-secondary" data-columns-reset>Domyślne</button>
+        <p class="text-danger mb-0" role="alert" hidden>Nie udało się zapisać kolumn. Spróbuj ponownie.</p>
+    </div>
+    <?php endif; ?>
 </nav>
 

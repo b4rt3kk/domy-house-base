@@ -29,3 +29,5 @@ wybór strony, rozmiar strony i geometrię przy otwartym/zamkniętym sidebarze,
 puste wyniki, jedną i wiele stron. Skróty muszą zostać w jednym rzędzie także
 przy 320 px, a kontrolki mieć równe wysokości i wyrównane etykiety.
 Przed wdrożeniem opublikuj Base i odśwież lock MVC zgodnie z AGENTS.md.
+
+Wspólne tabele mają pod nawigacją wybór wyświetlanych kolumn z przyciskami Zastosuj/Domyślne. Kontrakt modelu, sesji i bezpieczeństwa: `paginator-columns.md`. Kontrolki kolumn są poza mobilną siatką strony/rozmiaru, a górny i dolny pasek synchronizują wybór.

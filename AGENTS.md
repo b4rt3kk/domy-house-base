@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Wybór kolumn paginatorów, `headersMapping.defaultVisible/selectable`, sesyjne preferencje i kontrakt AJAX/CSRF: `docs/agent/paginator-columns.md`.
+
 - Aktualizacja Bootstrap/jQuery admina, współdzielone partiale `base/*`, sortowanie AJAX i zależności JS: `docs/agent/admin-view-dependencies.md`. Base nie dostarcza bibliotek przeglądarkowych; sortowanie używa natywnego JSON.parse i bezpiecznych literałów JS, z izolacją wielu tabel. Zachowaj odbiorców spoza admina.
 
 - Nawigacja paginatora, górny/dolny pasek, mobilny wybór strony i rozmiaru strony, pojedynczy rząd czterech skrótów: `docs/agent/paginator-navigation.md`.

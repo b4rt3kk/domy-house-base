@@ -95,6 +95,43 @@ abstract class Paginator extends Logic\AbstractLogic implements Paginator\Pagina
         return $this->headers;
     }
 
+    public function getColumnOptions(): array
+    {
+        if (!$this->headers || $this->getViewConfig()->getListPartial() !== 'base/table') {
+            return [];
+        }
+        return $this->getModel()->getEntity()->getPaginatorColumns($this->headers);
+    }
+
+    public static function getColumnPreferencesStorageName(string $paginatorId): string
+    {
+        return 'paginator_columns_' . hash('sha256', $paginatorId);
+    }
+
+    public function getColumnSelectionToken(): string
+    {
+        $preferences = new \Laminas\Session\Container(self::getColumnPreferencesStorageName($this->getPaginatorId()));
+        if (!is_string($preferences->token)) {
+            $preferences->token = bin2hex(random_bytes(32));
+        }
+        return $preferences->token;
+    }
+
+    public function getVisibleHeaders(): array
+    {
+        if ($this->getViewConfig()->getListPartial() !== 'base/table') {
+            return $this->headers;
+        }
+        $columns = $this->getColumnOptions();
+        $preferences = new \Laminas\Session\Container(self::getColumnPreferencesStorageName($this->getPaginatorId()));
+        $selection = $preferences->selection;
+        if (!is_array($selection)) {
+            return array_keys(array_filter($columns, static fn ($column) => $column['defaultVisible']));
+        }
+        // Preserve configured order; never render arbitrary fields from a request/session.
+        return array_values(array_filter(array_keys($columns), static fn ($name) => in_array($name, $selection, true)));
+    }
+
     public function getCurrentPage()
     {
         return $this->currentPage;

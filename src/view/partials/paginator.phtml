@@ -35,7 +35,7 @@ if ($paginator instanceof \Base\Paginator) {
         echo $this->partial($listPartial, [
             'paginator' => $paginator,
             'data' => $data,
-            'headers' => $paginator->getHeaders(),
+            'headers' => $paginator->getVisibleHeaders(),
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
             'responsive' => $viewConfig->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
@@ -53,6 +53,8 @@ if ($paginator instanceof \Base\Paginator) {
         echo $this->translate($viewConfig->getNoResultsText());
     }
     
+    $paginatorIdJs = json_encode($paginatorId, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    $ajaxUrlJs = json_encode($ajaxUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     $this->inlineScript()->captureStart();
 echo <<<"JS"
     $('#{$paginatorId}').find('select[name="items_per_page"]').on("change", function() {
@@ -69,6 +71,44 @@ echo <<<"JS"
             }
         });
     });
+(() => {
+    const root = document.getElementById({$paginatorIdJs});
+    if (!root) return;
+    const selectors = $(root).find('select[data-paginator-columns]');
+    $(root).find('[data-columns-apply]').on('click', function() {
+        const field = $(this).closest('[data-column-controls]');
+        const selected = field.find('select').val() || [];
+        const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
+        controls.prop('disabled', true);
+        field.find('[role="alert"]').prop('hidden', true);
+        $.ajax({
+            url: {$ajaxUrlJs}, type: 'POST',
+            data: {paginatorId: {$paginatorIdJs}, visibleColumns: JSON.stringify(selected), columnsToken: field.attr('data-columns-token')},
+            success: function() { window.location.reload(); },
+            error: function() {
+                controls.prop('disabled', false);
+                field.find('[role="alert"]').prop('hidden', false);
+            }
+        });
+    });
+    selectors.on('change', function() {
+        const selected = $(this).val() || [];
+        selectors.not(this).each(function() {
+            if ($.fn.selectpicker && $(this).data('selectpicker')) $(this).selectpicker('val', selected);
+            else $(this).val(selected);
+        });
+    });
+    $(root).find('[data-columns-reset]').on('click', function() {
+        const field = $(this).closest('[data-column-controls]');
+        const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
+        controls.prop('disabled', true);
+        field.find('[role="alert"]').prop('hidden', true);
+        $.ajax({url: {$ajaxUrlJs}, type: 'POST', data: {paginatorId: {$paginatorIdJs}, visibleColumns: 'null', columnsToken: field.attr('data-columns-token')},
+            success: function() { window.location.reload(); },
+            error: function() { controls.prop('disabled', false); field.find('[role="alert"]').prop('hidden', false); }
+        });
+    });
+})();
 JS;
     $this->inlineScript()->captureEnd();
 }
