@@ -61,3 +61,6 @@
 - XSS, kodowanie tekstu, URL-e użytkownika i reprezentacja opisu oferty: `docs/agent/text-security.md`.
 
 - Każde widoczne kryterium filtra paginatora jest opcjonalne. Zachowaj walidację podanych wartości oraz CSRF/pól technicznych. Regresje muszą obejmować jawne puste wartości z POST, nie tylko pominięte pola; kontrakt: `docs/agent/form-validation.md`.
+
+
+- W pierwszej kolejności używaj wspólnych widoków, klas i metod Base. Brakującą funkcję dodawaj jako reużywalne rozszerzenie/opcję Base zamiast kopiować implementację w module. Wszystkie tabelaryczne wyniki paginatorów admina muszą korzystać z `base/table`; różnice domenowe konfiguruj przez `ViewConfig::setTableOptions()` i `setTableActionsPartial()`. Partiale komórek/akcji nie mogą powielać struktury tabeli ani nawigacji.

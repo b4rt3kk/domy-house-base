@@ -12,14 +12,19 @@ $ajaxUrl = isset($ajax_url) ? $ajax_url : null;
 $ajaxParams = isset($ajax_params) ? $ajax_params : json_encode([]);
 $tableId = isset($table_id) ? $table_id : uniqid();
 
+$hasActions = !empty($rowActions) || !empty($table_actions_partial);
 if (empty($table_actions_partial)) {
     $table_actions_partial = $prototype->getActionsPartial();
 }
 
+$options = $table_options ?? [];
+$showIndex = $options['showIndex'] ?? true;
+$cellPartials = $options['cellPartials'] ?? [];
+$context = isset($options['context']) ? ($options['context'])($this, $headers) : [];
 $dictionaries = [];
 
 foreach ($rowDictionaries as $key => $rowDictionary) {
-    if (!in_array($key, $headers, true)) {
+    if (isset($cellPartials[$key]) || !in_array($key, $headers, true)) {
         continue;
     }
     $dictionary = clone $this->serviceManager()->get(\Base\Dictionary::class);
@@ -57,10 +62,10 @@ if ($responsive) {
     echo '<div class="table-responsive table-responsive-xxl">';
 }
 
-echo '<table class="table" id="' . $tableId . '">';
+echo '<table class="' . $this->escapeHtmlAttr('table ' . ($options['class'] ?? '')) . '" id="' . $tableId . '">';
 echo '<thead class="table-light">';
 echo '<tr>';
-echo '<th class="fw-bold">#</th>';
+if ($showIndex) echo '<th class="fw-bold">#</th>';
 
 foreach ($headers as $header) {
     echo '<th class="fw-bold text-nowrap ' . (!empty($headersMapping[$header]['sortable']) ? 'sortable' : null) . '" data-column_name="' . $header . '">';
@@ -86,8 +91,8 @@ foreach ($headers as $header) {
     echo '</th>';
 }
 
-if (!empty($rowActions)) {
-    echo '<th class="fw-bold">Actions</th>';
+if ($hasActions) {
+    echo '<th class="fw-bold text-nowrap">' . $this->escapeHtml($options['actionsLabel'] ?? 'Actions') . '</th>';
 }
 
 echo '</tr>';
@@ -96,10 +101,12 @@ echo '</thead>';
 echo '<tbody>';
 
 foreach ($data as $row) {
-    echo '<tr>';
-    echo '<td><strong>' . ($index++) . '</strong></td>';
+    $rowClass = isset($options['rowClass']) ? ($options['rowClass'])($row) : '';
+    echo '<tr class="' . $this->escapeHtmlAttr($rowClass) . '">';
+    if ($showIndex) echo '<td><strong>' . ($index++) . '</strong></td>';
     
     foreach ($headers as $header) {
+        $cellPartial = $cellPartials[$header] ?? null;
         $value = $row->{$header};
         $class = null;
         
@@ -107,7 +114,7 @@ foreach ($data as $row) {
             $value = $dictionaries[$header][$row->{$header}];
         }
         
-        if (!empty($headersMapping[$header]['format'])) {
+        if (!$cellPartial && !empty($headersMapping[$header]['format'])) {
             $value = $this->format()->format($headersMapping[$header]['format'], $value);
         }
         
@@ -123,11 +130,15 @@ foreach ($data as $row) {
             $class = trim(($class ?? '') . ' text-nowrap');
         }
         echo '<td class="' . $class . '">';
-        echo !empty($headersMapping[$header]['escape']) ? $this->escapeHtml((string) $value) : $value;
+        if ($cellPartial) {
+            echo $this->partial($cellPartial, ['row' => $row, 'header' => $header, 'value' => $value, 'context' => $context]);
+        } else {
+            echo !empty($headersMapping[$header]['escape']) ? $this->escapeHtml((string) $value) : $value;
+        }
         echo '</td>';
     }
     
-    if (!empty($rowActions)) {
+    if ($hasActions) {
         echo '<td class="text-nowrap">';
         echo $this->partial($table_actions_partial, ['actions' => $rowActions, 'row' => $row]);
         echo '</td>';
