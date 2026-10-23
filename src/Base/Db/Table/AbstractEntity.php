@@ -33,6 +33,23 @@ abstract class AbstractEntity
         return $this->headersMapping;
     }
 
+    /** Only explicitly declared paginator headers can become selectable columns. */
+    public function getPaginatorColumns(array $headers): array
+    {
+        $columns = [];
+        foreach ($headers as $header) {
+            $config = $this->headersMapping[$header] ?? [];
+            if (($config['selectable'] ?? true) === false) {
+                continue;
+            }
+            $columns[$header] = [
+                'label' => $config['title'] ?? $header,
+                'defaultVisible' => (bool) ($config['defaultVisible'] ?? true),
+            ];
+        }
+        return $columns;
+    }
+
     public function setHeadersMapping($headersMapping)
     {
         $this->headersMapping = $headersMapping;

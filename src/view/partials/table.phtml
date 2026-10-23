@@ -19,7 +19,10 @@ if (empty($table_actions_partial)) {
 $dictionaries = [];
 
 foreach ($rowDictionaries as $key => $rowDictionary) {
-    $dictionary = $this->serviceManager()->get(\Base\Dictionary::class);
+    if (!in_array($key, $headers, true)) {
+        continue;
+    }
+    $dictionary = clone $this->serviceManager()->get(\Base\Dictionary::class);
     $dictionary->init();
     
     /* @var $dictionary \Base\Dictionary */
@@ -113,7 +116,7 @@ foreach ($data as $row) {
         }
         
         echo '<td class="' . $class . '">';
-        echo $value;
+        echo !empty($headersMapping[$header]['escape']) ? $this->escapeHtml((string) $value) : $value;
         echo '</td>';
     }
     
