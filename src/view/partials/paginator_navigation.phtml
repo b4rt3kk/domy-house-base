@@ -88,11 +88,12 @@ $navigationId = uniqid('paginator-navigation-');
                 <option value="<?= $this->escapeHtmlAttr($name) ?>" <?= in_array($name, $visibleHeaders, true) ? 'selected' : '' ?>><?= $this->escapeHtml(strip_tags($column['label'])) ?></option>
             <?php endforeach; ?>
         </select>
+        <p id="<?= $navigationId ?>-columns-error" class="invalid-feedback mb-0" data-columns-error role="alert" hidden></p>
         <div class="base-paginator-advanced-actions">
         <button type="button" class="btn btn-outline-primary" data-columns-apply>Zastosuj</button>
         <button type="button" class="btn btn-outline-secondary" data-columns-reset>Wyczyść</button>
         </div>
-        <p class="text-danger mb-0" role="alert" hidden>Nie udało się zapisać kolumn. Spróbuj ponownie.</p>
+        <p class="text-danger mb-0" data-columns-save-error role="alert" hidden>Nie udało się zapisać kolumn. Spróbuj ponownie.</p>
     </div>
     </div>
     </div>

@@ -39,6 +39,7 @@ if ($paginator instanceof \Base\Paginator) {
             'index' => $paginator->getItemsPerPage() * ($paginator->getCurrentPage() - 1) + 1,
             'responsive' => $viewConfig->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
+            'table_options' => $viewConfig->getTableOptions(),
             'ajax_url' => $ajaxUrl,
             'ajax_params' => json_encode(['paginatorId' => $paginatorId]),
             'sort' => $paginator->getSortingData(),
@@ -75,28 +76,55 @@ echo <<<"JS"
     const root = document.getElementById({$paginatorIdJs});
     if (!root) return;
     const selectors = $(root).find('select[data-paginator-columns]');
-    $(root).find('[data-columns-apply]').on('click', function() {
-        const field = $(this).closest('[data-column-controls]');
-        const selected = field.find('select').val() || [];
+    function validation(select, message) {
+        const field = $(select).closest('[data-column-controls]');
+        const error = field.find('[data-columns-error]');
+        const button = field.find('.bootstrap-select > button');
+        const targets = $(select).add(button);
+        error.text(message || '').prop('hidden', !message).toggleClass('d-block', !!message);
+        targets.toggleClass('is-invalid', !!message);
+        targets.each(function() {
+            if (message) this.setAttribute('aria-invalid', 'true');
+            else this.removeAttribute('aria-invalid');
+            const ids = (this.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== error.attr('id'));
+            if (message) ids.push(error.attr('id'));
+            if (ids.length) this.setAttribute('aria-describedby', ids.join(' '));
+            else this.removeAttribute('aria-describedby');
+        });
+    }
+    function clearErrors() {
+        selectors.each(function() { validation(this, ''); });
+        $(root).find('[data-columns-save-error]').prop('hidden', true);
+    }
+    function save(field, selected) {
         const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
-        if (!selected.length) {
-            field.find('[role="alert"]').text('Wybierz conajmniej jedną kolumnę').prop('hidden', false);
-            return;
-        }
+        clearErrors();
         controls.prop('disabled', true);
-        field.find('[role="alert"]').text('Nie udało się zapisać kolumn. Spróbuj ponownie.').prop('hidden', true);
-        $.ajax({
-            url: {$ajaxUrlJs}, type: 'POST',
+        $.ajax({url: {$ajaxUrlJs}, type: 'POST',
             data: {paginatorId: {$paginatorIdJs}, visibleColumns: JSON.stringify(selected), columnsToken: field.attr('data-columns-token')},
             success: function() { window.location.reload(); },
-            error: function() {
+            error: function(xhr) {
                 controls.prop('disabled', false);
-                field.find('[role="alert"]').prop('hidden', false);
+                if (xhr && xhr.status === 422) validation(field.find('select')[0], 'Wybierz co najmniej jedną kolumnę');
+                else field.find('[data-columns-save-error]').prop('hidden', false);
             }
         });
+    }
+    $(root).find('[data-columns-apply]').on('click', function() {
+        const field = $(this).closest('[data-column-controls]');
+        const select = field.find('select')[0];
+        const selected = $(select).val() || [];
+        clearErrors();
+        if (!selected.length) {
+            validation(select, 'Wybierz co najmniej jedną kolumnę');
+            const button = field.find('.bootstrap-select > button')[0];
+            (button || select).focus();
+            return;
+        }
+        save(field, selected);
     });
     selectors.on('change', function() {
-        $(root).find('[data-column-controls] [role="alert"]').prop('hidden', true);
+        clearErrors();
         const selected = $(this).val() || [];
         selectors.not(this).each(function() {
             if ($.fn.selectpicker && $(this).data('selectpicker')) $(this).selectpicker('val', selected);
@@ -104,14 +132,7 @@ echo <<<"JS"
         });
     });
     $(root).find('[data-columns-reset]').on('click', function() {
-        const field = $(this).closest('[data-column-controls]');
-        const controls = $(root).find('[data-columns-apply], [data-columns-reset]');
-        controls.prop('disabled', true);
-        field.find('[role="alert"]').text('Nie udało się zapisać kolumn. Spróbuj ponownie.').prop('hidden', true);
-        $.ajax({url: {$ajaxUrlJs}, type: 'POST', data: {paginatorId: {$paginatorIdJs}, visibleColumns: 'null', columnsToken: field.attr('data-columns-token')},
-            success: function() { window.location.reload(); },
-            error: function() { controls.prop('disabled', false); field.find('[role="alert"]').prop('hidden', false); }
-        });
+        save($(this).closest('[data-column-controls]'), null);
     });
 })();
 JS;

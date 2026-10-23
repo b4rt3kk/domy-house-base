@@ -7,7 +7,20 @@ class ViewConfig extends \Base\Object\AbstractHydratableObject
     protected $tableActionsPartial;
     
     protected $listPartial = 'base/table';
-    
+
+    /** Trusted server-side presentation options for the shared base/table view. */
+    protected $tableOptions = [];
+
+    public function getTableOptions(): array
+    {
+        return $this->tableOptions;
+    }
+
+    public function setTableOptions(array $options): void
+    {
+        $this->tableOptions = $options;
+    }
+
     protected $listPartialItem = null;
     
     protected $filterPartial = 'base/paginator_filter';

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/src/Base/Db/Table/AbstractEntity.php';
+require_once dirname(__DIR__) . '/src/Base/Config/Paginator/ViewConfig.php';
 require_once dirname(__DIR__) . '/src/Base/Paginator.php';
 
 use PHPUnit\Framework\TestCase;
@@ -51,6 +52,10 @@ final class PaginatorColumnsTest extends TestCase
         $container->selection = ['optional', 'secret', 'name', 'outside', 'optional'];
         self::assertSame(['name', 'optional'], $paginator->getVisibleHeaders());
         self::assertSame(['name'], $this->paginator('other_list')->getVisibleHeaders());
+        $paginator->getViewConfig()->setTableOptions(['showIndex' => false]);
+        self::assertSame('base/table', $paginator->getViewConfig()->getListPartial());
+        self::assertSame(['name', 'optional'], $paginator->getVisibleHeaders());
+        self::assertArrayNotHasKey('secret', $paginator->getColumnOptions());
         self::assertSame($paginator->getColumnSelectionToken(), $paginator->getColumnSelectionToken());
         self::assertNotSame($paginator->getColumnSelectionToken(), $this->paginator('other_list')->getColumnSelectionToken());
     }
