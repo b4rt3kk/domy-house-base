@@ -37,3 +37,30 @@
 - Cyfra kontrolna PESEL to `(10 - suma % 10) % 10`, także gdy wynosi zero. Nie dodawaj zależności od BCMath dla tej operacji.
 - Test: `php tests/identifiers.php <consumer-vendor-autoload.php>`; ładuje lokalne klasy biblioteki i zależności Laminas konsumenta.
 - Po zatwierdzonej publikacji biblioteki odśwież Composer lock aplikacji konsumującej Base. Nie publikuj zmian ani locka bez zgody na konkretną operację.
+
+
+## Filtry paginatora: brak wymaganych kryteriów
+
+`Paginator::getFilterForm()` włącza `AbstractForm::setPaginatorFilter()` tylko
+na instancji formularza wyszukiwania. `AbstractForm::getInputFilter()` najpierw
+pozwala Laminas dołączyć domyślne walidatory elementów, potem rekurencyjnie
+normalizuje widoczne kryteria: required=false, allowEmpty=true,
+continueIfEmpty=false i brak atrybutów HTML required/aria-required. Ponowne
+pobranie input filter przed walidacją zabezpiecza konfigurację dopisaną przez
+potomny initInputFilter. Nie zmieniaj globalnie wymagalności wszystkich formularzy.
+
+CSRF, pola ukryte, hasła, pliki i przyciski zachowują swój kontrakt; to nie są
+kryteria wyszukiwania. Nie usuwaj walidatorów wypełnionych kryteriów. Zero nie jest
+pustą wartością. Puste string/null/tablica oraz brak klucza mają być dozwolone.
+
+Pułapka Laminas: required=false z continue_if_empty=true przepuszcza pustkę do
+GreaterThan/Step dołożonych przez element Number (min/step). Callback akceptujący
+pustkę nie pomija pozostałych walidatorów. Test z samym setData([]) tego nie
+wykrywa, ponieważ pominięte pole jest obsługiwane inną ścieżką niż id=''.
+
+Test `tests/PaginatorFilterTest.php` z autoloaderem konsumenta i --stderr obejmuje
+rzeczywiste pobranie formularza przez paginator, puste i brakujące kryteria,
+wypełnione błędne wartości, zero, poprawny wybór i zachowanie wymagalności pól
+technicznych oraz formularzy zapisu. MVC dodatkowo testuje cały POST filtra.
+Publikacja: najpierw Base/master, następnie composer.lock MVC wskazujący SHA
+scalenia; nigdy lokalna ścieżka ani nieopublikowany commit.
