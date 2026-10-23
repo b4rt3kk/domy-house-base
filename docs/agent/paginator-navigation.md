@@ -30,6 +30,6 @@ puste wyniki, jedną i wiele stron. Skróty muszą zostać w jednym rzędzie tak
 przy 320 px, a kontrolki mieć równe wysokości i wyrównane etykiety.
 Przed wdrożeniem opublikuj Base i odśwież lock MVC zgodnie z AGENTS.md.
 
-Wspólne tabele mają pod nawigacją zwinięte `details` „Zaawansowane”: wybór kolumn oraz dolny pasek Zastosuj/Wyczyść. Nawigacja ma `data-floating-label="off"`, także gdy jest zagnieżdżona w formularzu nadrzędnym. Kontrakt modelu, sesji i bezpieczeństwa: `paginator-columns.md`. Kontrolki kolumn są poza mobilną siatką strony/rozmiaru, a górny i dolny pasek synchronizują wybór.
+Wspólne tabele mają pod nawigacją zwinięty accordion Bootstrap „Zaawansowane”: wybór kolumn oraz dolny pasek Zastosuj/Wyczyść. Tylko podstawowy pasek `.base-paginator-layout` ma `data-floating-label="off"`. Treść accordionu ma `data-floating-label="on"`, aby adapter admina objął wybór kolumn także poza formularzem. Każdy panel collapse ma unikalne ID (top/bottom i wiele list); domyślnie jest zamknięty, a Bootstrap synchronizuje chevron oraz aria-expanded. Przyciski zajmują osobne pełne wiersze również na desktopie. Kontrakt modelu, sesji i bezpieczeństwa: `paginator-columns.md`. Kontrolki kolumn są poza mobilną siatką strony/rozmiaru, a górny i dolny pasek synchronizują wybór.
 
 Nagłówki `base/table` oraz wartości z formatami daty, daty/czasu (także intl) i czasu pozostałego mają `text-nowrap`. Szerokie tabele przewijają się poziomo; nie rozdzielaj ikony sortowania od tytułu.

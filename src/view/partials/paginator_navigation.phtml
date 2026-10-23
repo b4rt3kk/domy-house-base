@@ -12,8 +12,8 @@ $columnOptions = $paginator->getColumnOptions();
 $visibleHeaders = $columnOptions ? $paginator->getVisibleHeaders() : [];
 $navigationId = uniqid('paginator-navigation-');
 ?>
-<nav class="navbar bg-body-tertiary mb-3 base-paginator-navigation" aria-label="Nawigacja stron wyników" data-floating-label="off">
-    <div class="container-fluid flex-column flex-lg-row w-100 base-paginator-layout">
+<nav class="navbar bg-body-tertiary mb-3 base-paginator-navigation" aria-label="Nawigacja stron wyników">
+    <div class="container-fluid flex-column flex-lg-row w-100 base-paginator-layout" data-floating-label="off">
         <!-- numer strony -->
         <div class="d-flex justify-content-lg-start justify-content-center flex-grow-1 base-paginator-pages">
             <a class="btn btn-outline-primary mr-1 <?php echo $currentPage <= 1 ? 'disabled' : null; ?>" href="<?php echo $this->url(null, [], ['query' => ['page' => max(1, $currentPage - 1)]], true); ?>" aria-label="Previous">
@@ -74,8 +74,13 @@ $navigationId = uniqid('paginator-navigation-');
         </div>
     </div>
     <?php if ($columnOptions): ?>
-    <details class="base-paginator-advanced w-100">
-    <summary class="p-1">Zaawansowane <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
+    <div class="accordion base-paginator-advanced w-100">
+    <div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $navigationId ?>-advanced" aria-expanded="false" aria-controls="<?= $navigationId ?>-advanced">Zaawansowane</button>
+    </h2>
+    <div id="<?= $navigationId ?>-advanced" class="accordion-collapse collapse">
+    <div class="accordion-body" data-floating-label="on">
     <div class="base-paginator-columns" data-column-controls data-columns-token="<?= $this->escapeHtmlAttr($paginator->getColumnSelectionToken()) ?>">
         <label for="<?= $navigationId ?>-columns">Wyświetlane kolumny</label>
         <select id="<?= $navigationId ?>-columns" class="selectpicker-select-filter" multiple data-paginator-columns data-actions-box="true" data-selected-text-format="count > 2" title="Brak wybranych kolumn">
@@ -89,7 +94,10 @@ $navigationId = uniqid('paginator-navigation-');
         </div>
         <p class="text-danger mb-0" role="alert" hidden>Nie udało się zapisać kolumn. Spróbuj ponownie.</p>
     </div>
-    </details>
+    </div>
+    </div>
+    </div>
+    </div>
     <?php endif; ?>
 </nav>
 
