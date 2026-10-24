@@ -41,8 +41,8 @@ class MassEditForm extends AbstractForm
             $this->get('change_' . $name)->setValue('keep');
             $this->add(['name' => $name] + $field['element']);
         }
-        $this->cancel('Anuluj');
         $this->submit('Zapisz zmiany');
+        $this->cancel('Anuluj');
     }
 
     public function initInputFilter()
