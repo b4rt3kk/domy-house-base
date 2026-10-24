@@ -83,5 +83,37 @@ if ($form instanceof \Base\Form\AbstractForm) {
     echo $this->form()->closeTag();
 
     echo '</div>';
+
+    if ($form->getAttribute('data-mass-edit')) {
+        $formIdJs = json_encode($formId, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $this->inlineScript()->captureStart();
+        echo <<<JS
+(() => {
+    const form = document.getElementById({$formIdJs});
+    if (!form) return;
+    form.querySelectorAll('[data-mass-field]').forEach(mode => {
+        const field = form.elements.namedItem(mode.dataset.massField);
+        if (!field) return;
+        const sync = () => {
+            field.disabled = mode.value !== 'set';
+            field.required = !field.disabled;
+            if (window.jQuery && jQuery.fn.selectpicker && jQuery(field).data('selectpicker')) {
+                jQuery(field).selectpicker('refresh');
+            }
+        };
+        if (window.jQuery) jQuery(mode).on('change', sync);
+        else mode.addEventListener('change', sync);
+        sync();
+    });
+    let submitting = false;
+    form.addEventListener('submit', event => {
+        if (submitting) { event.preventDefault(); return; }
+        if (!event.defaultPrevented) submitting = true;
+    });
+    window.addEventListener('pageshow', () => { submitting = false; });
+})();
+JS;
+        $this->inlineScript()->captureEnd();
+    }
 }
 

@@ -22,6 +22,22 @@ $showIndex = $options['showIndex'] ?? true;
 $cellPartials = $options['cellPartials'] ?? [];
 $context = isset($options['context']) ? ($options['context'])($this, $headers) : [];
 $dictionaries = [];
+$massActions = [];
+if (($allow_mass_actions ?? true) && $prototype->getAllowMassActions()) {
+    $rbac = $this->serviceManager()->get(\Base\Services\Rbac\RbacManager::class);
+    foreach ($prototype->getMassActions() as $key => $action) {
+        $hasRecordPermission = array_filter($action['recordPrivileges'] ?? [], static fn ($privilege) => $rbac->isGranted(null, $privilege));
+        if (!empty($action['privilege']) && $rbac->isGranted(null, $action['privilege']) && $hasRecordPermission) {
+            $massActions[$key] = $action;
+        }
+    }
+}
+$massAllowed = static function ($row, array $action) use (&$rbac): bool {
+    foreach ($action['recordPrivileges'] ?? [] as $privilege) {
+        if ($rbac->isGranted(null, $privilege, $row->getData())) return true;
+    }
+    return false;
+};
 
 foreach ($rowDictionaries as $key => $rowDictionary) {
     if (isset($cellPartials[$key]) || !in_array($key, $headers, true)) {
@@ -65,6 +81,9 @@ if ($responsive) {
 echo '<table class="' . $this->escapeHtmlAttr('table ' . ($options['class'] ?? '')) . '" id="' . $tableId . '">';
 echo '<thead class="table-light">';
 echo '<tr>';
+if ($massActions) {
+    echo '<th hidden data-mass-cell class="base-mass-cell text-center align-middle"><label class="base-mass-choice"><input type="checkbox" class="form-check-input" data-mass-all aria-label="Zaznacz wszystkie dostępne wiersze na tej stronie"></label></th>';
+}
 if ($showIndex) echo '<th class="fw-bold">#</th>';
 
 foreach ($headers as $header) {
@@ -103,6 +122,12 @@ echo '<tbody>';
 foreach ($data as $row) {
     $rowClass = isset($options['rowClass']) ? ($options['rowClass'])($row) : '';
     echo '<tr class="' . $this->escapeHtmlAttr($rowClass) . '">';
+    if ($massActions) {
+        $allowed = array_keys(array_filter($massActions, static fn ($action) => $massAllowed($row, $action)));
+        echo '<td hidden data-mass-cell class="base-mass-cell text-center align-middle"><label class="base-mass-choice"><input type="checkbox" class="form-check-input" data-mass-row value="'
+            . $this->escapeHtmlAttr((string) $row->id) . '" aria-label="Zaznacz rekord ' . $this->escapeHtmlAttr((string) $row->id)
+            . '" data-mass-allowed="' . $this->escapeHtmlAttr(json_encode($allowed)) . '"' . (!$allowed ? ' disabled' : '') . '></label></td>';
+    }
     if ($showIndex) echo '<td><strong>' . ($index++) . '</strong></td>';
     
     foreach ($headers as $header) {
@@ -155,12 +180,66 @@ if ($responsive) {
     echo '</div>';
 }
 
+if ($massActions) {
+    echo '<div class="base-mass-actions bg-body-tertiary p-3 mb-3" data-mass-controls="' . $this->escapeHtmlAttr($tableId) . '">';
+    echo '<button type="button" class="btn btn-outline-primary p-3" data-mass-toggle aria-expanded="false" aria-controls="' . $this->escapeHtmlAttr($tableId) . '">Akcje masowe</button>';
+    echo '<div hidden data-mass-panel><p class="mt-3" data-mass-count aria-live="polite">Zaznaczono: 0</p>';
+    echo '<p hidden data-mass-error class="alert alert-danger" role="alert" tabindex="-1"></p>';
+    foreach ($massActions as $key => $action) {
+        $url = $this->url($action['route'], ($action['params'] ?? []) + ['action' => $action['action']], ['query' => $action['query'] ?? []]);
+        echo '<button type="button" class="btn btn-outline-primary p-3" data-mass-action="' . $this->escapeHtmlAttr((string) $key)
+            . '" data-mass-url="' . $this->escapeHtmlAttr($url) . '">' . $this->escapeHtml($action['label']) . '</button>';
+    }
+    echo '</div></div>';
+}
+
 // Encode JS literals independently from HTML, including quotes and closing script tags.
 $ajaxUrlJs = json_encode($ajaxUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
 $ajaxParamsJs = json_encode($ajaxParams, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
+$tableIdJs = json_encode($tableId, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
 $this->inlineScript()->captureStart();
 echo <<<"JS"
 (() => {
+    const table = document.getElementById({$tableIdJs});
+    const controls = Array.from(document.querySelectorAll('[data-mass-controls]')).find(el => el.dataset.massControls === {$tableIdJs});
+    if (controls) {
+        const toggle = controls.querySelector('[data-mass-toggle]');
+        const panel = controls.querySelector('[data-mass-panel]');
+        const all = table.querySelector('[data-mass-all]');
+        const rows = Array.from(table.querySelectorAll('[data-mass-row]:not(:disabled)'));
+        const error = controls.querySelector('[data-mass-error]');
+        const selected = () => rows.filter(row => row.checked);
+        const sync = () => {
+            const count = selected().length;
+            all.checked = rows.length > 0 && count === rows.length;
+            all.indeterminate = count > 0 && count < rows.length;
+            all.disabled = !rows.length;
+            controls.querySelector('[data-mass-count]').textContent = 'Zaznaczono: ' + count;
+            error.hidden = true;
+        };
+        toggle.addEventListener('click', () => {
+            const open = toggle.getAttribute('aria-expanded') !== 'true';
+            toggle.setAttribute('aria-expanded', String(open));
+            table.querySelectorAll('[data-mass-cell]').forEach(cell => cell.hidden = !open);
+            panel.hidden = !open;
+            if (!open) rows.forEach(row => row.checked = false);
+            sync();
+        });
+        all.addEventListener('change', () => { rows.forEach(row => row.checked = all.checked); sync(); });
+        rows.forEach(row => row.addEventListener('change', sync));
+        controls.querySelectorAll('[data-mass-action]').forEach(button => button.addEventListener('click', () => {
+            const checked = selected();
+            let message = checked.length ? '' : 'Wybierz co najmniej jeden rekord.';
+            if (checked.some(row => !JSON.parse(row.dataset.massAllowed).map(String).includes(button.dataset.massAction))) {
+                message = 'Ta akcja nie jest dostępna dla wszystkich zaznaczonych rekordów.';
+            }
+            if (message) { error.textContent = message; error.hidden = false; error.focus(); return; }
+            const url = new URL(button.dataset.massUrl, window.location.href);
+            url.searchParams.set('ids', checked.map(row => row.value).join(','));
+            window.location.assign(url.href);
+        }));
+        sync();
+    }
     const ajaxUrl = {$ajaxUrlJs};
     const ajaxParams = JSON.parse({$ajaxParamsJs});
 

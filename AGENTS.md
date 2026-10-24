@@ -28,6 +28,8 @@
 
 ## Read only when relevant
 
+- Akcje masowe tabel, `allowMassActions`/`massActions`, pola formularza i atomowy zapis grupy: `docs/agent/mass-actions.md`. Sprawdzaj całą zablokowaną selekcję przed pierwszym zapisem; pusta wartość nie oznacza automatycznie wyczyszczenia.
+
 - Wybór kolumn paginatorów, `headersMapping.defaultVisible/selectable`, sesyjne preferencje i kontrakt AJAX/CSRF: `docs/agent/paginator-columns.md`.
 
 - Aktualizacja Bootstrap/jQuery admina, współdzielone partiale `base/*`, sortowanie AJAX i zależności JS: `docs/agent/admin-view-dependencies.md`. Base nie dostarcza bibliotek przeglądarkowych; sortowanie używa natywnego JSON.parse i bezpiecznych literałów JS, z izolacją wielu tabel. Zachowaj odbiorców spoza admina.
