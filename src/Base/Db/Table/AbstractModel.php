@@ -416,6 +416,67 @@ abstract class AbstractModel
         return $return;
     }
     
+    /** Read current rows, optionally locking them within the caller's transaction (PostgreSQL). */
+    public function fetchMassRows(array $ids, array $contextColumns = [], bool $lock = false): array
+    {
+        $ids = \Base\MassAction\Selection::ids(implode(',', $ids));
+        $gateway = $this->getTableGateway();
+        $sql = $gateway->getSql();
+        $select = $sql->select();
+        $select->columns(array_values(array_unique(array_merge(
+            [$this->getPrimaryKey(), $this->getCreatorColumnName(), 'ghost'], $contextColumns
+        ))));
+        $select->where->in($this->getPrimaryKey(), $ids);
+        $select->order($this->getPrimaryKey());
+        $statement = $sql->prepareStatementForSqlObject($select);
+        if ($lock) $statement->setSql($statement->getSql() . ' FOR UPDATE');
+        return iterator_to_array($statement->execute(), false);
+    }
+
+    /** Validate the entire locked selection before any write; callbacks are trusted application code. */
+    public function updateMass(array $ids, array $changes, int $actorId, callable $authorize, callable $validate, array $contextColumns = []): int
+    {
+        $ids = \Base\MassAction\Selection::ids(implode(',', $ids));
+        $entity = $this->getEntity();
+        if (!$entity->getAllowMassActions() || !$changes || $actorId < 1
+            || array_diff_key($changes, $entity->getMassEditableFields())) {
+            throw new \InvalidArgumentException('Niedozwolony zakres edycji masowej.');
+        }
+        foreach ($changes as $field => $value) {
+            if ($value === null && empty($entity->getMassEditableFields()[$field]['nullable'])) {
+                throw new \InvalidArgumentException('To pole nie dopuszcza wyczyszczenia.');
+            }
+        }
+        $connection = $this->getTableGateway()->getAdapter()->getDriver()->getConnection();
+        $cache = $this->getUseCache();
+        $connection->beginTransaction();
+        try {
+            $rows = $this->fetchMassRows($ids, $contextColumns, true);
+            if (count($rows) !== count($ids)) throw new \Base\MassAction\Rejection('Co najmniej jeden rekord nie jest już dostępny.');
+            foreach ($rows as $row) {
+                if (!empty($row['ghost']) || !$authorize($row)) {
+                    throw new \Base\MassAction\Rejection('Brak dostępu do co najmniej jednego wybranego rekordu.');
+                }
+                $validate($row, $changes);
+            }
+            $where = new \Laminas\Db\Sql\Where();
+            $where->in($this->getPrimaryKey(), $ids);
+            $this->setUseCache(false);
+            $count = $this->update($changes + [
+                'changed_by' => $actorId, 'changed_at' => new \Laminas\Db\Sql\Expression('CURRENT_TIMESTAMP'),
+            ], $where);
+            if ($count !== count($ids)) throw new \RuntimeException('Incomplete mass update.');
+            $connection->commit();
+        } catch (\Throwable $error) {
+            $connection->rollback();
+            throw $error;
+        } finally {
+            $this->setUseCache($cache);
+        }
+        if ($cache) $this->clearCache();
+        return $count;
+    }
+
     public function clearCache()
     {
         $storage = $this->getStorage();

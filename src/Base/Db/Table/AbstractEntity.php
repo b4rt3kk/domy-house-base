@@ -8,6 +8,14 @@ abstract class AbstractEntity
     protected $headersMapping = [];
     
     protected $rowActions = [];
+
+    protected $allowMassActions = false;
+    protected $massActions = [];
+    protected $massEditableFields = [];
+
+    public function getAllowMassActions(): bool { return $this->allowMassActions; }
+    public function getMassActions(): array { return $this->allowMassActions ? $this->massActions : []; }
+    public function getMassEditableFields(): array { return $this->allowMassActions ? $this->massEditableFields : []; }
     
     protected $dictionaries = [];
     
@@ -113,5 +121,8 @@ abstract class AbstractEntity
         $this->setRowActions([]);
         $this->setDictionaries([]);
         $this->setActionsPartial(null);
+        $this->allowMassActions = false;
+        $this->massActions = [];
+        $this->massEditableFields = [];
     }
 }

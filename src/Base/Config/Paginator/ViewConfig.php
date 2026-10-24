@@ -11,6 +11,12 @@ class ViewConfig extends \Base\Object\AbstractHydratableObject
     /** Trusted server-side presentation options for the shared base/table view. */
     protected $tableOptions = [];
 
+    /** A consumer can suppress an entity's mass actions for a particular list. */
+    protected $allowMassActions = true;
+
+    public function getAllowMassActions(): bool { return $this->allowMassActions; }
+    public function setAllowMassActions(bool $allow): void { $this->allowMassActions = $allow; }
+
     public function getTableOptions(): array
     {
         return $this->tableOptions;

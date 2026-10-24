@@ -40,6 +40,7 @@ if ($paginator instanceof \Base\Paginator) {
             'responsive' => $viewConfig->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
             'table_options' => $viewConfig->getTableOptions(),
+            'allow_mass_actions' => $viewConfig->getAllowMassActions(),
             'ajax_url' => $ajaxUrl,
             'ajax_params' => json_encode(['paginatorId' => $paginatorId]),
             'sort' => $paginator->getSortingData(),
