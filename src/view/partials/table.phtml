@@ -189,11 +189,14 @@ if ($massActions || !empty($page_navigation)) {
     }
     if ($massActions) {
         echo '<button type="button" class="btn btn-outline-secondary" data-mass-toggle aria-expanded="false" aria-controls="' . $this->escapeHtmlAttr($tableId) . '">Akcje masowe</button>';
+        echo '<div hidden data-mass-panel class="base-mass-action-group d-flex flex-wrap align-items-center gap-2 border rounded" role="group" aria-label="Wykonaj dla zaznaczonych">';
+        echo '<span class="base-mass-action-label small text-muted">Wykonaj dla zaznaczonych</span>';
         foreach ($massActions as $key => $action) {
             $url = $this->url($action['route'], ($action['params'] ?? []) + ['action' => $action['action']], ['query' => $action['query'] ?? []]);
-            echo '<button hidden data-mass-panel type="button" class="btn btn-outline-primary" data-mass-action="' . $this->escapeHtmlAttr((string) $key)
+            echo '<button type="button" class="btn btn-outline-primary" data-mass-action="' . $this->escapeHtmlAttr((string) $key)
                 . '" data-mass-url="' . $this->escapeHtmlAttr($url) . '">' . $this->escapeHtml($action['label']) . '</button>';
         }
+        echo '</div>';
     }
     echo '</div>';
     if ($massActions) {

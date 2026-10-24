@@ -19,6 +19,11 @@ jest dodatnie `id`, zgodne z konwencją modeli aplikacji.
 Opcjonalne `page_navigation` (przekazywane także przez `base/paginator`) renderuje
 standardowe `base/navigation` obok „Akcje masowe” i przycisków modelu.
 Przełącznik ma wariant outline-secondary, wszystkie przyciski standardowy padding.
+Przyciski operujące na selekcji są w osobnej, początkowo ukrytej grupie
+`base-mass-action-group` z ramką i etykietą „Wykonaj dla zaznaczonych”
+(`role=group`, dostępna nazwa). Nawigacja strony i przełącznik pozostają poza grupą.
+Na desktopie przyciski mają wspólny środek w pionie; konsument zapewnia niewielki
+padding ramki i pionowy układ na mobile. Zamknięcie trybu ukrywa całą grupę.
 Licznik jest pod przyciskami, ma mniejszy tekst i pogrubioną samą liczbę.
 Paginator zachowuje nawigację strony także przy braku wyników i własnej liście.
 Nie dodawaj drugiego paska nawigacji w widoku korzystającym z tej opcji.
