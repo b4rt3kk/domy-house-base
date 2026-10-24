@@ -15,7 +15,13 @@ wszystkich akcji wyłącza checkbox; akcja obejmująca niedozwolony wiersz jest
 odrzucana w UI i musi być ponownie sprawdzona w backendzie. Kluczem zaznaczenia
 jest dodatnie `id`, zgodne z konwencją modeli aplikacji.
 
-`base/table` renderuje ukrytą pierwszą kolumnę i dolny pasek „Akcje masowe”.
+`base/table` renderuje ukrytą pierwszą kolumnę i wspólny dolny pasek akcji.
+Opcjonalne `page_navigation` (przekazywane także przez `base/paginator`) renderuje
+standardowe `base/navigation` obok „Akcje masowe” i przycisków modelu.
+Przełącznik ma wariant outline-secondary, wszystkie przyciski standardowy padding.
+Licznik jest pod przyciskami, ma mniejszy tekst i pogrubioną samą liczbę.
+Paginator zachowuje nawigację strony także przy braku wyników i własnej liście.
+Nie dodawaj drugiego paska nawigacji w widoku korzystającym z tej opcji.
 Natywny checkbox nagłówka używa `indeterminate`, zaznacza tylko dostępne wiersze
 bieżącej strony i jest niezależny od wyboru kolumn. Zamknięcie trybu, zmiana
 strony, sortowania, filtra lub przeładowanie kasują wybór. Stan jest lokalny dla
@@ -39,6 +45,9 @@ rozwiązać słownik przed przekazaniem konfiguracji. Każde pole ma selektor
 `change_<kolumna>`: keep/set oraz clear tylko dla nullable. Nie wnioskuj zmiany
 z pustej wartości. `getChanges()` wywołuj tylko po poprawnej walidacji; zwraca
 wyłącznie wskazane pola, a clear zwraca NULL.
+
+Przyciski formularza używają standardowych helperów Base: najpierw zapis
+z dolnym marginesem, następnie anulowanie. Oba zajmują pełną szerokość.
 
 Formularz zachowuje CSRF. Nie używa generycznego `AbstractForm::initInputFilter`,
 który zastępuje specyfikacje elementów. Jawne `input` zastępuje, a nie scala

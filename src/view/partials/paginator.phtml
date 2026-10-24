@@ -40,6 +40,7 @@ if ($paginator instanceof \Base\Paginator) {
             'responsive' => $viewConfig->getIsResponsive(),
             'table_actions_partial' => $tableActionsPartial,
             'table_options' => $viewConfig->getTableOptions(),
+            'page_navigation' => $page_navigation ?? [],
             'allow_mass_actions' => $viewConfig->getAllowMassActions(),
             'ajax_url' => $ajaxUrl,
             'ajax_params' => json_encode(['paginatorId' => $paginatorId]),
@@ -53,6 +54,9 @@ if ($paginator instanceof \Base\Paginator) {
         echo '</div>';
     } else {
         echo $this->translate($viewConfig->getNoResultsText());
+    }
+    if (!empty($page_navigation) && ($totalResults <= 0 || $listPartial !== 'base/table')) {
+        echo '<div class="bg-body-tertiary p-3">' . $this->partial('base/navigation', ['navigation' => $page_navigation]) . '</div>';
     }
     
     $paginatorIdJs = json_encode($paginatorId, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
