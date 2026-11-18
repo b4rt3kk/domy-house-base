@@ -71,4 +71,30 @@ final class DictionaryTest extends TestCase
         $dictionary->setNamedDictionaryCallable(static fn () => [0 => 'Nie', 1 => 'Tak']);
         self::assertSame([0 => 'Nie', 1 => 'Tak'], $dictionary->getDictionary());
     }
+    public function testCacheSeparatesProjectionAndSeparator(): void
+    {
+        $dictionary = $this->dictionary();
+        $key = new ReflectionMethod(Base\Dictionary::class, 'getDictionaryCacheKey');
+        $keys = [$key->invoke($dictionary)];
+        $dictionary->setIdKey('code');
+        $keys[] = $key->invoke($dictionary);
+        $dictionary->setNameFields(['name', 'code']);
+        $keys[] = $key->invoke($dictionary);
+        $dictionary->setSeparator(' — ');
+        $keys[] = $key->invoke($dictionary);
+        self::assertCount(4, array_unique($keys));
+    }
+
+    public function testNamedLanguagesDoNotShareValues(): void
+    {
+        $dictionary = $this->dictionary();
+        $dictionary->setDictionaryName('translated');
+        $dictionary->setNamedDictionaryCallable(static fn ($d) => [0 => $d->getLanguageCode()]);
+        self::assertSame([0 => 'pl_pl'], $dictionary->getDictionary());
+        $dictionary->setLanguageCode('en_gb');
+        self::assertSame([0 => 'en_gb'], $dictionary->getDictionary());
+        $dictionary->setLanguageCode('pl_pl');
+        self::assertSame([0 => 'pl_pl'], $dictionary->getDictionary());
+    }
+
 }

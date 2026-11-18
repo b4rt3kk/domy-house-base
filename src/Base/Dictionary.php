@@ -276,7 +276,15 @@ class Dictionary extends Logic\AbstractLogic
             $cacheKey = $select->getSqlString($platform);
         }
         
-        return md5($cacheKey);
+        return md5(serialize([
+            'version' => 2,
+            'source' => $cacheKey,
+            'model' => $this->getModelName(),
+            'idKey' => $this->getIdKey(),
+            'nameFields' => $this->getNameFields(),
+            'separator' => $this->getSeparator(),
+            'language' => $this->getLanguageCode(),
+        ]));
     }
     
     /**
