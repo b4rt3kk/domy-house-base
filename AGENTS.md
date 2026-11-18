@@ -39,6 +39,7 @@
 - Podgląd `base/show`, mobilne etykiety/wartości i rozdzielenie podglądów od tabel wyników: `docs/agent/record-details.md`.
 
 - Model dictionaries, filtered labels, dictionary cache keys or SQL92 quoting warnings: `docs/agent/dictionaries.md`.
+  Klucz cache musi uwzględniać model, pole wartości, pola etykiety, separator, język i warunki; nie przywracaj klucza opartego wyłącznie o SELECT/nazwę.
 
 - Typ oferty Usługa/Produkt, wybór przed dodawaniem, dozwolone subkategorie, lokalizacja i cennik zależny od typu: `docs/agent/offer-types.md`.
 
