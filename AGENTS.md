@@ -67,3 +67,7 @@
 
 
 - W pierwszej kolejności używaj wspólnych widoków, klas i metod Base. Brakującą funkcję dodawaj jako reużywalne rozszerzenie/opcję Base zamiast kopiować implementację w module. Wszystkie tabelaryczne wyniki paginatorów admina muszą korzystać z `base/table`; różnice domenowe konfiguruj przez `ViewConfig::setTableOptions()` i `setTableActionsPartial()`. Partiale komórek/akcji nie mogą powielać struktury tabeli ani nawigacji.
+
+## Zapis tekstów
+
+- Używaj zwykłego `-` (U+002D), nie długiej pauzy U+2014, także w pustych opcjach VAT. Zasady kodu, dokumentacji i danych: `docs/agent/text-conventions.md`.

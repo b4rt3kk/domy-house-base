@@ -80,7 +80,7 @@ final class DictionaryTest extends TestCase
         $keys[] = $key->invoke($dictionary);
         $dictionary->setNameFields(['name', 'code']);
         $keys[] = $key->invoke($dictionary);
-        $dictionary->setSeparator(' — ');
+        $dictionary->setSeparator(' - ');
         $keys[] = $key->invoke($dictionary);
         self::assertCount(4, array_unique($keys));
     }
