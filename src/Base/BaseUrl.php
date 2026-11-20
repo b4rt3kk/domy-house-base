@@ -73,7 +73,7 @@ class BaseUrl extends \Base\Logic\AbstractLogic
             $hostName = $this->getHostName();
         }
 
-        // host_name nie powinien zawierać prefiksu www. — usuwamy go jeśli ktoś go dodał,
+        // host_name nie powinien zawierać prefiksu www. - usuwamy go jeśli ktoś go dodał,
         // żeby uniknąć podwójnego www (np. www.www.test.domy.house lub ogrod.www.test.domy.house)
         if (substr($hostName, 0, 4) === 'www.') {
             $hostName = substr($hostName, 4);

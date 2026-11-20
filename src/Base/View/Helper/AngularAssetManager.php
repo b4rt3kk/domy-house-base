@@ -115,7 +115,7 @@ class AngularAssetManager extends AbstractHelper
             }
         }
 
-        // iteracja wzorców w zdefiniowanej kolejności — gwarantuje właściwą kolejność ładowania skryptów
+        // iteracja wzorców w zdefiniowanej kolejności - gwarantuje właściwą kolejność ładowania skryptów
         foreach ($filesPatterns as $pattern) {
             foreach ($localFiles as $fileName) {
                 if (!preg_match('#^' . $pattern . '$#', $fileName)) {

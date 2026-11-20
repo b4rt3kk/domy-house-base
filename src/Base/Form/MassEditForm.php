@@ -33,7 +33,7 @@ class MassEditForm extends AbstractForm
             $label = $field['element']['options']['label'] ?? $name;
             $this->add([
                 'name' => 'change_' . $name, 'type' => \Laminas\Form\Element\Select::class,
-                'options' => ['label' => $label . ' — działanie', 'value_options' => [
+                'options' => ['label' => $label . ' - działanie', 'value_options' => [
                     'keep' => 'Pozostaw bez zmian', 'set' => 'Ustaw wartość',
                 ] + (!empty($field['nullable']) ? ['clear' => 'Wyczyść wartość'] : [])],
                 'attributes' => ['class' => 'form-select selectpicker-select-filter', 'data-mass-field' => $name],
