@@ -3,7 +3,9 @@
 `src/view/partials/show.phtml` jest partialem `base/show` używanym m.in. przez
 panel MVC dla wiadomości, użytkowników, zamówień i płatności. Nie jest listą
 wyników (`table.phtml`). Zachowuje mapowanie nagłówków, słowniki, formatowanie
-oraz istniejący kontrakt HTML wartości; zmiana układu nie może zmieniać escapowania.
+oraz istniejący kontrakt HTML wartości. Nowe ogólne podglądy mogą jawnie włączyć
+`escape_values=true`, aby kodować tekst również po wyborze wartości słownika.
+Słowniki są klonowane i ładowane wyłącznie dla wybranych pól.
 
 Klasy `record-details`, `record-details-label`, `record-details-value` są
 kontraktem stylowania. Base nie wymusza mobilnego układu w publicznych layoutach.
