@@ -1,45 +1,15 @@
-<div class="dropdown">
-    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-cog"></i>
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-    <?php
-    $showedPages = [];
-
-    foreach ($actions as $action) {
-        $page = new \Base\Navigation\Page\Mvc(array_merge($action, [
-            'row' => $row,
-            'serviceManager' => $this->serviceManager(),
-        ]));
-        
-        if (!empty($action['confirmModal'])) {
-            // dodanie partiala z confirm (potwierdzeniem)
-            // wygenerowanie unikatowego id elementu
-            $id = uniqid("action_");
-
-            $this->layout()->modals = array_merge($this->layout()->modals, [
-                ['partial' => 'base/modal/confirm', 'params' => array_merge([
-                    'id' => $id,
-                    'page' => $page,
-                    'href' => $page->getHref(),
-                ], $action['confirmModal'])],
-            ]);
-
-            $page->setAttribute('data-bs-toggle', 'modal');
-            $page->setAttribute('data-bs-target', '#' . $id);
-            $page->setUrl('#');
-        }
-
-        if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
-            $showedPages[] = $page->getHref();
-
-            echo '<li>';
-            echo '<a href="' . $page->getHref() . '" class="dropdown-item" ' . $page->getAttributesAsString() . '>';
-            echo $page->getLabel();
-            echo '</a>';
-            echo '</li>';
-        }
-    }
-    ?>
-    </ul>
+<?php
+$content = $content ?? $this->partial('base/table_actions', [
+    'actions' => $actions, 'row' => $row, 'items_only' => true,
+    'default_action' => $default_action ?? null,
+    'require_base_privilege' => $require_base_privilege ?? false,
+]);
+if (trim(strip_tags($content)) === '') return;
+if (!empty($items_only)) { echo $content; return; }
+$id = uniqid('row_actions_');
+?>
+<div class="dropdown base-row-actions">
+    <button id="<?= $this->escapeHtmlAttr($id) ?>" class="btn btn-outline-primary dropdown-toggle" type="button"
+            data-bs-toggle="dropdown" data-bs-config='{"popperConfig":{"strategy":"fixed"}}' aria-expanded="false" aria-label="Akcje rekordu">Akcje</button>
+    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="<?= $this->escapeHtmlAttr($id) ?>"><?= $content ?></div>
 </div>

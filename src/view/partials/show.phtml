@@ -12,7 +12,8 @@ $dictionaries = [];
 
 // pobranie listy słowników określonych na wierszu
 foreach ($rowDictionaries as $key => $rowDictionary) {
-    $dictionary = $this->serviceManager()->get(\Base\Dictionary::class);
+    if (!in_array($key, $headers, true)) continue;
+    $dictionary = clone $this->serviceManager()->get(\Base\Dictionary::class);
     $dictionary->init();
 
     /* @var $dictionary \Base\Dictionary */
@@ -77,6 +78,8 @@ foreach ($headers as $header) {
         $value = $dictionaries[$header][$row->{$header}];
     }
     
+    if (!empty($escape_values)) $value = $this->escapeHtml((string) $value);
+
     // formatowanie
     if (!empty($headersMapping[$header]['format'])) {
         switch ($headersMapping[$header]['format']) {

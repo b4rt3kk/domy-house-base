@@ -10,7 +10,7 @@ if ($paginator instanceof \Base\Paginator) {
     $ajaxUrl = $viewConfig->getAjaxUrl() ?? $this->url('ajax', ['action' => 'paginator']);
     $storageContainerName = $paginator->getStorageContainerName();
     $paginatorId = $paginator->getPaginatorId();
-    $tableActionsPartial = $viewConfig->getTableActionsPartial();
+    $tableActionsPartial = $viewConfig->getTableActionsPartial() ?? $paginator->getTableActionsPartial();
     $listPartial = $viewConfig->getListPartial();
     
     $form = $paginator->getFilterForm();

@@ -1,36 +1,40 @@
 <?php
 $showedPages = [];
-
+if (!empty($items_only)) {
+    $rank = static fn (array $action): int => preg_match('/^(Edytuj|Edycja)/u', $action['label'] ?? '') ? 0
+        : (preg_match('/^(Usuń|Przywróć)/u', $action['label'] ?? '') ? 2 : 1);
+    usort($actions, static fn (array $left, array $right): int => $rank($left) <=> $rank($right));
+}
 foreach ($actions as $action) {
+    // The default read action is rendered once by the table, using the same RBAC.
+    if (!empty($default_action) && ($action['route'] ?? null) === ($default_action['route'] ?? null)
+        && ($action['action'] ?? null) === ($default_action['action'] ?? null)) continue;
     $page = new \Base\Navigation\Page\Mvc(array_merge($action, [
-        'row' => $row,
-        'serviceManager' => $this->serviceManager(),
+        'row' => $row, 'serviceManager' => $this->serviceManager(),
     ]));
-    
+    if (!$page->isAllowed() || !$page->isShowable()) continue;
+    if (!empty($require_base_privilege) && !empty($action['route']) && !empty($action['action'])
+        && !$this->serviceManager()->get(\Base\Services\Rbac\RbacManager::class)
+            ->isGranted(null, $action['route'] . '.' . $action['action'])) continue;
+    // Deduplicate the real destination before modal triggers replace it with '#'.
+    $href = $page->getHref();
+    if (in_array($href, $showedPages, true)) continue;
+    $showedPages[] = $href;
     if (!empty($action['confirmModal'])) {
-        // dodanie partiala z confirm (potwierdzeniem)
-        // wygenerowanie unikatowego id elementu
-        $id = uniqid("action_");
-
-        $this->layout()->modals = array_merge($this->layout()->modals, [
+        $id = uniqid('action_');
+        $this->layout()->modals = array_merge($this->layout()->modals ?? [], [
             ['partial' => 'base/modal/confirm', 'params' => array_merge([
-                'id' => $id,
-                'page' => $page,
-                'href' => $page->getHref(),
+                'id' => $id, 'page' => $page, 'href' => $href,
             ], $action['confirmModal'])],
         ]);
-        
         $page->setAttribute('data-bs-toggle', 'modal');
         $page->setAttribute('data-bs-target', '#' . $id);
-        $page->setUrl('#');
+        $href = '#';
     }
-
-    if ($page->isAllowed() && $page->isShowable() && !in_array($page->getHref(), $showedPages)) {
-        $showedPages[] = $page->getHref();
-        $class = $page->getClass();
-        
-        echo '<a href="' . $page->getHref() . '" class="' . (!empty($class) ? $class : 'btn btn-outline-primary') . '" ' . $page->getAttributesAsString() . '>';
-        echo $page->getLabel();
-        echo '</a>&nbsp;';
+    $class = !empty($items_only) ? 'dropdown-item' : ($page->getClass() ?: 'btn btn-outline-primary');
+    echo '<a href="' . $this->escapeHtmlAttr($href) . '" class="' . $this->escapeHtmlAttr($class) . '"';
+    foreach ($page->getAttributes() as $name => $value) {
+        echo ' ' . $this->escapeHtmlAttr($name) . '="' . $this->escapeHtmlAttr($value) . '"';
     }
+    echo '>' . $this->escapeHtml($page->getLabel()) . '</a>' . (!empty($items_only) ? '' : '&nbsp;');
 }

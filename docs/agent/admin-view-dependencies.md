@@ -38,6 +38,8 @@ nie lokalnego checkoutu Base. Nie naprawiać tego przez edycję vendor.
 - `show.phtml` renderuje szczegóły, nie tabelę wyników. Klasy
   `record-details*` i kontrakt HTML: [record-details.md](record-details.md).
 
+Akcje wierszy, menu i opcjonalny domyślny podgląd: [table-row-actions.md](table-row-actions.md).
+
 ## Granice zmian
 
 Partiale Base mogą mieć odbiorców poza adminem. Aktualizacja panelu nie

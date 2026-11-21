@@ -5,19 +5,20 @@ $prototype = $data->getArrayObjectPrototype();
 
 $index = isset($index) ? $index : 1;
 $headersMapping = $prototype->getHeadersMapping();
-$rowActions = $prototype->getRowActions();
+$options = $table_options ?? [];
+$rowActions = $options['rowActions'] ?? $prototype->getRowActions();
+$defaultAction = $options['defaultAction'] ?? null;
 $rowDictionaries = $prototype->getDictionaries();
 $sort = isset($sort) ? $sort : [];
 $ajaxUrl = isset($ajax_url) ? $ajax_url : null;
 $ajaxParams = isset($ajax_params) ? $ajax_params : json_encode([]);
 $tableId = isset($table_id) ? $table_id : uniqid();
 
-$hasActions = !empty($rowActions) || !empty($table_actions_partial);
+$hasActions = !empty($rowActions) || !empty($table_actions_partial) || $defaultAction;
 if (empty($table_actions_partial)) {
     $table_actions_partial = $prototype->getActionsPartial();
 }
 
-$options = $table_options ?? [];
 $showIndex = $options['showIndex'] ?? true;
 $cellPartials = $options['cellPartials'] ?? [];
 $context = isset($options['context']) ? ($options['context'])($this, $headers) : [];
@@ -121,7 +122,16 @@ echo '<tbody>';
 
 foreach ($data as $row) {
     $rowClass = isset($options['rowClass']) ? ($options['rowClass'])($row) : '';
-    echo '<tr class="' . $this->escapeHtmlAttr($rowClass) . '">';
+    $defaultPage = null;
+    if ($defaultAction) {
+        $candidate = new \Base\Navigation\Page\Mvc($defaultAction + ['row' => $row, 'serviceManager' => $this->serviceManager()]);
+        $baseAllowed = empty($defaultAction['route']) || empty($defaultAction['action'])
+            || $this->serviceManager()->get(\Base\Services\Rbac\RbacManager::class)
+                ->isGranted(null, $defaultAction['route'] . '.' . $defaultAction['action']);
+        if ($baseAllowed && $candidate->isAllowed() && $candidate->isShowable()) $defaultPage = $candidate;
+    }
+    echo '<tr class="' . $this->escapeHtmlAttr($rowClass) . '"' . ($defaultPage
+        ? ' data-row-href="' . $this->escapeHtmlAttr($defaultPage->getHref()) . '" tabindex="0" aria-label="' . $this->escapeHtmlAttr($defaultPage->getLabel()) . '"' : '') . '>';
     if ($massActions) {
         $allowed = array_keys(array_filter($massActions, static fn ($action) => $massAllowed($row, $action)));
         echo '<td hidden data-mass-cell class="base-mass-cell text-center align-middle"><label class="base-mass-choice"><input type="checkbox" class="form-check-input" data-mass-row value="'
@@ -164,8 +174,13 @@ foreach ($data as $row) {
     }
     
     if ($hasActions) {
-        echo '<td class="text-nowrap">';
-        echo $this->partial($table_actions_partial, ['actions' => $rowActions, 'row' => $row]);
+        echo '<td class="text-nowrap" data-row-actions>';
+        $menu = ($options['actionsPresentation'] ?? null) === 'dropdown';
+        $content = $defaultPage ? '<a class="' . ($menu ? 'dropdown-item' : 'btn btn-outline-primary') . '" href="'
+            . $this->escapeHtmlAttr($defaultPage->getHref()) . '">' . $this->escapeHtml($defaultPage->getLabel()) . '</a>' : '';
+        $content .= $this->partial($table_actions_partial, ['actions' => $rowActions, 'row' => $row,
+            'items_only' => $menu, 'default_action' => $defaultAction, 'require_base_privilege' => $menu]);
+        echo $menu ? $this->partial('base/table_actions_dropdown', ['content' => $content]) : $content;
         echo '</td>';
     }
     
@@ -214,6 +229,21 @@ $this->inlineScript()->captureStart();
 echo <<<"JS"
 (() => {
     const table = document.getElementById({$tableIdJs});
+    const interactive = 'a,button,input,select,textarea,label,summary,[contenteditable],[role="button"],[role="link"],[data-row-actions],[data-mass-cell]';
+    table.addEventListener('click', event => {
+        const row = event.target.closest('tr[data-row-href]');
+        if (!row || !table.contains(row) || event.defaultPrevented || event.button !== 0
+            || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey
+            || event.target.closest(interactive) || window.getSelection()?.toString()) return;
+        window.location.assign(row.dataset.rowHref);
+    });
+    table.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && event.target.matches('tr[data-row-href]')
+            && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+            event.preventDefault();
+            window.location.assign(event.target.dataset.rowHref);
+        }
+    });
     const controls = Array.from(document.querySelectorAll('[data-mass-controls]')).find(el => el.dataset.massControls === {$tableIdJs});
     if (controls) {
         const toggle = controls.querySelector('[data-mass-toggle]');
