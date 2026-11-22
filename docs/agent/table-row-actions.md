@@ -6,6 +6,13 @@ Ustawia je aplikacja dla swojego admina; domyślność Base poza adminem pozosta
 bez zmian. MVC dokumentuje katalog odczytowych podglądów i RBAC w swoim
 `docs/agent/admin-row-actions.md`.
 
+`defaultAction` wskazuje rzeczywistą odczytową akcję kontrolera właściciela
+listy. Base współdzieli renderowanie i obsługę kliknięcia; nie zastępuje
+domenowych tras globalnym endpointem przyjmującym model/listę przez query.
+W MVC dodanie podglądu wymaga także wpisu w katalogu, własnego RBAC i ukrytego
+dziecka listy w breadcrumbs. Pełna procedura należy do dokumentu MVC wskazanego
+powyżej. Zachowuj specjalistyczne podglądy już istniejące w aplikacji.
+
 - Paginator wybiera `ViewConfig.tableActionsPartial`, następnie historyczne
   `Paginator.tableActionsPartial`, potem renderer encji. Nie ignoruj starszej
   właściwości: istniejące listy nadal ją deklarują.
