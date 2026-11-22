@@ -9,9 +9,9 @@ Słowniki są klonowane i ładowane wyłącznie dla wybranych pól.
 
 Klasy `record-details`, `record-details-label`, `record-details-value` są
 kontraktem stylowania. Base nie wymusza mobilnego układu w publicznych layoutach.
-MVC ładuje własny `admin-responsive.css` wyłącznie w panelu: poniżej 768 px
-etykieta jest mniejsza, uppercase, nad pełnoszeroką wartością. Od 768 px pozostają
-dwie kolumny. Tabele list wyników pozostają poziome.
+MVC ładuje własny `admin-responsive.css` wyłącznie w panelu: na każdej szerokości
+etykieta jest mniejsza, uppercase, nad pełnoszeroką wartością. To reguła panelu,
+nie globalna zmiana odbiorców Base. Tabele list wyników pozostają poziome.
 
 Walidacja: lint PHP oraz test przeglądarkowy MVC
 `python3 tools/check-message-center.py --base-view-root ../domy-house-base/src/view`.
