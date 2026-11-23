@@ -26,6 +26,10 @@
 - Do not commit, push, merge, deploy, create/update issues, or modify issue state without explicit approval for the exact repository, remote, branch, commit, and external action.
 - Run focused validation and `git diff --check` after changes.
 
+## Usunięte rekordy (`ghost`)
+
+- `ghost = true` oznacza usunięcie logiczne. Takie rekordy nie należą do zwykłych wyników, list, treści, słowników, opcji formularzy/filtrów, wyszukiwania ani liczników. Warunki stosuj w zapytaniach przed paginacją, także dla relacji. Model i `Base\Dictionary` nie filtrują ich automatycznie; klient musi przekazać warunek. Zachowuj osobny kontrakt niezmiennej historii i jawnie uprawnionego audytu. Szczegóły: `docs/agent/dictionaries.md`.
+
 ## Read only when relevant
 
 - Akcje wierszy, domyślny dropdown admina, odczytowe „Pokaż”, kliknięcie/Enter, RBAC, własne partiale i menu bez obcinania: `docs/agent/table-row-actions.md`. Admin domyślnie używa jednego menu; nowa lista wymaga rzeczywistej akcji podglądu w kontrolerze modułu, jego trasy, uprawnień i breadcrumbs. Wspólny renderer Base nie zastępuje tych elementów.

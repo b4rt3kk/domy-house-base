@@ -6,6 +6,23 @@
 - `tests/DictionaryTest.php` exercises real dictionary/cache rendering with a PostgreSQL platform, a fake driver and warning-to-exception handling; no database is contacted. This package uses the consuming application's Laminas/PHPUnit dependencies. Run its PHPUnit executable with `--no-configuration --bootstrap <consumer>/vendor/autoload.php <base>/tests/DictionaryTest.php`.
 - After publishing an approved Base fix to `origin`, refresh the consumer's `bwiechnik/domy-house-base` Composer lock reference before building its image. Local tests that preload this checkout's class do not update the locked production dependency.
 
+## Deleted records and visible options
+
+- `ghost = true` marks a logically deleted database row. Exclude deleted rows
+  from ordinary lists, rendered content, search results, filter/form options and
+  counts in the query before pagination. Apply the same rule to relation rows.
+- This generic library does not infer whether a model has `ghost`. Consumers
+  building active-only options must clone/init the dictionary, then pass
+  `setWhere(['NOT ghost'])` (preserving the domain's NULL convention).
+  A named dictionary's callable must filter its own data and deleted parents.
+- A historical reference label or immutable message snapshot is separate from
+  selectable options; do not globally remove history or change all generic
+  dictionary reads to repair one unfiltered selector. Trash/audit reads require
+  an explicit domain/access contract and must not populate ordinary results.
+- Tests must exercise an active/deleted fixture pair through the real query,
+  reject submitted deleted option IDs and preserve empty/zero options and cache
+  isolation. Filtering only in the template does not enforce this contract.
+
 ## Configuration contract and cache identity
 
 - `dictionaryName` takes precedence over `modelName`. Named dictionary behavior is
