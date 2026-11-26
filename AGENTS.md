@@ -1,5 +1,10 @@
 # Repository instructions
 
+## Wersjonowanie i changelog
+
+- Przed zmianą kodu lub przygotowaniem wydania przeczytaj `docs/agent/versioning.md`.
+- Agent klasyfikuje całe wydanie według SemVer, aktualizuje `CHANGELOG.md` w tej samej zmianie i uzasadnia numer; nie podbija wersji na każdy commit ani etap wdrożenia. Tagi są niezmienne, a zasady wersjonowania nie zastępują zgody na publikację.
+
 ## Routed agent documentation
 
 - When a task requires investigating a coherent application area that is not covered by an existing routed agent document, create a focused `docs/agent/<area>.md` after understanding that area and add a concise routing entry to the main `AGENTS.md` under a relevant “Read only when relevant” section. Record durable architecture, contracts, workflows, constraints, validation, and recurring pitfalls; omit transient incident details and facts already obvious from the code.
