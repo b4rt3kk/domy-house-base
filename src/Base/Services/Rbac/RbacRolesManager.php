@@ -69,12 +69,15 @@ abstract class RbacRolesManager extends AbstractLogic
         $foundPermissions = [];
 
         foreach ($dataRolePermissions as $rowRolePermission) {
-            if (strpos($rowRolePermission->{$permissionColumnName}, RbacManager::ANY_PARAM) !== false) {
+            $name = $rowRolePermission->{$permissionColumnName} ?? null;
+            if (is_string($name) && strpos($name, RbacManager::ANY_PARAM) !== false) {
                 $foundPermissions[] = $rowRolePermission;
             }
         }
 
-        $resultSet->initialize(new \ArrayIterator($foundPermissions));
+        // ArrayIterator of entity objects is discarded by Laminas' streaming
+        // ResultSet::current(); an array source preserves hydrated entities.
+        $resultSet->initialize($foundPermissions);
 
         return $resultSet;
     }
@@ -93,6 +96,9 @@ abstract class RbacRolesManager extends AbstractLogic
 
     public function isAnyPermissionAllowed($idRole, $permission)
     {
+        if (!is_string($permission) || $permission === '') {
+            return false;
+        }
         if (!$this->hasAnyPermissions($idRole)) {
             // rola nie posiada uprawnień zawierających \Base\Services\Rbac\RbacManager::ANY_PARAM
             return false;
@@ -102,14 +108,14 @@ abstract class RbacRolesManager extends AbstractLogic
         $permissionNameColumn = $this->getPermissionNameColumn();
 
         foreach ($data as $row) {
-            $permissionName = isset($row->{$permissionNameColumn}) && preg_quote($row->{$permissionNameColumn});
+            $permissionName = $row->{$permissionNameColumn} ?? null;
 
             // pominięcie pustych wpisów
-            if (empty($permissionName)) {
+            if (!is_string($permissionName) || $permissionName === '') {
                 continue;
             }
 
-            $pattern = '#' . str_replace('\\' . RbacManager::ANY_PARAM, '.*', $permissionName) . '#';
+            $pattern = '#\\A' . str_replace('\\' . RbacManager::ANY_PARAM, '.*', preg_quote($permissionName, '#')) . '\\z#D';
 
             if (preg_match($pattern, $permission) === 1) {
                 return true;
