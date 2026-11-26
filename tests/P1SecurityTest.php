@@ -60,12 +60,15 @@ final class P1SecurityTest extends TestCase
 
     public function testWildcardMatchesTheWholePermissionAndQuotesRegexCharacters(): void
     {
-        $manager = $this->getMockForAbstractClass(RbacRolesManager::class);
-        $rows = new ResultSet();
-        $rows->initialize([['name' => 'orders.*'], ['name' => 'a#b[0].*'], ['name' => null]]);
-        $manager->method('getRolePermissionsData')->willReturn($rows);
-        foreach (['orders.show', 'orders.show.own', 'a#b[0].read'] as $permission) self::assertTrue($manager->isAnyPermissionAllowed(1, $permission), $permission);
-        foreach (['unrelated1.action', 'prefix.orders.show', 'ordersXshow', 'a#b0.read', '', "orders.show\n"] as $permission) self::assertFalse($manager->isAnyPermissionAllowed(1, $permission));
+        foreach ([new ArrayObject([], ArrayObject::ARRAY_AS_PROPS), new class extends Base\Db\Table\AbstractEntity {}] as $prototype) {
+            $manager = $this->getMockForAbstractClass(RbacRolesManager::class);
+            $rows = new ResultSet();
+            $rows->setArrayObjectPrototype($prototype);
+            $rows->initialize([['name' => 'orders.*'], ['name' => 'a#b[0].*'], ['name' => null]]);
+            $manager->method('getRolePermissionsData')->willReturn($rows);
+            foreach (['orders.show', 'orders.show.own', 'a#b[0].read'] as $permission) self::assertTrue($manager->isAnyPermissionAllowed(1, $permission), $permission);
+            foreach (['unrelated1.action', 'prefix.orders.show', 'ordersXshow', 'a#b0.read', '', "orders.show\n"] as $permission) self::assertFalse($manager->isAnyPermissionAllowed(1, $permission));
+        }
     }
 
     public function testCsvLoadsWithRealParentAndExportsSuppliedAndModelRows(): void

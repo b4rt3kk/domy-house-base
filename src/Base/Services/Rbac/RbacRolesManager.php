@@ -71,12 +71,14 @@ abstract class RbacRolesManager extends AbstractLogic
         foreach ($dataRolePermissions as $rowRolePermission) {
             $name = $rowRolePermission->{$permissionColumnName} ?? null;
             if (is_string($name) && strpos($name, RbacManager::ANY_PARAM) !== false) {
-                $foundPermissions[] = $rowRolePermission;
+                $foundPermissions[] = $rowRolePermission instanceof \ArrayObject
+                    ? $rowRolePermission->getArrayCopy()
+                    : $rowRolePermission->toArray();
             }
         }
 
-        // ArrayIterator of entity objects is discarded by Laminas' streaming
-        // ResultSet::current(); an array source preserves hydrated entities.
+        // Laminas counts fields on the first source row and hydrates the prototype.
+        // Supply row arrays: entities need not implement Countable.
         $resultSet->initialize($foundPermissions);
 
         return $resultSet;
