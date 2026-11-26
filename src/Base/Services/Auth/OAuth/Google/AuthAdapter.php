@@ -141,6 +141,18 @@ class AuthAdapter extends \Base\Services\Auth\OAuth\AbstractOAuth
             $table = $model->getEntity();
 
             if (!empty($rowUser)) {
+                if ($rowUser->{$this->getIsVirtualColumnName()}) {
+                    $this->callEvent(self::EVENT_LOGIN_FAILED);
+                    return new \Laminas\Authentication\Result(\Laminas\Authentication\Result::FAILURE, null, ['Invalid credentials']);
+                }
+                foreach ($this->getRowPostConditions() as $condition) {
+                    foreach ($condition['condition'] as $column => $value) {
+                        if ($rowUser->{$column} !== $value) {
+                            $this->callEvent(self::EVENT_LOGIN_FAILED);
+                            return new \Laminas\Authentication\Result(\Laminas\Authentication\Result::FAILURE, null, ['Invalid credentials']);
+                        }
+                    }
+                }
                 $this->setUserRow($rowUser);
 
                 // użytkownik o tym adresie email już istnieje

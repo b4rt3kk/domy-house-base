@@ -214,7 +214,7 @@ class Generator extends \Base\Logic\AbstractLogic
     
     protected function getDataFromModel()
     {
-        $model = $this->getModel();
+        $model = $this->getConfiguredModel();
         $select = $this->getSelect();
         $columns = $this->getColumns();
         
@@ -245,7 +245,7 @@ class Generator extends \Base\Logic\AbstractLogic
      * @return \Base\Db\Table\AbstractModel
      * @throws \Exception
      */
-    protected function getModel()
+    protected function getConfiguredModel()
     {
         $modelName = $this->getModelName();
         

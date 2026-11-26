@@ -40,11 +40,9 @@ class AuthAdapter extends AbstractAuthAdapter
         }
         
         if ($rowUser->{$this->getIsVirtualColumnName()}) {
-            // użytkownik wirtualny/systemowy
-            // taki użytkownik nie powinien posiadać żadnych ról, nie ma hasła, 
-            // więc nie powinien mieć żadnych uprawnień
-            $result = new Result(Result::SUCCESS, $rowUser, ['Authenticated successfully']);
-            $this->callEvent(self::EVENT_LOGIN_SUCCESS);
+            // Tożsamości systemowe nie mogą logować się interaktywnie.
+            $result = new Result(Result::FAILURE_CREDENTIAL_INVALID, null, ['Invalid credentials']);
+            $this->callEvent(self::EVENT_LOGIN_FAILED);
             
             return $result;
         }

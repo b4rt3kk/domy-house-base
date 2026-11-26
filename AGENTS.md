@@ -37,6 +37,8 @@
 
 ## Read only when relevant
 
+- Logowanie hasłem/Google, konta techniczne, wildcard uprawnień i eksport CSV: `docs/agent/auth-rbac-exports.md`.
+
 - Akcje wierszy, domyślny dropdown admina, odczytowe „Pokaż”, kliknięcie/Enter, RBAC, własne partiale i menu bez obcinania: `docs/agent/table-row-actions.md`. Admin domyślnie używa jednego menu; nowa lista wymaga rzeczywistej akcji podglądu w kontrolerze modułu, jego trasy, uprawnień i breadcrumbs. Wspólny renderer Base nie zastępuje tych elementów.
 
 - Akcje masowe tabel, `allowMassActions`/`massActions`, pola formularza i atomowy zapis grupy: `docs/agent/mass-actions.md`. Sprawdzaj całą zablokowaną selekcję przed pierwszym zapisem; pusta wartość nie oznacza automatycznie wyczyszczenia.
