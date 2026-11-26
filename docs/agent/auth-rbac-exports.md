@@ -10,8 +10,9 @@
   nie zastępuje kontroli tożsamości przy odczycie JWT przez konsumenta.
 - `RbacRolesManager` dopasowuje wildcard do całej nazwy uprawnienia. Cytuje znaki
   regex, a tylko `*` staje się wieloznacznikiem. Nie używaj klucza/indeksu tablicy
-  jako nazwy uprawnienia. Wyniki encji przekazuj do `ResultSet::initialize` jako
-  tablicę; iterator encji może utracić nazwę przy hydratacji.
+  jako nazwy uprawnienia. Do `ResultSet::initialize` przekazuj tablicę tablic danych, zachowując prototyp
+  encji. Encja Base nie jest Countable, a Laminas liczy pola pierwszego wiersza.
+  Testuj zarówno ArrayObject, jak i rzeczywisty kontrakt AbstractEntity.
 - CSV korzysta z `getConfiguredModel`; nie przesłaniaj publicznego `getModel`
   rodzica metodą chronioną o niezgodnej sygnaturze. Eksport zachowuje separator,
   cytowanie i możliwość podania danych lub modelu.
